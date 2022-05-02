@@ -7,7 +7,7 @@
 <br/>
 
 <p align="center">
-    A simple C++ pipewire-api wrapper
+    A C++ RAII PipeWire-API Wrapper
 </p>
 
 <hr/>
@@ -18,7 +18,7 @@
 
 <div align="left">
 
-_Rohrkabel_ is a simple RAII wrapper around the pipewire-api that aims to simplify work with it, at the moment _Rohrkabel_ is only used by Soundux to reduce LOC and simplify the work with pipewire.  
+_Rohrkabel_ is a RAII wrapper around the pipewire-api that aims to simplify work with it, at the moment _Rohrkabel_ is only used by Soundux to reduce LOC and simplify the work with pipewire.  
 
 **Currently only a portion of the pipewire-api is supported.**  
 
