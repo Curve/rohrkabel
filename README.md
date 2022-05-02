@@ -26,6 +26,8 @@ Depending on personal demand from Soundux or the community more portions of the 
 
 </div>
 
+<hr/>
+
 ### Projects using _Rohrkabel_
 <img src="https://avatars.githubusercontent.com/u/74979035?s=200&v=4" width=15/> <b>[Soundux](https://github.com/Soundux)</b>
 
