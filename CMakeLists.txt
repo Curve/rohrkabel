@@ -6,7 +6,7 @@ project(rohrkabel LANGUAGES CXX VERSION 1.0)
 # --------------------------------------------------------------------------------------------------------
 
 if (NOT UNIX)
-    message(WARNING "pipewirepp is not supported on non unix platforms")
+    message(FATAL_ERROR "rohrkabel is not supported on non unix platforms")
 endif()
 
 # --------------------------------------------------------------------------------------------------------
