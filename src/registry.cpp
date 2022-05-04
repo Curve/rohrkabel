@@ -25,17 +25,26 @@ namespace pipewire
 
     template <> node registry::bind<node>(const global &global)
     {
-        return {*this, global};
+        node rtn{*this, global};
+        m_core.sync();
+
+        return rtn;
     }
 
     template <> port registry::bind<port>(const global &global)
     {
-        return {*this, global};
+        port rtn{*this, global};
+        m_core.sync();
+
+        return rtn;
     }
 
     template <> metadata registry::bind<metadata>(const global &global)
     {
-        return {*this, global};
+        metadata rtn{*this, global};
+        m_core.sync();
+
+        return rtn;
     }
 
     core &registry::get_core()

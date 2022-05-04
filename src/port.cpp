@@ -41,7 +41,6 @@ namespace pipewire
 
         // NOLINTNEXTLINE
         pw_port_add_listener(m_impl->port, &listener::get(), &m_impl->events, m_impl.get());
-        registry.get_core().sync();
     }
 
     port_info port::info() const

@@ -51,7 +51,6 @@ namespace pipewire
 
         // NOLINTNEXTLINE
         pw_node_add_listener(m_impl->node, &listener::get(), &m_impl->events, m_impl.get());
-        registry.get_core().sync();
     }
 
     node_info node::info() const

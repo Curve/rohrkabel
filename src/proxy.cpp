@@ -40,7 +40,6 @@ namespace pipewire
         m_impl->proxy = reinterpret_cast<pw_proxy *>(pw_core_create_object(core.get(), factory_name.c_str(), type.c_str(), version, &properties.get()->dict, sizeof(void *)));
 
         pw_proxy_add_listener(m_impl->proxy, &listener::get(), &m_impl->events, m_impl.get());
-        core.sync();
     }
 
     std::uint32_t proxy::id() const

@@ -38,7 +38,6 @@ namespace pipewire
 
         // NOLINTNEXTLINE
         pw_metadata_add_listener(m_impl->metadata, &listener::get(), &m_impl->events, m_impl.get());
-        registry.get_core().sync();
     }
 
     metadata::properties_t metadata::properties() const
