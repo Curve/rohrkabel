@@ -26,6 +26,29 @@ Depending on personal demand from Soundux or the community more portions of the 
 
 </div>
 
+### Installation
+
+<div align="left">
+
+- With FetchContent
+  ```cmake
+  include(FetchContent)
+
+  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Soundux/rohrkabel")
+  FetchContent_MakeAvailable(rohrkabel)
+
+  target_link_libraries(<target> rohrkabel)
+  ```
+- As Git-Submodule
+  ```bash
+  $ git clone https://github.com/Soundux/rohrkabel
+  ```
+  ```cmake
+  add_subdirectory(rohrkabel)
+  target_link_libraries(<target> rohrkabel)
+  ```
+</div>
+
 <hr/>
 
 ### Projects using _Rohrkabel_
