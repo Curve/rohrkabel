@@ -1,5 +1,6 @@
 #include "proxy.hpp"
 #include "error.hpp"
+#include "listener.hpp"
 #include "core/core.hpp"
 
 #include <optional>
@@ -22,10 +23,11 @@ namespace pipewire
         }
     }
 
-    proxy::proxy(proxy &&proxy) noexcept : listener(std::move(proxy)), m_impl(std::move(proxy.m_impl)) {}
+    proxy::proxy(proxy &&proxy) noexcept : m_impl(std::move(proxy.m_impl)) {}
 
     proxy::proxy(core &core, const std::string &factory_name, const properties &properties, const std::string &type, std::uint32_t version) : m_impl(std::make_unique<impl>())
     {
+        listener hook;
         m_impl->events.version = PW_VERSION_PROXY_EVENTS;
 
         m_impl->events.bound = [](void *data, std::uint32_t id) {
@@ -39,7 +41,14 @@ namespace pipewire
 
         m_impl->proxy = reinterpret_cast<pw_proxy *>(pw_core_create_object(core.get(), factory_name.c_str(), type.c_str(), version, &properties.get()->dict, sizeof(void *)));
 
-        pw_proxy_add_listener(m_impl->proxy, &listener::get(), &m_impl->events, m_impl.get());
+        pw_proxy_add_listener(m_impl->proxy, &hook.get(), &m_impl->events, m_impl.get());
+        core.sync();
+    }
+
+    proxy &proxy::operator=(proxy &&proxy) noexcept
+    {
+        m_impl = std::move(proxy.m_impl);
+        return *this;
     }
 
     std::uint32_t proxy::id() const

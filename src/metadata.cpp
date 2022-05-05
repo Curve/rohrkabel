@@ -1,3 +1,4 @@
+#include "listener.hpp"
 #include "metadata/metadata.hpp"
 #include "registry/registry.hpp"
 
@@ -21,10 +22,11 @@ namespace pipewire
         }
     }
 
-    metadata::metadata(metadata &&metadata) noexcept : listener(std::move(metadata)), m_impl(std::move(metadata.m_impl)) {}
+    metadata::metadata(metadata &&metadata) noexcept : m_impl(std::move(metadata.m_impl)) {}
 
     metadata::metadata(registry &registry, const global &global) : m_impl(std::make_unique<impl>())
     {
+        listener hook;
         m_impl->events.version = PW_VERSION_METADATA_EVENTS;
 
         m_impl->events.property = [](void *data, std::uint32_t subject, const char *key, const char *type, const char *value) {
@@ -37,7 +39,14 @@ namespace pipewire
         m_impl->metadata = reinterpret_cast<pw_metadata *>(pw_registry_bind(registry.get(), global.id, PW_TYPE_INTERFACE_Metadata, PW_VERSION_METADATA, sizeof(void *)));
 
         // NOLINTNEXTLINE
-        pw_metadata_add_listener(m_impl->metadata, &listener::get(), &m_impl->events, m_impl.get());
+        pw_metadata_add_listener(m_impl->metadata, &hook.listener::get(), &m_impl->events, m_impl.get());
+        registry.get_core().sync();
+    }
+
+    metadata &metadata::operator=(metadata &&metadata) noexcept
+    {
+        m_impl = std::move(metadata.m_impl);
+        return *this;
     }
 
     metadata::properties_t metadata::properties() const

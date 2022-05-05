@@ -1,7 +1,6 @@
 #pragma once
 #include "info.hpp"
 #include "global.hpp"
-#include "listener.hpp"
 
 #include <memory>
 #include <cstdint>
@@ -10,7 +9,7 @@ struct pw_node;
 namespace pipewire
 {
     class registry;
-    class node : listener
+    class node
     {
         struct impl;
 
@@ -23,6 +22,9 @@ namespace pipewire
       public:
         node(node &&) noexcept;
         node(registry &, const global &);
+
+      public:
+        node &operator=(node &&) noexcept;
 
       public:
         [[nodiscard]] node_info info() const;

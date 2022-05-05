@@ -1,5 +1,4 @@
 #pragma once
-#include "listener.hpp"
 #include "properties.hpp"
 
 #include <memory>
@@ -10,7 +9,7 @@ struct pw_proxy;
 namespace pipewire
 {
     class core;
-    class proxy : listener
+    class proxy
     {
         struct impl;
 
@@ -23,6 +22,9 @@ namespace pipewire
       public:
         proxy(proxy &&) noexcept;
         proxy(core &, const std::string &, const properties &, const std::string &, std::uint32_t);
+
+      public:
+        proxy &operator=(proxy &&) noexcept;
 
       public:
         [[nodiscard]] std::uint32_t id() const;

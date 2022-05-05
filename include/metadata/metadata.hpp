@@ -1,6 +1,5 @@
 #pragma once
 #include "global.hpp"
-#include "listener.hpp"
 #include "property.hpp"
 
 #include <memory>
@@ -9,7 +8,7 @@ struct pw_metadata;
 namespace pipewire
 {
     class registry;
-    class metadata : listener
+    class metadata
     {
         struct impl;
         using properties_t = std::map<const std::string, const metadata_property>;
@@ -23,6 +22,9 @@ namespace pipewire
       public:
         metadata(metadata &&) noexcept;
         metadata(registry &, const global &);
+
+      public:
+        metadata &operator=(metadata &&) noexcept;
 
       public:
         [[nodiscard]] properties_t properties() const;

@@ -1,3 +1,4 @@
+#include "listener.hpp"
 #include "node/node.hpp"
 #include "registry/registry.hpp"
 
@@ -21,10 +22,11 @@ namespace pipewire
         }
     }
 
-    node::node(node &&node) noexcept : listener(std::move(node)), m_impl(std::move(node.m_impl)) {}
+    node::node(node &&node) noexcept : m_impl(std::move(node.m_impl)) {}
 
     node::node(registry &registry, const global &global) : m_impl(std::make_unique<impl>())
     {
+        listener hook;
         m_impl->events.version = PW_VERSION_NODE_EVENTS;
 
         m_impl->events.info = [](void *data, const pw_node_info *info) {
@@ -50,7 +52,14 @@ namespace pipewire
         m_impl->node = reinterpret_cast<pw_node *>(pw_registry_bind(registry.get(), global.id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, sizeof(void *)));
 
         // NOLINTNEXTLINE
-        pw_node_add_listener(m_impl->node, &listener::get(), &m_impl->events, m_impl.get());
+        pw_node_add_listener(m_impl->node, &hook.get(), &m_impl->events, m_impl.get());
+        registry.get_core().sync();
+    }
+
+    node &node::operator=(node &&node) noexcept
+    {
+        m_impl = std::move(node.m_impl);
+        return *this;
     }
 
     node_info node::info() const

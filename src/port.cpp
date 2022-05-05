@@ -1,3 +1,4 @@
+#include "listener.hpp"
 #include "port/port.hpp"
 #include "registry/registry.hpp"
 
@@ -20,10 +21,11 @@ namespace pipewire
         }
     }
 
-    port::port(port &&port) noexcept : listener(std::move(port)), m_impl(std::move(port.m_impl)) {}
+    port::port(port &&port) noexcept : m_impl(std::move(port.m_impl)) {}
 
     port::port(registry &registry, const global &global) : m_impl(std::make_unique<impl>())
     {
+        listener hook;
         m_impl->events.version = PW_VERSION_PORT_EVENTS;
 
         m_impl->events.info = [](void *data, const pw_port_info *info) {
@@ -40,7 +42,14 @@ namespace pipewire
         m_impl->port = reinterpret_cast<pw_port *>(pw_registry_bind(registry.get(), global.id, PW_TYPE_INTERFACE_Port, PW_VERSION_PORT, sizeof(void *)));
 
         // NOLINTNEXTLINE
-        pw_port_add_listener(m_impl->port, &listener::get(), &m_impl->events, m_impl.get());
+        pw_port_add_listener(m_impl->port, &hook.get(), &m_impl->events, m_impl.get());
+        registry.get_core().sync();
+    }
+
+    port &port::operator=(port &&port) noexcept
+    {
+        m_impl = std::move(port.m_impl);
+        return *this;
     }
 
     port_info port::info() const

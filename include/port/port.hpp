@@ -1,7 +1,6 @@
 #pragma once
 #include "info.hpp"
 #include "global.hpp"
-#include "listener.hpp"
 
 #include <memory>
 
@@ -9,7 +8,7 @@ struct pw_port;
 namespace pipewire
 {
     class registry;
-    class port : listener
+    class port
     {
         struct impl;
 
@@ -22,6 +21,9 @@ namespace pipewire
       public:
         port(port &&) noexcept;
         port(registry &, const global &);
+
+      public:
+        port &operator=(port &&) noexcept;
 
       public:
         [[nodiscard]] port_info info() const;
