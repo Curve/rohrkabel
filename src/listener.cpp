@@ -23,6 +23,12 @@ namespace pipewire
 
     listener::listener(listener &&listener) noexcept : m_impl(std::move(listener.m_impl)) {}
 
+    listener &listener::operator=(listener &&listener) noexcept
+    {
+        m_impl = std::move(listener.m_impl);
+        return *this;
+    }
+
     spa_hook &listener::get()
     {
         return m_impl->hook;

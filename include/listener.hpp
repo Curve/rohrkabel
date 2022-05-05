@@ -18,7 +18,10 @@ namespace pipewire
         listener();
         listener(listener &&) noexcept;
 
-      protected:
+      public:
+        listener &operator=(listener &&) noexcept;
+
+      public:
         [[nodiscard]] spa_hook &get();
     };
 } // namespace pipewire
