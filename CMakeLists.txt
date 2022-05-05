@@ -54,4 +54,5 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${PipeWire_INCLUDE_DIR
 if (rohrkabel_examples)
     add_subdirectory("examples/roundtrip")
     add_subdirectory("examples/virtual-mic")
+    add_subdirectory("examples/link-app-to-mic")
 endif()
