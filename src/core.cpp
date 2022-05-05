@@ -51,10 +51,7 @@ namespace pipewire
 
     proxy core::create(const std::string &factory_name, const properties &properties, const std::string &type, std::uint32_t version)
     {
-        proxy rtn{*this, factory_name, properties, type, version};
-        sync();
-
-        return rtn;
+        return {*this, factory_name, properties, type, version};
     }
 
     pw_core *core::get() const
