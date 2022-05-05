@@ -25,8 +25,8 @@ namespace pipewire
         [[nodiscard]] int sync(int seq);
 
       public:
-        template <class EventListener> EventListener listen() = delete;
-        proxy create(const std::string &factory_name, const properties &properties, const std::string &type, std::uint32_t version);
+        template <class EventListener> [[nodiscard]] EventListener listen() = delete;
+        [[nodiscard]] proxy create(const std::string &factory_name, const properties &properties, const std::string &type, std::uint32_t version);
 
       public:
         [[nodiscard]] pw_core *get() const;
