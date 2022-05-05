@@ -12,6 +12,7 @@ namespace pipewire
         pw_node *node;
         node_info info;
         pw_node_events events;
+        std::unique_ptr<listener> hook;
     };
 
     node::~node()
@@ -26,7 +27,6 @@ namespace pipewire
 
     node::node(registry &registry, const global &global) : m_impl(std::make_unique<impl>())
     {
-        listener hook;
         m_impl->events.version = PW_VERSION_NODE_EVENTS;
 
         m_impl->events.info = [](void *data, const pw_node_info *info) {
@@ -47,13 +47,15 @@ namespace pipewire
                 auto param = info->params[i];
                 m_impl.info.params.emplace_back(param_info{param.id, param.user, param.flags});
             }
+
+            m_impl.hook.reset();
         };
 
+        m_impl->hook = std::make_unique<listener>();
         m_impl->node = reinterpret_cast<pw_node *>(pw_registry_bind(registry.get(), global.id, PW_TYPE_INTERFACE_Node, PW_VERSION_NODE, sizeof(void *)));
 
         // NOLINTNEXTLINE
-        pw_node_add_listener(m_impl->node, &hook.get(), &m_impl->events, m_impl.get());
-        registry.get_core().sync();
+        pw_node_add_listener(m_impl->node, &m_impl->hook->get(), &m_impl->events, m_impl.get());
     }
 
     node &node::operator=(node &&node) noexcept

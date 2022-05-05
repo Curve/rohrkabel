@@ -11,6 +11,7 @@ namespace pipewire
         pw_port *port;
         port_info info;
         pw_port_events events;
+        std::unique_ptr<listener> hook;
     };
 
     port::~port()
@@ -25,7 +26,6 @@ namespace pipewire
 
     port::port(registry &registry, const global &global) : m_impl(std::make_unique<impl>())
     {
-        listener hook;
         m_impl->events.version = PW_VERSION_PORT_EVENTS;
 
         m_impl->events.info = [](void *data, const pw_port_info *info) {
@@ -37,13 +37,15 @@ namespace pipewire
                 auto param = info->params[i];
                 m_impl.info.params.emplace_back(param_info{param.id, param.user, param.flags});
             }
+
+            m_impl.hook.reset();
         };
 
+        m_impl->hook = std::make_unique<listener>();
         m_impl->port = reinterpret_cast<pw_port *>(pw_registry_bind(registry.get(), global.id, PW_TYPE_INTERFACE_Port, PW_VERSION_PORT, sizeof(void *)));
 
         // NOLINTNEXTLINE
-        pw_port_add_listener(m_impl->port, &hook.get(), &m_impl->events, m_impl.get());
-        registry.get_core().sync();
+        pw_port_add_listener(m_impl->port, &m_impl->hook->get(), &m_impl->events, m_impl.get());
     }
 
     port &port::operator=(port &&port) noexcept

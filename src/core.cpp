@@ -49,9 +49,16 @@ namespace pipewire
         return {*this};
     }
 
-    proxy core::create(const std::string &factory_name, const properties &properties, const std::string &type, std::uint32_t version)
+    proxy core::create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version, bool auto_sync)
     {
-        return {*this, factory_name, properties, type, version};
+        proxy rtn{*this, factory_name, props, type, version};
+
+        if (auto_sync)
+        {
+            sync();
+        }
+
+        return rtn;
     }
 
     pw_core *core::get() const
