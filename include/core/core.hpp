@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "annotations.hpp"
 struct pw_core;
 namespace pipewire
 {
@@ -25,8 +26,8 @@ namespace pipewire
         [[nodiscard]] int sync(int seq);
 
       public:
-        template <class EventListener> [[nodiscard]] EventListener listen() = delete;
-        [[nodiscard]] proxy create(const std::string &factory_name, const properties &properties, const std::string &type, std::uint32_t version);
+        template <class EventListener> [[needs_sync]] [[nodiscard]] EventListener listen() = delete;
+        [[nodiscard]] [[needs_sync]] proxy create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version, bool auto_sync = true);
 
       public:
         [[nodiscard]] pw_core *get() const;
@@ -35,3 +36,4 @@ namespace pipewire
 
     template <> core_listener core::listen<core_listener>();
 } // namespace pipewire
+#include "annotations.hpp"

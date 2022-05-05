@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "annotations.hpp"
 struct pw_registry;
 namespace pipewire
 {
@@ -24,8 +25,8 @@ namespace pipewire
         registry(core &);
 
       public:
-        template <class EventListener> [[nodiscard]] EventListener listen() = delete;
-        template <class Interface> [[nodiscard]] Interface bind(const global &) = delete;
+        template <class EventListener> [[needs_sync]] [[nodiscard]] EventListener listen() = delete;
+        template <class Interface> [[needs_sync]] [[nodiscard]] Interface bind(const global &, bool auto_sync = true) = delete;
 
       public:
         [[nodiscard]] core &get_core();
@@ -34,7 +35,8 @@ namespace pipewire
 
     template <> registry_listener registry::listen<registry_listener>();
 
-    template <> node registry::bind<node>(const global &);
-    template <> port registry::bind<port>(const global &);
-    template <> metadata registry::bind<metadata>(const global &);
+    template <> node registry::bind<node>(const global &, bool);
+    template <> port registry::bind<port>(const global &, bool);
+    template <> metadata registry::bind<metadata>(const global &, bool);
 } // namespace pipewire
+#include "annotations.hpp"
