@@ -2,7 +2,7 @@
 #include "proxy.hpp"
 #include "events.hpp"
 #include "context.hpp"
-#include "link-factory.hpp"
+#include "link_factory.hpp"
 #include "factories/factories.hpp"
 
 #include <memory>

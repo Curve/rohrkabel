@@ -1,5 +1,5 @@
 #include "core/core.hpp"
-#include "link-factory.hpp"
+#include "link_factory.hpp"
 #include <pipewire/pipewire.h>
 
 namespace pipewire
