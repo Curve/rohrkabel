@@ -47,6 +47,18 @@ namespace pipewire
         return rtn;
     }
 
+    template <> device registry::bind<device>(const global &global, bool auto_sync)
+    {
+        device rtn{*this, global};
+
+        if (auto_sync)
+        {
+            m_core.sync();
+        }
+
+        return rtn;
+    }
+
     template <> metadata registry::bind<metadata>(const global &global, bool auto_sync)
     {
         metadata rtn{*this, global};
