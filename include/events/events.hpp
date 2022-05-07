@@ -1,4 +1,5 @@
 #pragma once
+#include "utils/type_indentity.hpp"
 #include <functional>
 
 namespace pipewire
@@ -22,11 +23,6 @@ namespace pipewire
 
     template <auto Val, typename Type> struct is_event<event<Val, Type>> : std::true_type
     {
-    };
-
-    template <typename T> struct type_identity
-    {
-        using type = T;
     };
 
     template <class... Events> class event_handler

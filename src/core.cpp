@@ -61,6 +61,18 @@ namespace pipewire
         return rtn;
     }
 
+    template <> link_factory core::create<link_factory>(const factories_t::get_t<link_factory> &params, bool auto_sync)
+    {
+        auto rtn = std::apply([&](auto &&...params) { return link_factory(*this, std::forward<decltype(params)>(params)...); }, params);
+
+        if (auto_sync)
+        {
+            sync();
+        }
+
+        return rtn;
+    }
+
     pw_core *core::get() const
     {
         return m_impl->core;
