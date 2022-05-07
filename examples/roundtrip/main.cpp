@@ -10,7 +10,7 @@ int main()
 
     auto reg_listener = reg.listen<pipewire::registry_listener>();
     reg_listener.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
-        if (global.type == "PipeWire:Interface:Node")
+        if (global.type == pipewire::node::type)
         {
             auto node = reg.bind<pipewire::node>(global);
             auto info = node.info();
@@ -22,7 +22,7 @@ int main()
             }
             std::cout << std::endl;
         }
-        if (global.type == "PipeWire:Interface:Metadata")
+        if (global.type == pipewire::metadata::type)
         {
             auto metadata = reg.bind<pipewire::metadata>(global);
 
@@ -33,12 +33,24 @@ int main()
             }
             std::cout << std::endl;
         }
-        if (global.type == "PipeWire:Interface:Port")
+        if (global.type == pipewire::port::type)
         {
             auto port = reg.bind<pipewire::port>(global);
             auto info = port.info();
 
             std::cout << "Port " << info.id << ": ";
+            for (const auto &prop : info.props)
+            {
+                std::cout << "{" << prop.first << ", " << prop.second << "} ";
+            }
+            std::cout << std::endl;
+        }
+        if (global.type == pipewire::device::type)
+        {
+            auto device = reg.bind<pipewire::device>(global);
+            auto info = device.info();
+
+            std::cout << "Device " << info.id << ": ";
             for (const auto &prop : info.props)
             {
                 std::cout << "{" << prop.first << ", " << prop.second << "} ";

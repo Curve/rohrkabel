@@ -29,7 +29,7 @@ int main()
                                        {"audio.channels", "2"},                     //
                                        {"audio.position", "FL,FR"}                  //
                                    },
-                                   "PipeWire:Interface:Node", 3, false);
+                                   pipewire::node::type, pipewire::node::version, false);
 
     std::map<std::uint32_t, linked_port> ports;
     std::map<std::uint32_t, pipewire::node> nodes;
@@ -37,7 +37,7 @@ int main()
 
     auto reg_events = reg.listen<pipewire::registry_listener>();
     reg_events.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
-        if (global.type == "PipeWire:Interface:Node")
+        if (global.type == pipewire::node::type)
         {
             auto node = reg.bind<pipewire::node>(global);
             std::cout << "Added  : " << node.info().props["node.name"] << std::endl;
@@ -47,7 +47,7 @@ int main()
                 nodes.emplace(global.id, std::move(node));
             }
         }
-        if (global.type == "PipeWire:Interface:Port")
+        if (global.type == pipewire::port::type)
         {
             auto port = reg.bind<pipewire::port>(global);
             auto info = port.info();
@@ -69,12 +69,15 @@ int main()
                             {
                                 if (info.props["audio.channel"] == linked_port.port.info().props["audio.channel"])
                                 {
-                                    links.emplace(info.id, core.create("link-factory",
-                                                                       {
-                                                                           {"link.input.port", std::to_string(linked_port.port.info().id)}, //
-                                                                           {"link.output.port", std::to_string(info.id)}                    //
-                                                                       },
-                                                                       "PipeWire:Interface:Link", 3));
+                                    links.emplace(info.id, core.create<pipewire::link_factory>({linked_port.port.info().id, info.id}));
+
+                                    //? Alternatively:
+                                    //     links.emplace(info.id, core.create("link-factory",
+                                    //    {
+                                    //        {"link.input.port", std::to_string(linked_port.port.info().id)}, //
+                                    //        {"link.output.port", std::to_string(info.id)}                    //
+                                    //    },
+                                    //    "PipeWire:Interface:Link", 3));
                                 }
                             }
                         }

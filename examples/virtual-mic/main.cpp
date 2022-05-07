@@ -14,7 +14,7 @@ int main()
 
     auto metadata_listener = reg.listen<pipewire::registry_listener>();
     metadata_listener.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
-        if (global.type == "PipeWire:Interface:Metadata")
+        if (global.type == pipewire::metadata::type)
         {
             auto metadata = reg.bind<pipewire::metadata>(global);
             auto properties = metadata.properties();
@@ -41,11 +41,11 @@ int main()
                 default_source = name;
             }
         }
-        if (global.type == "PipeWire:Interface:Node")
+        if (global.type == pipewire::node::type)
         {
             nodes.emplace(global.id, reg.bind<pipewire::node>(global));
         }
-        if (global.type == "PipeWire:Interface:Port")
+        if (global.type == pipewire::port::type)
         {
             ports.emplace_back(reg.bind<pipewire::port>(global));
         }
@@ -71,8 +71,8 @@ int main()
 
     auto old_port_size = ports.size();
 
-    auto virtual_mic =
-        core.create("adapter", {{"node.name", "Virtual Mic"}, {"media.class", "Audio/Source/Virtual"}, {"factory.name", "support.null-audio-sink"}}, "PipeWire:Interface:Node", 3);
+    auto virtual_mic = core.create("adapter", {{"node.name", "Virtual Mic"}, {"media.class", "Audio/Source/Virtual"}, {"factory.name", "support.null-audio-sink"}},
+                                   pipewire::node::type, pipewire::node::version);
 
     //? The Ports are available shortly after the virtual microphone has been created
     while (ports.size() == old_port_size)
@@ -120,15 +120,11 @@ int main()
             {
                 if (info.props["audio.channel"] == "FL")
                 {
-                    links.emplace_back(core.create(
-                        "link-factory", {{"application.name", "link"}, {"link.input.port", std::to_string(virt_in_fl->info().id)}, {"link.output.port", std::to_string(info.id)}},
-                        "PipeWire:Interface:Link", 3));
+                    links.emplace_back(core.create<pipewire::link_factory>({virt_in_fl->info().id, info.id}));
                 }
                 else if (info.props["audio.channel"] == "FR")
                 {
-                    links.emplace_back(core.create(
-                        "link-factory", {{"application.name", "link"}, {"link.input.port", std::to_string(virt_in_fr->info().id)}, {"link.output.port", std::to_string(info.id)}},
-                        "PipeWire:Interface:Link", 3));
+                    links.emplace_back(core.create<pipewire::link_factory>({virt_in_fr->info().id, info.id}));
                 }
             }
         }
