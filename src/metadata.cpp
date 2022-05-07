@@ -37,7 +37,7 @@ namespace pipewire
         };
 
         m_impl->hook = std::make_unique<listener>();
-        m_impl->metadata = reinterpret_cast<pw_metadata *>(pw_registry_bind(registry.get(), global.id, PW_TYPE_INTERFACE_Metadata, PW_VERSION_METADATA, sizeof(void *)));
+        m_impl->metadata = reinterpret_cast<pw_metadata *>(pw_registry_bind(registry.get(), global.id, type.c_str(), version, sizeof(void *)));
 
         // NOLINTNEXTLINE
         pw_metadata_add_listener(m_impl->metadata, &m_impl->hook->get(), &m_impl->events, m_impl.get());
@@ -58,4 +58,7 @@ namespace pipewire
     {
         return m_impl->metadata;
     }
+
+    const std::string metadata::type = PW_TYPE_INTERFACE_Metadata;
+    const std::uint32_t metadata::version = PW_VERSION_METADATA;
 } // namespace pipewire

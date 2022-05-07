@@ -31,5 +31,9 @@ namespace pipewire
 
       public:
         [[nodiscard]] pw_metadata *get() const;
+
+      public:
+        static const std::string type;
+        static const std::uint32_t version;
     };
 } // namespace pipewire

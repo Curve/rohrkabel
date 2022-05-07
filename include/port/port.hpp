@@ -30,5 +30,9 @@ namespace pipewire
 
       public:
         [[nodiscard]] pw_port *get() const;
+
+      public:
+        static const std::string type;
+        static const std::uint32_t version;
     };
 } // namespace pipewire

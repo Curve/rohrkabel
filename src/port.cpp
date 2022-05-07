@@ -42,7 +42,7 @@ namespace pipewire
         };
 
         m_impl->hook = std::make_unique<listener>();
-        m_impl->port = reinterpret_cast<pw_port *>(pw_registry_bind(registry.get(), global.id, PW_TYPE_INTERFACE_Port, PW_VERSION_PORT, sizeof(void *)));
+        m_impl->port = reinterpret_cast<pw_port *>(pw_registry_bind(registry.get(), global.id, type.c_str(), version, sizeof(void *)));
 
         // NOLINTNEXTLINE
         pw_port_add_listener(m_impl->port, &m_impl->hook->get(), &m_impl->events, m_impl.get());
@@ -63,4 +63,7 @@ namespace pipewire
     {
         return m_impl->port;
     }
+
+    const std::string port::type = PW_TYPE_INTERFACE_Port;
+    const std::uint32_t port::version = PW_VERSION_PORT;
 } // namespace pipewire
