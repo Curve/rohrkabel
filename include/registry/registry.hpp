@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "annotations.hpp"
+#include "utils/annotations.hpp"
 struct pw_registry;
 namespace pipewire
 {
@@ -41,4 +41,4 @@ namespace pipewire
     template <> device registry::bind<device>(const global &, bool);
     template <> metadata registry::bind<metadata>(const global &, bool);
 } // namespace pipewire
-#include "annotations.hpp"
+#include "utils/annotations.hpp"
