@@ -1,12 +1,56 @@
 #include <iostream>
-#include "port/info.hpp"
 #include "registry/registry.hpp"
 
-struct linked_port
+std::map<std::uint32_t, pipewire::port> ports;
+std::unique_ptr<pipewire::port> virt_fl, virt_fr;
+
+std::map<std::uint32_t, pipewire::node> nodes;
+std::map<std::uint32_t, pipewire::link_factory> links;
+
+void link(const std::string &target, pipewire::core &core)
 {
-    pipewire::port port;
-    pipewire::node &node;
-};
+    for (const auto &[port_id, port] : ports)
+    {
+        if (!virt_fl || !virt_fr)
+            continue;
+
+        if (links.count(port_id))
+            continue;
+
+        if (port.info().direction == pipewire::port_direction::input)
+            continue;
+
+        if (!port.info().props.count("node.id"))
+            continue;
+
+        auto parent_id = std::stoul(port.info().props["node.id"]);
+
+        if (!nodes.count(parent_id))
+            continue;
+
+        auto &parent = nodes.at(parent_id);
+
+        if (parent.info().props["node.name"].find(target) != std::string::npos)
+        {
+            std::cout << "Link   : " << target << ":" << port_id << " -> ";
+
+            if (port.info().props["audio.channel"] == "FL")
+            {
+                links.emplace(port_id, core.create<pipewire::link_factory>({virt_fl->info().id, port_id}));
+                std::cout << virt_fl->info().id << std::endl;
+            }
+            else
+            {
+                links.emplace(port_id, core.create<pipewire::link_factory>({virt_fr->info().id, port_id}));
+                std::cout << virt_fr->info().id << std::endl;
+            }
+        }
+    }
+}
+
+//? Due to pipewire listing some ports before adding the node
+//? we need to call link everytime a node or port is added to catch
+//? un-linked ports which we will then link.
 
 int main()
 {
@@ -23,17 +67,13 @@ int main()
 
     auto virtual_mic = core.create("adapter",
                                    {
-                                       {"node.name", "Virtual Mic"},                //
+                                       {"node.name", "Rohrkabel Virtual Mic"},      //
                                        {"media.class", "Audio/Source/Virtual"},     //
                                        {"factory.name", "support.null-audio-sink"}, //
                                        {"audio.channels", "2"},                     //
                                        {"audio.position", "FL,FR"}                  //
                                    },
                                    pipewire::node::type, pipewire::node::version, false);
-
-    std::map<std::uint32_t, linked_port> ports;
-    std::map<std::uint32_t, pipewire::node> nodes;
-    std::map<std::uint32_t, pipewire::proxy> links;
 
     auto reg_events = reg.listen<pipewire::registry_listener>();
     reg_events.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
@@ -45,6 +85,7 @@ int main()
             if (!nodes.count(global.id))
             {
                 nodes.emplace(global.id, std::move(node));
+                link(target, core);
             }
         }
         if (global.type == pipewire::port::type)
@@ -54,35 +95,25 @@ int main()
 
             if (info.props.count("node.id"))
             {
-                auto node_id = std::stoll(info.props["node.id"]);
+                auto node_id = std::stoul(info.props["node.id"]);
 
-                if (nodes.count(node_id))
+                if (node_id == virtual_mic.id() && info.direction == pipewire::port_direction::input)
                 {
-                    ports.emplace(global.id, linked_port{std::move(port), nodes.at(node_id)});
-
-                    auto &parent = nodes.at(node_id);
-                    if (info.direction == pipewire::port_direction::output && parent.info().props["node.name"].find(target) != std::string::npos)
+                    if (info.props["audio.channel"] == "FL")
                     {
-                        for (const auto &[port_id, linked_port] : ports)
-                        {
-                            if (linked_port.node.info().id == virtual_mic.id() && linked_port.port.info().direction == pipewire::port_direction::input)
-                            {
-                                if (info.props["audio.channel"] == linked_port.port.info().props["audio.channel"])
-                                {
-                                    links.emplace(info.id, core.create<pipewire::link_factory>({linked_port.port.info().id, info.id}));
-
-                                    //? Alternatively:
-                                    //     links.emplace(info.id, core.create("link-factory",
-                                    //    {
-                                    //        {"link.input.port", std::to_string(linked_port.port.info().id)}, //
-                                    //        {"link.output.port", std::to_string(info.id)}                    //
-                                    //    },
-                                    //    "PipeWire:Interface:Link", 3));
-                                }
-                            }
-                        }
+                        virt_fl = std::make_unique<pipewire::port>(std::move(port));
+                    }
+                    else
+                    {
+                        virt_fr = std::make_unique<pipewire::port>(std::move(port));
                     }
                 }
+                else
+                {
+                    ports.emplace(global.id, std::move(port));
+                }
+
+                link(target, core);
             }
         }
     });
