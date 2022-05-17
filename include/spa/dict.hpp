@@ -3,7 +3,7 @@
 #include <string>
 
 struct spa_dict;
-namespace pipewire
+namespace pipewire::spa
 {
     class dict : public std::map<std::string, std::string>
     {
@@ -11,4 +11,4 @@ namespace pipewire
         using map::map;
         dict(const spa_dict *);
     };
-} // namespace pipewire
+} // namespace pipewire::spa

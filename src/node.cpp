@@ -36,7 +36,7 @@ namespace pipewire
                            info->max_output_ports,
                            info->n_input_ports,
                            info->n_output_ports,
-                           info->props ? info->props : dict{},
+                           info->props ? info->props : spa::dict{},
                            static_cast<node_state>(info->state),
                            {},
                            info->error ? info->error : "",

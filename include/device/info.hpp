@@ -1,5 +1,5 @@
 #pragma once
-#include "dict.hpp"
+#include "spa/dict.hpp"
 #include "param_info.hpp"
 
 #include <string>
@@ -10,7 +10,7 @@ namespace pipewire
 {
     struct device_info
     {
-        dict props;
+        spa::dict props;
         std::uint32_t id;
         std::uint64_t change_mask;
         std::vector<param_info> params;

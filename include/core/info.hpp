@@ -1,5 +1,5 @@
 #pragma once
-#include "dict.hpp"
+#include "spa/dict.hpp"
 
 #include <string>
 #include <cstdint>
@@ -8,7 +8,7 @@ namespace pipewire
 {
     struct core_info
     {
-        dict props;
+        spa::dict props;
 
         std::uint32_t id;
         std::uint32_t cookie;

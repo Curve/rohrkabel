@@ -1,7 +1,7 @@
-#include "dict.hpp"
+#include "spa/dict.hpp"
 #include <pipewire/pipewire.h>
 
-namespace pipewire
+namespace pipewire::spa
 {
     dict::dict(const spa_dict *dict)
     {
@@ -11,4 +11,4 @@ namespace pipewire
             emplace(item->key, item->value);
         }
     }
-} // namespace pipewire
+} // namespace pipewire::spa

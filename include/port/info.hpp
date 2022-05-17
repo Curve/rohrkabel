@@ -1,5 +1,5 @@
 #pragma once
-#include "dict.hpp"
+#include "spa/dict.hpp"
 #include "param_info.hpp"
 
 #include <vector>
@@ -19,7 +19,7 @@ namespace pipewire
         port_direction direction;
         std::uint64_t change_mask;
 
-        dict props;
+        spa::dict props;
         std::vector<param_info> params;
     };
 } // namespace pipewire

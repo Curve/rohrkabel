@@ -1,5 +1,5 @@
 #pragma once
-#include "dict.hpp"
+#include "spa/dict.hpp"
 #include "param_info.hpp"
 
 #include <string>
@@ -26,7 +26,7 @@ namespace pipewire
         std::uint32_t n_input_ports;
         std::uint32_t n_output_ports;
 
-        dict props;
+        spa::dict props;
         node_state state;
         std::vector<param_info> params;
 

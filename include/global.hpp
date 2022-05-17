@@ -1,5 +1,5 @@
 #pragma once
-#include "dict.hpp"
+#include "spa/dict.hpp"
 
 #include <string>
 #include <cstdint>
@@ -12,7 +12,7 @@ namespace pipewire
         std::uint32_t version;
         std::uint32_t permissions;
 
-        dict props;
+        spa::dict props;
         std::string type;
     };
 } // namespace pipewire
