@@ -47,6 +47,17 @@ Depending on personal demand from Soundux or the community more portions of the 
   add_subdirectory(rohrkabel)
   target_link_libraries(<target> rohrkabel)
   ```
+
+
+</div>
+
+### Why `rohrkabel`?
+
+<div align="left">
+
+The name `rohrkabel` is a 1 to 1 translation of `pipewire` to german.  
+I chose this name because I would occasionally rant about some things that I didn't like about pipewire to my german friends and thought it would be funny if I call the thing `rohrkabel` instead.
+
 </div>
 
 <hr/>
