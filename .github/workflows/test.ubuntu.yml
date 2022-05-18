@@ -50,42 +50,6 @@ jobs:
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON && cmake --build . --config Debug"
 
-  test-ubuntu-impish-release:
-    runs-on: ubuntu-latest
-    container: ubuntu:impish
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ["cpp"]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.4.0
-
-      - name: Install build dependencies
-        run: "apt-get update && apt-get install -y git build-essential cmake pipewire libpipewire-0.3-0 libpipewire-0.3-dev pipewire-pulse"
-
-      - name: Compile
-        run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON && cmake --build . --config Release"
-
-  test-ubuntu-impish-debug:
-    runs-on: ubuntu-latest
-    container: ubuntu:impish
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ["cpp"]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.4.0
-
-      - name: Install build dependencies
-        run: "apt-get update && apt-get install -y git build-essential cmake pipewire libpipewire-0.3-0 libpipewire-0.3-dev pipewire-pulse"
-
-      - name: Compile
-        run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON && cmake --build . --config Debug"
-
   test-ubuntu-jammy-release:
     runs-on: ubuntu-22.04
     strategy:
