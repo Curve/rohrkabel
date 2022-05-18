@@ -45,3 +45,75 @@ jobs:
 
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON && cmake --build . --config Debug"
+
+  test-fedora-35-release:
+    runs-on: ubuntu-latest
+    container: fedora:35
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["cpp"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+
+      - name: Install build dependencies
+        run: "dnf install -y pipewire-devel make automake gcc gcc-c++ kernel-devel cmake"
+
+      - name: Compile
+        run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON && cmake --build . --config Release"
+
+  test-fedora-35-debug:
+    runs-on: ubuntu-latest
+    container: fedora:35
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["cpp"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+
+      - name: Install build dependencies
+        run: "dnf install -y pipewire-devel make automake gcc gcc-c++ kernel-devel cmake"
+
+      - name: Compile
+        run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON && cmake --build . --config Debug"
+
+  test-fedora-36-release:
+    runs-on: ubuntu-latest
+    container: fedora:36
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["cpp"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+
+      - name: Install build dependencies
+        run: "dnf install -y pipewire-devel make automake gcc gcc-c++ kernel-devel cmake"
+
+      - name: Compile
+        run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON && cmake --build . --config Release"
+
+  test-fedora-36-debug:
+    runs-on: ubuntu-latest
+    container: fedora:36
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["cpp"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+
+      - name: Install build dependencies
+        run: "dnf install -y pipewire-devel make automake gcc gcc-c++ kernel-devel cmake"
+
+      - name: Compile
+        run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON && cmake --build . --config Debug"
