@@ -30,6 +30,7 @@ namespace pipewire
         if (auto_sync)
         {
             m_core.sync();
+            m_core.sync(); //? We need to sync twice for the param binding
         }
 
         return rtn;
@@ -42,6 +43,7 @@ namespace pipewire
         if (auto_sync)
         {
             m_core.sync();
+            m_core.sync(); //? We need to sync twice for the param binding
         }
 
         return rtn;
@@ -54,6 +56,7 @@ namespace pipewire
         if (auto_sync)
         {
             m_core.sync();
+            m_core.sync(); //? We need to sync twice for the param binding
         }
 
         return rtn;
