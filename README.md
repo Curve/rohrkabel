@@ -55,12 +55,10 @@ Depending on personal demand from Soundux or the community more portions of the 
 
 <center>
 
-| Distro                     | Supported OOTB | Notes                                                                                                     |
-| -------------------------- | :------------: | --------------------------------------------------------------------------------------------------------- |
-| Ubuntu 20.04               |       ❌        | Works with PPA¹                                                                                           |
-| Ubuntu 21.10 _(and later)_ |       ✅        |                                                                                                           |
-| Fedora 33                  |       ❌        | Works with [<kbd>pipewire-nightly</kbd>](https://copr.fedorainfracloud.org/coprs/mfrey/pipewire-nightly/) |
-| Fedora 34 _(and later)_    |       ✅        |                                                                                                           |
+| Distro                     | Supported OOTB | Notes                                              |
+| -------------------------- | :------------: | -------------------------------------------------- |
+| Ubuntu 20.04               |       ❌        | Supplied PipeWire-Version too old, works with PPA¹ |
+| Ubuntu 21.10 _(and later)_ |       ✅        |                                                    |
 
 ¹ `sudo add-apt-repository ppa:pipewire-debian/pipewire-upstream`
 
