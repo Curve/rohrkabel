@@ -1,4 +1,6 @@
 #include "context.hpp"
+
+#include <cassert>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -16,6 +18,7 @@ namespace pipewire
     context::context(main_loop &main_loop) : m_main_loop(main_loop), m_impl(std::make_unique<impl>())
     {
         m_impl->context = pw_context_new(pw_main_loop_get_loop(main_loop.get()), nullptr, 0);
+        assert((void("Failed to create context"), m_impl->context));
     }
 
     pw_context *context::get() const

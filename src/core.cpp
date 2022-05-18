@@ -1,4 +1,6 @@
 #include "core/core.hpp"
+
+#include <cassert>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -16,6 +18,7 @@ namespace pipewire
     core::core(context &context) : m_context(context), m_impl(std::make_unique<impl>())
     {
         m_impl->core = pw_context_connect(context.get(), nullptr, 0);
+        assert((void("Failed to connect core"), m_impl->core));
     }
 
     void core::sync()

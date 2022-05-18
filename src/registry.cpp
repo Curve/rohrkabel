@@ -1,5 +1,7 @@
-#include <pipewire/pipewire.h>
 #include "registry/registry.hpp"
+
+#include <cassert>
+#include <pipewire/pipewire.h>
 
 namespace pipewire
 {
@@ -16,6 +18,7 @@ namespace pipewire
     registry::registry(core &core) : m_core(core), m_impl(std::make_unique<impl>())
     {
         m_impl->registry = pw_core_get_registry(core.get(), PW_VERSION_REGISTRY, 0);
+        assert((void("Failed to get registry"), m_impl->registry));
     }
 
     template <> registry_listener registry::listen<registry_listener>()

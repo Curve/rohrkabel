@@ -1,6 +1,7 @@
 #include "main_loop.hpp"
 
 #include <mutex>
+#include <cassert>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -15,6 +16,8 @@ namespace pipewire
     {
         std::call_once(impl::init_flag, [] { pw_init(nullptr, nullptr); });
         m_impl->main_loop = pw_main_loop_new(nullptr);
+
+        assert((void("Failed to create main_loop"), m_impl->main_loop));
     }
 
     main_loop::~main_loop()
