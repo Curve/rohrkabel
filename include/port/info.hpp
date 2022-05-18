@@ -1,8 +1,6 @@
 #pragma once
 #include "spa/dict.hpp"
-#include "param_info.hpp"
 
-#include <vector>
 #include <cstdint>
 
 namespace pipewire
@@ -20,6 +18,5 @@ namespace pipewire
         std::uint64_t change_mask;
 
         spa::dict props;
-        std::vector<param_info> params;
     };
 } // namespace pipewire

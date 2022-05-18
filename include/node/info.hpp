@@ -1,9 +1,7 @@
 #pragma once
 #include "spa/dict.hpp"
-#include "param_info.hpp"
 
 #include <string>
-#include <vector>
 #include <cstdint>
 
 namespace pipewire
@@ -28,7 +26,6 @@ namespace pipewire
 
         spa::dict props;
         node_state state;
-        std::vector<param_info> params;
 
         std::string error;
         std::uint64_t change_mask;
