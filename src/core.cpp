@@ -18,12 +18,6 @@ namespace pipewire
         m_impl->core = pw_context_connect(context.get(), nullptr, 0);
     }
 
-    int core::sync(int seq)
-    {
-        // NOLINTNEXTLINE
-        return pw_core_sync(m_impl->core, PW_ID_CORE, seq);
-    }
-
     void core::sync()
     {
         bool done = false;
@@ -42,6 +36,20 @@ namespace pipewire
         {
             m_context.get_main_loop().run();
         }
+    }
+
+    void core::sync(std::size_t amount)
+    {
+        for (auto i = 0u; amount > i; i++)
+        {
+            sync();
+        }
+    }
+
+    int core::sync(int seq)
+    {
+        // NOLINTNEXTLINE
+        return pw_core_sync(m_impl->core, PW_ID_CORE, seq);
     }
 
     template <> core_listener core::listen<core_listener>()

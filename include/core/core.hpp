@@ -29,6 +29,7 @@ namespace pipewire
 
       public:
         void sync();
+        void sync(std::size_t amount);
         [[nodiscard]] int sync(int seq);
 
       public:
