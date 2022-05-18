@@ -28,9 +28,6 @@ jobs:
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON && cmake --build . --config Release"
 
-      - name: Run Roundtrip
-        run: "./build/examples/roundtrip/roundtrip-example"
-
   test-arch-debug:
     runs-on: ubuntu-latest
     container: archlinux
@@ -44,10 +41,7 @@ jobs:
         uses: actions/checkout@v2.4.0
 
       - name: Install build dependencies
-        run: "pacman --noconfirm -Syu base-devel cmake gcc git make pipewire pipewire-pulse"
+        run: "pacman --noconfirm -Syu base-devel cmake gcc git make pipewire pipewire-pulse wireplumber"
 
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON && cmake --build . --config Debug"
-
-      - name: Run Roundtrip
-        run: "./build/examples/roundtrip/roundtrip-example"
