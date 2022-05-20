@@ -4,6 +4,7 @@
 
 #include "node/node.hpp"
 #include "port/port.hpp"
+#include "client/client.hpp"
 #include "device/device.hpp"
 #include "metadata/metadata.hpp"
 
@@ -38,6 +39,7 @@ namespace pipewire
 
     template <> node registry::bind<node>(const global &, bool);
     template <> port registry::bind<port>(const global &, bool);
+    template <> client registry::bind<client>(const global &, bool);
     template <> device registry::bind<device>(const global &, bool);
     template <> metadata registry::bind<metadata>(const global &, bool);
 } // namespace pipewire

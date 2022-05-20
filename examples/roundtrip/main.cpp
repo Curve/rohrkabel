@@ -57,6 +57,18 @@ int main()
             }
             std::cout << std::endl;
         }
+        if (global.type == pipewire::client::type)
+        {
+            auto client = reg.bind<pipewire::client>(global);
+            auto info = client.info();
+
+            std::cout << "Client " << info.id << ": ";
+            for (const auto &prop : info.props)
+            {
+                std::cout << "{" << prop.first << ", " << prop.second << "} ";
+            }
+            std::cout << std::endl;
+        }
     });
 
     core.sync();
