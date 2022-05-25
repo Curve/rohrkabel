@@ -21,8 +21,13 @@ endif()
 
 add_library(${PROJECT_NAME})
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror -Wextra -pedantic -Wno-gnu)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror -Wextra -pedantic -fno-strict-aliasing)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF CXX_STANDARD_REQUIRED ON)
+
+# Disable warnings for GNU-Extensions on Clang because PipeWire makes use of them
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-gnu)
+endif()
 
 # --------------------------------------------------------------------------------------------------------
 # Add source files
