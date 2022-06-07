@@ -63,4 +63,11 @@ namespace pipewire
     {
         return m_impl->proxy;
     }
+
+    std::uint32_t proxy::release()
+    {
+        auto rtn = m_impl->id;
+        m_impl.reset();
+        return rtn;
+    }
 } // namespace pipewire

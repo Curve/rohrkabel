@@ -31,5 +31,6 @@ namespace pipewire
 
       public:
         [[nodiscard]] pw_proxy *get() const;
+        [[nodiscard]] std::uint32_t release();
     };
 } // namespace pipewire
