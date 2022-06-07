@@ -25,7 +25,7 @@ namespace pipewire
 
     metadata::metadata(metadata &&metadata) noexcept : m_impl(std::move(metadata.m_impl)) {}
 
-    metadata::metadata(registry &registry, const global &global) : m_impl(std::make_unique<impl>())
+    metadata::metadata(registry &registry, std::uint32_t id) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_METADATA_EVENTS;
 
@@ -37,7 +37,7 @@ namespace pipewire
         };
 
         m_impl->hook = std::make_unique<listener>();
-        m_impl->metadata = reinterpret_cast<pw_metadata *>(pw_registry_bind(registry.get(), global.id, type.c_str(), version, sizeof(void *)));
+        m_impl->metadata = reinterpret_cast<pw_metadata *>(pw_registry_bind(registry.get(), id, type.c_str(), version, sizeof(void *)));
 
         // NOLINTNEXTLINE
         pw_metadata_add_listener(m_impl->metadata, &m_impl->hook->get(), &m_impl->events, m_impl.get());

@@ -24,7 +24,7 @@ namespace pipewire
 
     client::client(client &&client) noexcept : m_impl(std::move(client.m_impl)) {}
 
-    client::client(registry &registry, const global &global) : m_impl(std::make_unique<impl>())
+    client::client(registry &registry, std::uint32_t id) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_CLIENT_EVENTS;
 
@@ -35,7 +35,7 @@ namespace pipewire
         };
 
         m_impl->hook = std::make_unique<listener>();
-        m_impl->client = reinterpret_cast<pw_client *>(pw_registry_bind(registry.get(), global.id, type.c_str(), version, sizeof(void *)));
+        m_impl->client = reinterpret_cast<pw_client *>(pw_registry_bind(registry.get(), id, type.c_str(), version, sizeof(void *)));
 
         // NOLINTNEXTLINE
         pw_client_add_listener(m_impl->client, &m_impl->hook->get(), &m_impl->events, m_impl.get());

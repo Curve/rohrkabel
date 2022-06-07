@@ -20,7 +20,7 @@ namespace pipewire
 
       public:
         client(client &&) noexcept;
-        client(registry &, const global &);
+        client(registry &, std::uint32_t);
 
       public:
         client &operator=(client &&) noexcept;

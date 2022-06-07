@@ -27,7 +27,7 @@ namespace pipewire
 
     device::device(device &&device) noexcept : m_impl(std::move(device.m_impl)) {}
 
-    device::device(registry &registry, const global &global) : m_impl(std::make_unique<impl>())
+    device::device(registry &registry, std::uint32_t id) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_DEVICE_EVENTS;
 
@@ -62,7 +62,7 @@ namespace pipewire
         };
 
         m_impl->hook = std::make_unique<listener>();
-        m_impl->device = reinterpret_cast<pw_device *>(pw_registry_bind(registry.get(), global.id, type.c_str(), version, sizeof(void *)));
+        m_impl->device = reinterpret_cast<pw_device *>(pw_registry_bind(registry.get(), id, type.c_str(), version, sizeof(void *)));
 
         // NOLINTNEXTLINE
         pw_device_add_listener(m_impl->device, &m_impl->hook->get(), &m_impl->events, m_impl.get());

@@ -28,7 +28,7 @@ namespace pipewire
 
       public:
         template <class EventListener> [[needs_sync]] [[nodiscard]] EventListener listen() = delete;
-        template <class Interface> [[needs_sync]] [[nodiscard]] Interface bind(const global &, bool auto_sync = true) = delete;
+        template <class Interface> [[needs_sync]] [[nodiscard]] Interface bind(std::uint32_t, bool auto_sync = true) = delete;
 
       public:
         [[nodiscard]] core &get_core();
@@ -37,10 +37,10 @@ namespace pipewire
 
     template <> registry_listener registry::listen<registry_listener>();
 
-    template <> node registry::bind<node>(const global &, bool);
-    template <> port registry::bind<port>(const global &, bool);
-    template <> client registry::bind<client>(const global &, bool);
-    template <> device registry::bind<device>(const global &, bool);
-    template <> metadata registry::bind<metadata>(const global &, bool);
+    template <> node registry::bind<node>(std::uint32_t, bool);
+    template <> port registry::bind<port>(std::uint32_t, bool);
+    template <> client registry::bind<client>(std::uint32_t, bool);
+    template <> device registry::bind<device>(std::uint32_t, bool);
+    template <> metadata registry::bind<metadata>(std::uint32_t, bool);
 } // namespace pipewire
 #include "utils/annotations.hpp"

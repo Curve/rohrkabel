@@ -19,7 +19,7 @@ int main()
     reg_listener.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
         if (global.type == pipewire::device::type)
         {
-            auto device = reg.bind<pipewire::device>(global);
+            auto device = reg.bind<pipewire::device>(global.id);
             auto info = device.info();
 
             if (info.props.count("alsa.card_name"))

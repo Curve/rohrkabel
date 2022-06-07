@@ -12,7 +12,7 @@ int main()
     reg_listener.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
         if (global.type == pipewire::node::type)
         {
-            auto node = reg.bind<pipewire::node>(global);
+            auto node = reg.bind<pipewire::node>(global.id);
             auto info = node.info();
 
             std::cout << "Node " << info.id << ": ";
@@ -24,7 +24,7 @@ int main()
         }
         if (global.type == pipewire::metadata::type)
         {
-            auto metadata = reg.bind<pipewire::metadata>(global);
+            auto metadata = reg.bind<pipewire::metadata>(global.id);
 
             std::cout << "Metadata: ";
             for (const auto &[key, property] : metadata.properties())
@@ -35,7 +35,7 @@ int main()
         }
         if (global.type == pipewire::port::type)
         {
-            auto port = reg.bind<pipewire::port>(global);
+            auto port = reg.bind<pipewire::port>(global.id);
             auto info = port.info();
 
             std::cout << "Port " << info.id << ": ";
@@ -47,7 +47,7 @@ int main()
         }
         if (global.type == pipewire::device::type)
         {
-            auto device = reg.bind<pipewire::device>(global);
+            auto device = reg.bind<pipewire::device>(global.id);
             auto info = device.info();
 
             std::cout << "Device " << info.id << ": ";
@@ -59,7 +59,7 @@ int main()
         }
         if (global.type == pipewire::client::type)
         {
-            auto client = reg.bind<pipewire::client>(global);
+            auto client = reg.bind<pipewire::client>(global.id);
             auto info = client.info();
 
             std::cout << "Client " << info.id << ": ";

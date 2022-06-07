@@ -27,7 +27,7 @@ namespace pipewire
 
     port::port(port &&port) noexcept : m_impl(std::move(port.m_impl)) {}
 
-    port::port(registry &registry, const global &global) : m_impl(std::make_unique<impl>())
+    port::port(registry &registry, std::uint32_t id) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_PORT_EVENTS;
 
@@ -62,7 +62,7 @@ namespace pipewire
         };
 
         m_impl->hook = std::make_unique<listener>();
-        m_impl->port = reinterpret_cast<pw_port *>(pw_registry_bind(registry.get(), global.id, type.c_str(), version, sizeof(void *)));
+        m_impl->port = reinterpret_cast<pw_port *>(pw_registry_bind(registry.get(), id, type.c_str(), version, sizeof(void *)));
 
         // NOLINTNEXTLINE
         pw_port_add_listener(m_impl->port, &m_impl->hook->get(), &m_impl->events, m_impl.get());

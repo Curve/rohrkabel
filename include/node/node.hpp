@@ -24,7 +24,7 @@ namespace pipewire
 
       public:
         node(node &&) noexcept;
-        node(registry &, const global &);
+        node(registry &, std::uint32_t);
 
       public:
         node &operator=(node &&) noexcept;

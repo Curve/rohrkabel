@@ -21,7 +21,7 @@ namespace pipewire
 
       public:
         metadata(metadata &&) noexcept;
-        metadata(registry &, const global &);
+        metadata(registry &, std::uint32_t);
 
       public:
         metadata &operator=(metadata &&) noexcept;

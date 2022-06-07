@@ -79,7 +79,7 @@ int main()
     reg_events.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
         if (global.type == pipewire::node::type)
         {
-            auto node = reg.bind<pipewire::node>(global);
+            auto node = reg.bind<pipewire::node>(global.id);
             std::cout << "Added  : " << node.info().props["node.name"] << std::endl;
 
             if (!nodes.count(global.id))
@@ -90,7 +90,7 @@ int main()
         }
         if (global.type == pipewire::port::type)
         {
-            auto port = reg.bind<pipewire::port>(global);
+            auto port = reg.bind<pipewire::port>(global.id);
             auto info = port.info();
 
             if (info.props.count("node.id"))

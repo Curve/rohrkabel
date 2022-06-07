@@ -16,7 +16,7 @@ int main()
     metadata_listener.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
         if (global.type == pipewire::metadata::type)
         {
-            auto metadata = reg.bind<pipewire::metadata>(global);
+            auto metadata = reg.bind<pipewire::metadata>(global.id);
             auto properties = metadata.properties();
 
             if (properties.count("default.audio.sink"))
@@ -43,11 +43,11 @@ int main()
         }
         if (global.type == pipewire::node::type)
         {
-            nodes.emplace(global.id, reg.bind<pipewire::node>(global));
+            nodes.emplace(global.id, reg.bind<pipewire::node>(global.id));
         }
         if (global.type == pipewire::port::type)
         {
-            ports.emplace_back(reg.bind<pipewire::port>(global));
+            ports.emplace_back(reg.bind<pipewire::port>(global.id));
         }
     });
     core.sync();

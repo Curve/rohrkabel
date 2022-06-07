@@ -24,7 +24,7 @@ namespace pipewire
 
       public:
         device(device &&) noexcept;
-        device(registry &, const global &);
+        device(registry &, std::uint32_t);
 
       public:
         device &operator=(device &&) noexcept;

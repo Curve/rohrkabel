@@ -23,7 +23,7 @@ namespace pipewire
 
       public:
         port(port &&) noexcept;
-        port(registry &, const global &);
+        port(registry &, std::uint32_t);
 
       public:
         port &operator=(port &&) noexcept;

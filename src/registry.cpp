@@ -26,9 +26,9 @@ namespace pipewire
         return {*this};
     }
 
-    template <> node registry::bind<node>(const global &global, bool auto_sync)
+    template <> node registry::bind<node>(std::uint32_t id, bool auto_sync)
     {
-        node rtn{*this, global};
+        node rtn{*this, id};
 
         if (auto_sync)
         {
@@ -38,9 +38,9 @@ namespace pipewire
         return rtn;
     }
 
-    template <> port registry::bind<port>(const global &global, bool auto_sync)
+    template <> port registry::bind<port>(std::uint32_t id, bool auto_sync)
     {
-        port rtn{*this, global};
+        port rtn{*this, id};
 
         if (auto_sync)
         {
@@ -50,9 +50,9 @@ namespace pipewire
         return rtn;
     }
 
-    template <> client registry::bind<client>(const global &global, bool auto_sync)
+    template <> client registry::bind<client>(std::uint32_t id, bool auto_sync)
     {
-        client rtn{*this, global};
+        client rtn{*this, id};
 
         if (auto_sync)
         {
@@ -62,9 +62,9 @@ namespace pipewire
         return rtn;
     }
 
-    template <> device registry::bind<device>(const global &global, bool auto_sync)
+    template <> device registry::bind<device>(std::uint32_t id, bool auto_sync)
     {
-        device rtn{*this, global};
+        device rtn{*this, id};
 
         if (auto_sync)
         {
@@ -74,9 +74,9 @@ namespace pipewire
         return rtn;
     }
 
-    template <> metadata registry::bind<metadata>(const global &global, bool auto_sync)
+    template <> metadata registry::bind<metadata>(std::uint32_t id, bool auto_sync)
     {
-        metadata rtn{*this, global};
+        metadata rtn{*this, id};
 
         if (auto_sync)
         {
