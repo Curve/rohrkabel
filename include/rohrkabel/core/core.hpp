@@ -1,13 +1,13 @@
 #pragma once
-#include "proxy.hpp"
 #include "events.hpp"
-#include "context.hpp"
-#include "link_factory.hpp"
-#include "utils/factories/factories.hpp"
+#include "../proxy.hpp"
+#include "../context.hpp"
+#include "../link_factory.hpp"
+#include "../utils/factories/factories.hpp"
 
 #include <memory>
 
-#include "utils/annotations.hpp"
+#include "../utils/annotations.hpp"
 struct pw_core;
 namespace pipewire
 {
@@ -47,4 +47,4 @@ namespace pipewire
     template <> core_listener core::listen<core_listener>();
     template <> link_factory core::create<link_factory>(const factories_t::get_t<link_factory> &, bool);
 } // namespace pipewire
-#include "utils/annotations.hpp"
+#include "../utils/annotations.hpp"

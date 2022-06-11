@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(rohrkabel LANGUAGES CXX VERSION 1.0)
+project(rohrkabel LANGUAGES CXX VERSION 1.1)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -46,6 +46,7 @@ target_sources(${PROJECT_NAME} PRIVATE ${src})
 # --------------------------------------------------------------------------------------------------------
 
 target_include_directories(${PROJECT_NAME} PUBLIC "include")
+target_include_directories(${PROJECT_NAME} PRIVATE "include/rohrkabel")
 
 # --------------------------------------------------------------------------------------------------------
 # Link required libraries

@@ -1,5 +1,5 @@
 #pragma once
-#include "spa/dict.hpp"
+#include "../spa/dict.hpp"
 
 #include <cstdint>
 

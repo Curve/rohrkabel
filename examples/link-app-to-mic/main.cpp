@@ -1,5 +1,5 @@
 #include <iostream>
-#include "registry/registry.hpp"
+#include <rohrkabel/registry/registry.hpp>
 
 std::map<std::uint32_t, pipewire::port> ports;
 std::unique_ptr<pipewire::port> virt_fl, virt_fr;

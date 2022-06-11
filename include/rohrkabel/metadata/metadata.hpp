@@ -1,6 +1,6 @@
 #pragma once
-#include "global.hpp"
 #include "property.hpp"
+#include "../global.hpp"
 
 #include <memory>
 

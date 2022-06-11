@@ -1,5 +1,5 @@
 #pragma once
-#include "spa/pod/prop.hpp"
+#include "../prop.hpp"
 
 #include <memory>
 

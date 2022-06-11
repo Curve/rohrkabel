@@ -1,16 +1,16 @@
 #pragma once
 #include "events.hpp"
-#include "core/core.hpp"
+#include "../core/core.hpp"
 
-#include "node/node.hpp"
-#include "port/port.hpp"
-#include "client/client.hpp"
-#include "device/device.hpp"
-#include "metadata/metadata.hpp"
+#include "../node/node.hpp"
+#include "../port/port.hpp"
+#include "../client/client.hpp"
+#include "../device/device.hpp"
+#include "../metadata/metadata.hpp"
 
 #include <memory>
 
-#include "utils/annotations.hpp"
+#include "../utils/annotations.hpp"
 struct pw_registry;
 namespace pipewire
 {
@@ -43,4 +43,4 @@ namespace pipewire
     template <> device registry::bind<device>(std::uint32_t, bool);
     template <> metadata registry::bind<metadata>(std::uint32_t, bool);
 } // namespace pipewire
-#include "utils/annotations.hpp"
+#include "../utils/annotations.hpp"

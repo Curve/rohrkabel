@@ -1,8 +1,8 @@
 #include <memory>
 #include <iostream>
 
-#include "registry/registry.hpp"
-#include "spa/pod/object/body.hpp"
+#include <rohrkabel/registry/registry.hpp>
+#include <rohrkabel/spa/pod/object/body.hpp>
 
 void search_mute_prop(std::unique_ptr<pipewire::spa::pod_prop> &result, const pipewire::spa::pod &pod, pipewire::spa::pod_prop *parent_prop = nullptr);
 
