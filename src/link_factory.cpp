@@ -5,7 +5,7 @@
 namespace pipewire
 {
     link_factory::link_factory(core &core, std::uint32_t input, std::uint32_t output)
-        : proxy(core, "link-factory", {{"link.input.port", std::to_string(input)}, {"link.output.port", std::to_string(output)}}, type, version)
+        : proxy(core.create("link-factory", {{"link.input.port", std::to_string(input)}, {"link.output.port", std::to_string(output)}}, type, version))
     {
     }
 

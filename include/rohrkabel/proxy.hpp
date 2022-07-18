@@ -11,17 +11,21 @@ namespace pipewire
     class core;
     class proxy
     {
+        friend class registry;
         struct impl;
 
       private:
         std::unique_ptr<impl> m_impl;
 
-      public:
-        ~proxy();
+      protected:
+        virtual bool is_ready() const;
 
       public:
+        virtual ~proxy();
+
+      public:
+        proxy(pw_proxy *);
         proxy(proxy &&) noexcept;
-        proxy(core &, const std::string &, const properties &, const std::string &, std::uint32_t);
 
       public:
         proxy &operator=(proxy &&) noexcept;

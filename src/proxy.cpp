@@ -16,6 +16,12 @@ namespace pipewire
         std::unique_ptr<listener> hook;
     };
 
+    bool proxy::is_ready() const
+    {
+        // TODO: Check if this can cause problems when combined with `.release()`
+        return !m_impl->hook;
+    }
+
     proxy::~proxy()
     {
         if (m_impl)
@@ -26,14 +32,16 @@ namespace pipewire
 
     proxy::proxy(proxy &&proxy) noexcept : m_impl(std::move(proxy.m_impl)) {}
 
-    proxy::proxy(core &core, const std::string &factory_name, const properties &properties, const std::string &type, std::uint32_t version) : m_impl(std::make_unique<impl>())
+    proxy::proxy(pw_proxy *proxy) : m_impl(std::make_unique<impl>())
     {
+        m_impl->proxy = proxy;
         m_impl->events.version = PW_VERSION_PROXY_EVENTS;
 
         m_impl->events.bound = [](void *data, std::uint32_t id) {
             auto &m_impl = *reinterpret_cast<impl *>(data);
-            m_impl.hook.reset();
+
             m_impl.id = id;
+            m_impl.hook.reset();
         };
         m_impl->events.error = []([[maybe_unused]] void *data, int seq, int res, const char *message) {
             auto &m_impl = *reinterpret_cast<impl *>(data);
@@ -43,8 +51,6 @@ namespace pipewire
         };
 
         m_impl->hook = std::make_unique<listener>();
-        m_impl->proxy = reinterpret_cast<pw_proxy *>(pw_core_create_object(core.get(), factory_name.c_str(), type.c_str(), version, &properties.get()->dict, sizeof(void *)));
-
         pw_proxy_add_listener(m_impl->proxy, &m_impl->hook->get(), &m_impl->events, m_impl.get());
     }
 

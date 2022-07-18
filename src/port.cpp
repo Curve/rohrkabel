@@ -13,22 +13,20 @@ namespace pipewire
         pw_port_events events;
         std::unique_ptr<listener> hook;
 
-        std::uint32_t last_id;
+        int last_seq;
         std::map<std::uint32_t, spa::pod> params;
     };
 
-    port::~port()
+    bool port::is_ready() const
     {
-        if (m_impl)
-        {
-            pw_proxy_destroy(reinterpret_cast<pw_proxy *>(m_impl->port));
-        }
+        return !m_impl->hook || !m_impl->params.empty();
     }
 
-    port::port(port &&port) noexcept : m_impl(std::move(port.m_impl)) {}
+    port::~port() = default;
 
-    port::port(registry &registry, std::uint32_t id) : m_impl(std::make_unique<impl>())
+    port::port(pw_port *port) : proxy(reinterpret_cast<pw_proxy *>(port)), m_impl(std::make_unique<impl>())
     {
+        m_impl->port = port;
         m_impl->events.version = PW_VERSION_PORT_EVENTS;
 
         m_impl->events.info = [](void *data, const pw_port_info *info) {
@@ -37,8 +35,6 @@ namespace pipewire
 
             if (info->params)
             {
-                m_impl.last_id = info->params[info->n_params - 1].id;
-
                 for (auto i = 0u; i < info->n_params; i++)
                 {
                     auto param = info->params[i];
@@ -46,30 +42,39 @@ namespace pipewire
                     if (param.flags & SPA_PARAM_INFO_READ)
                     {
                         // NOLINTNEXTLINE
-                        pw_port_enum_params(m_impl.port, 0, param.id, 0, -1, nullptr);
+                        m_impl.last_seq = pw_port_enum_params(m_impl.port, 0, param.id, 0, -1, nullptr);
                     }
                 }
             }
-        };
-        m_impl->events.param = [](void *data, int, uint32_t id, uint32_t, uint32_t, const struct spa_pod *param) {
-            auto &m_impl = *reinterpret_cast<impl *>(data);
-            m_impl.params.emplace(id, param);
-
-            if (id == m_impl.last_id)
+            else
             {
                 m_impl.hook.reset();
             }
         };
+        m_impl->events.param = [](void *data, int seq, uint32_t id, uint32_t, uint32_t, const struct spa_pod *param) {
+            auto &m_impl = *reinterpret_cast<impl *>(data);
+
+            if (seq == m_impl.last_seq)
+            {
+                m_impl.hook.reset();
+            }
+
+            m_impl.params.emplace(id, param);
+        };
 
         m_impl->hook = std::make_unique<listener>();
-        m_impl->port = reinterpret_cast<pw_port *>(pw_registry_bind(registry.get(), id, type.c_str(), version, sizeof(void *)));
 
         // NOLINTNEXTLINE
         pw_port_add_listener(m_impl->port, &m_impl->hook->get(), &m_impl->events, m_impl.get());
     }
 
+    port::port(port &&port) noexcept : proxy(std::move(port)), m_impl(std::move(port.m_impl)) {}
+
+    port::port(registry &registry, std::uint32_t id) : port(reinterpret_cast<pw_port *>(pw_registry_bind(registry.get(), id, type.c_str(), version, sizeof(void *)))) {}
+
     port &port::operator=(port &&port) noexcept
     {
+        proxy::operator=(std::move(port));
         m_impl = std::move(port.m_impl);
         return *this;
     }

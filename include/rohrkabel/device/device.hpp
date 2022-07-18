@@ -1,5 +1,6 @@
 #pragma once
 #include "info.hpp"
+#include "../proxy.hpp"
 #include "../global.hpp"
 #include "../spa/pod/pod.hpp"
 
@@ -12,17 +13,22 @@ struct pw_device;
 namespace pipewire
 {
     class registry;
-    class device
+    class device final : public proxy
     {
+        friend class registry;
         struct impl;
 
       private:
         std::unique_ptr<impl> m_impl;
 
-      public:
-        ~device();
+      protected:
+        bool is_ready() const final;
 
       public:
+        ~device() final;
+
+      public:
+        device(pw_device *);
         device(device &&) noexcept;
         device(registry &, std::uint32_t);
 
