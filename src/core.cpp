@@ -87,13 +87,14 @@ namespace pipewire
         return {*this};
     }
 
-    proxy core::create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version, bool auto_sync)
+    proxy core::create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version, update_strategy strategy)
     {
+        proxy rtn{reinterpret_cast<pw_proxy *>(pw_core_create_object(get(), factory_name.c_str(), type.c_str(), version, &props.get()->dict, sizeof(void *)))};
         update(strategy);
         return rtn;
     }
 
-    template <> link_factory core::create<link_factory>(const factories_t::get_t<link_factory> &params, bool auto_sync)
+    template <> link_factory core::create<link_factory>(const factories_t::get_t<link_factory> &params, update_strategy strategy)
     {
         auto rtn = std::apply([&](auto &&...params) { return link_factory(*this, std::forward<decltype(params)>(params)...); }, params);
         update(strategy);
