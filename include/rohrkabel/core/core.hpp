@@ -11,6 +11,13 @@
 struct pw_core;
 namespace pipewire
 {
+    enum class update_strategy
+    {
+        none,
+        sync,
+        wait,
+    };
+
     class core
     {
         struct impl;
@@ -23,21 +30,26 @@ namespace pipewire
         context &m_context;
         std::unique_ptr<impl> m_impl;
 
+      private:
+        template <update_strategy Strategy> void update();
+
       public:
         ~core();
         core(context &);
 
       public:
-        void sync();
-        void sync(std::size_t amount);
+        void update(update_strategy strategy = update_strategy::sync);
+
+      public:
         [[nodiscard]] int sync(int seq);
 
       public:
         template <class EventListener> [[needs_sync]] [[nodiscard]] EventListener listen() = delete;
-        [[nodiscard]] [[needs_sync]] proxy create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version, bool auto_sync = true);
+        [[nodiscard]] [[needs_sync]] proxy create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version,
+                                                  update_strategy strategy = update_strategy::sync);
 
       public:
-        template <typename Type> [[nodiscard]] [[needs_sync]] Type create(const factories_t::get_t<Type> &params, bool auto_sync = true) = delete;
+        template <typename Type> [[nodiscard]] [[needs_sync]] Type create(const factories_t::get_t<Type> &param, update_strategy strategy = update_strategy::sync) = delete;
 
       public:
         [[nodiscard]] pw_core *get() const;
@@ -45,6 +57,6 @@ namespace pipewire
     };
 
     template <> core_listener core::listen<core_listener>();
-    template <> link_factory core::create<link_factory>(const factories_t::get_t<link_factory> &, bool);
+    template <> link_factory core::create<link_factory>(const factories_t::get_t<link_factory> &, update_strategy);
 } // namespace pipewire
 #include "../utils/annotations.hpp"

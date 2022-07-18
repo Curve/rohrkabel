@@ -28,7 +28,7 @@ int main()
             }
         }
     });
-    core.sync();
+    core.update();
 
     for (auto i = 0u; devices.size() > i; i++)
     {
@@ -60,7 +60,7 @@ int main()
             result->value().as<bool>() = true;
 
             device.set_param(pod_id, pod.get());
-            core.sync();
+            core.update();
 
             std::cout << "Device muted!" << std::endl;
             return 0;
@@ -70,6 +70,7 @@ int main()
     std::cout << "Could not find mute prop for device!" << std::endl;
     return 1;
 
+    // TODO: May be subject to change
     //? Instead of enumerating all pods you could also use the short version:
     /*
         auto mute = pods.at(13).body<pipewire::spa::pod_object_body>().at(10).value().body<pipewire::spa::pod_object_body>().at(65540).value();

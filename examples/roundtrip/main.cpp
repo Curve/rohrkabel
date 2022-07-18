@@ -71,6 +71,6 @@ int main()
         }
     });
 
-    core.sync();
+    core.update();
     return 0;
 }

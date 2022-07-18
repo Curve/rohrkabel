@@ -50,7 +50,7 @@ int main()
             ports.emplace_back(reg.bind<pipewire::port>(global.id));
         }
     });
-    core.sync();
+    core.update();
 
     std::uint32_t mic_node{0}, speaker_node{0};
     for (const auto &[id, node] : nodes)
@@ -77,7 +77,7 @@ int main()
     //? The Ports are available shortly after the virtual microphone has been created
     while (ports.size() == old_port_size)
     {
-        core.sync();
+        core.update();
     }
 
     const pipewire::port *virt_in_fr{}, *virt_in_fl{};

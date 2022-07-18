@@ -1,5 +1,6 @@
 #include "core/core.hpp"
 
+#include <future>
 #include <cassert>
 #include <pipewire/pipewire.h>
 
@@ -9,6 +10,44 @@ namespace pipewire
     {
         pw_core *core;
     };
+
+    template <> void core::update<update_strategy::none>() {}
+
+    template <> void core::update<update_strategy::sync>()
+    {
+        bool done = false;
+        int pending = sync(0);
+        auto listener = listen<core_listener>();
+
+        listener.on<core_event::done>([&](std::uint32_t id, int seq) {
+            if (id == PW_ID_CORE && seq == pending)
+            {
+                done = true;
+                m_context.get_loop().quit();
+            }
+        });
+
+        while (!done)
+        {
+            m_context.get_loop().run();
+        }
+    }
+
+    template <> void core::update<update_strategy::wait>()
+    {
+        std::promise<void> done;
+        int pending = sync(0);
+        auto listener = listen<core_listener>();
+
+        listener.on<core_event::done>([&](std::uint32_t id, int seq) {
+            if (id == PW_ID_CORE && seq == pending)
+            {
+                done.set_value();
+            }
+        });
+
+        return done.get_future().get();
+    }
 
     core::~core()
     {
@@ -21,31 +60,19 @@ namespace pipewire
         assert((void("Failed to connect core"), m_impl->core));
     }
 
-    void core::sync()
+    void core::update(update_strategy strategy)
     {
-        bool done = false;
-        int pending = sync(0);
-        auto listener = listen<core_listener>();
-
-        listener.on<core_event::done>([&](std::uint32_t id, int seq) {
-            if (id == PW_ID_CORE && seq == pending)
-            {
-                done = true;
-                m_context.get_main_loop().quit();
-            }
-        });
-
-        while (!done)
+        switch (strategy)
         {
-            m_context.get_main_loop().run();
-        }
-    }
-
-    void core::sync(std::size_t amount)
-    {
-        for (auto i = 0u; amount > i; i++)
-        {
-            sync();
+        case update_strategy::none:
+            update<update_strategy::none>();
+            break;
+        case update_strategy::sync:
+            update<update_strategy::sync>();
+            break;
+        case update_strategy::wait:
+            update<update_strategy::wait>();
+            break;
         }
     }
 
@@ -62,25 +89,14 @@ namespace pipewire
 
     proxy core::create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version, bool auto_sync)
     {
-        proxy rtn{*this, factory_name, props, type, version};
-
-        if (auto_sync)
-        {
-            sync();
-        }
-
+        update(strategy);
         return rtn;
     }
 
     template <> link_factory core::create<link_factory>(const factories_t::get_t<link_factory> &params, bool auto_sync)
     {
         auto rtn = std::apply([&](auto &&...params) { return link_factory(*this, std::forward<decltype(params)>(params)...); }, params);
-
-        if (auto_sync)
-        {
-            sync();
-        }
-
+        update(strategy);
         return rtn;
     }
 

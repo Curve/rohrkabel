@@ -26,62 +26,56 @@ namespace pipewire
         return {*this};
     }
 
-    template <> node registry::bind<node>(std::uint32_t id, bool auto_sync)
+    template <> node registry::bind<node>(std::uint32_t id, update_strategy strategy)
     {
         node rtn{*this, id};
 
         if (auto_sync)
         {
-            m_core.sync(2ul); //? We need to sync twice for the param binding
+            m_core.update(strategy);
         }
 
         return rtn;
     }
 
-    template <> port registry::bind<port>(std::uint32_t id, bool auto_sync)
+    template <> port registry::bind<port>(std::uint32_t id, update_strategy strategy)
     {
         port rtn{*this, id};
 
         if (auto_sync)
         {
-            m_core.sync(2ul); //? We need to sync twice for the param binding
+            m_core.update(strategy);
         }
 
         return rtn;
     }
 
-    template <> client registry::bind<client>(std::uint32_t id, bool auto_sync)
+    template <> client registry::bind<client>(std::uint32_t id, update_strategy strategy)
     {
         client rtn{*this, id};
 
-        if (auto_sync)
-        {
-            m_core.sync();
-        }
+        m_core.update(strategy);
 
         return rtn;
     }
 
-    template <> device registry::bind<device>(std::uint32_t id, bool auto_sync)
+    template <> device registry::bind<device>(std::uint32_t id, update_strategy strategy)
     {
         device rtn{*this, id};
 
         if (auto_sync)
         {
-            m_core.sync(2ul); //? We need to sync twice for the param binding
+            m_core.update(strategy);
         }
 
         return rtn;
     }
 
-    template <> metadata registry::bind<metadata>(std::uint32_t id, bool auto_sync)
+    template <> metadata registry::bind<metadata>(std::uint32_t id, update_strategy strategy)
     {
         metadata rtn{*this, id};
 
-        if (auto_sync)
-        {
-            m_core.sync();
-        }
+        m_core.update(strategy);
 
         return rtn;
     }

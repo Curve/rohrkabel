@@ -73,7 +73,7 @@ int main()
                                        {"audio.channels", "2"},                     //
                                        {"audio.position", "FL,FR"}                  //
                                    },
-                                   pipewire::node::type, pipewire::node::version, false);
+                                   pipewire::node::type, pipewire::node::version, pipewire::update_strategy::none);
 
     auto reg_events = reg.listen<pipewire::registry_listener>();
     reg_events.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
