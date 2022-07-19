@@ -49,7 +49,10 @@ int main()
     std::cout << std::endl;
     std::cout << "Muting: " << device.info().props.at("alsa.card_name") << std::endl;
 
-    for (const auto &[pod_id, pod] : device.params())
+    auto params = device.params();
+    core.update();
+
+    for (const auto &[pod_id, pod] : params.get())
     {
         std::unique_ptr<pipewire::spa::pod_prop> result;
         search_mute_prop(result, pod);
