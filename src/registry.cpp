@@ -1,5 +1,4 @@
 #include "registry/registry.hpp"
-#include "core/core.hpp"
 
 #include <cassert>
 #include <pipewire/pipewire.h>
@@ -31,10 +30,7 @@ namespace pipewire
     {
         node rtn{*this, id};
 
-        while (strategy != update_strategy::none && !rtn.is_ready())
-        {
-            m_core.update(strategy);
-        }
+        m_core.update(strategy);
 
         return rtn;
     }
@@ -43,10 +39,7 @@ namespace pipewire
     {
         port rtn{*this, id};
 
-        while (strategy != update_strategy::none && !rtn.is_ready())
-        {
-            m_core.update(strategy);
-        }
+        m_core.update(strategy);
 
         return rtn;
     }
@@ -64,10 +57,7 @@ namespace pipewire
     {
         device rtn{*this, id};
 
-        while (strategy != update_strategy::none && !rtn.is_ready())
-        {
-            m_core.update(strategy);
-        }
+        m_core.update(strategy);
 
         return rtn;
     }

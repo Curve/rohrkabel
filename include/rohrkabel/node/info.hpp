@@ -1,7 +1,9 @@
 #pragma once
 #include "../spa/dict.hpp"
+#include "../spa/param.hpp"
 
 #include <string>
+#include <vector>
 #include <cstdint>
 
 namespace pipewire
@@ -29,5 +31,7 @@ namespace pipewire
 
         std::string error;
         std::uint64_t change_mask;
+
+        std::vector<param_info> params;
     };
 } // namespace pipewire

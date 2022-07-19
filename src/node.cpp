@@ -1,6 +1,7 @@
 #include "listener.hpp"
 #include "node/node.hpp"
 #include "registry/registry.hpp"
+#include "spa/param.hpp"
 
 #include <exception>
 #include <pipewire/pipewire.h>
@@ -11,18 +12,10 @@ namespace pipewire
     struct node::impl
     {
         pw_node *node;
+        listener hook;
         node_info info;
         pw_node_events events;
-        std::unique_ptr<listener> hook;
-
-        int last_seq;
-        std::map<std::uint32_t, spa::pod> params;
     };
-
-    bool node::is_ready() const
-    {
-        return !m_impl->hook || !m_impl->params.empty();
-    }
 
     node::~node() = default;
 
@@ -41,42 +34,21 @@ namespace pipewire
                            info->props ? info->props : spa::dict{},
                            static_cast<node_state>(info->state),
                            info->error ? info->error : "",
-                           info->change_mask};
+                           info->change_mask,
+                           std::vector<param_info>(info->n_params)};
 
             if (info->params)
             {
                 for (auto i = 0u; i < info->n_params; i++)
                 {
                     auto param = info->params[i];
-
-                    if (param.flags & SPA_PARAM_INFO_READ)
-                    {
-                        // NOLINTNEXTLINE
-                        m_impl.last_seq = pw_node_enum_params(m_impl.node, 0, param.id, 0, -1, nullptr);
-                    }
+                    m_impl.info.params.emplace_back(param_info{param.id, static_cast<param_info_flags>(param.flags)});
                 }
             }
-            else
-            {
-                m_impl.hook.reset();
-            }
         };
-        m_impl->events.param = [](void *data, int seq, uint32_t id, [[maybe_unused]] uint32_t index, uint32_t, const struct spa_pod *param) {
-            auto &m_impl = *reinterpret_cast<impl *>(data);
-
-            if (seq == m_impl.last_seq)
-            {
-                m_impl.hook.reset();
-            }
-
-            // TODO: Check for duplicate ids.
-            m_impl.params.emplace(id, param);
-        };
-
-        m_impl->hook = std::make_unique<listener>();
 
         // NOLINTNEXTLINE
-        pw_node_add_listener(m_impl->node, &m_impl->hook->get(), &m_impl->events, m_impl.get());
+        pw_node_add_listener(m_impl->node, &m_impl->hook.get(), &m_impl->events, m_impl.get());
     }
 
     node::node(node &&node) noexcept : proxy(std::move(node)), m_impl(std::move(node.m_impl)) {}
@@ -101,9 +73,39 @@ namespace pipewire
         return m_impl->info;
     }
 
-    const std::map<std::uint32_t, spa::pod> &node::params() const
+    std::future<std::map<std::uint32_t, spa::pod>> node::params() const
     {
-        return m_impl->params;
+        struct state
+        {
+            listener hook;
+            pw_node_events events;
+            std::map<std::uint32_t, spa::pod> params;
+        };
+
+        auto m_state = std::make_shared<state>();
+        m_state->events.version = PW_VERSION_NODE_EVENTS;
+
+        for (const auto &param : m_impl->info.params)
+        {
+            // NOLINTNEXTLINE
+            pw_node_enum_params(m_impl->node, 0, param.id, 0, -1, nullptr);
+        }
+
+        m_state->events.param = [](void *data, int, uint32_t id, [[maybe_unused]] uint32_t index, uint32_t, const struct spa_pod *param) {
+            auto &m_state = *reinterpret_cast<state *>(data);
+
+            // TODO: Check for duplicate ids.
+            m_state.params.emplace(id, param);
+        };
+
+        // NOLINTNEXTLINE
+        pw_node_add_listener(m_impl->node, &m_state->hook.get(), &m_state->events, m_state.get());
+
+        return std::async(std::launch::deferred, [m_state] {
+            auto rtn = std::map<std::uint32_t, spa::pod>{};
+            rtn.merge(std::move(m_state->params));
+            return rtn;
+        });
     }
 
     pw_node *node::get() const

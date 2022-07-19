@@ -16,12 +16,6 @@ namespace pipewire
         std::unique_ptr<listener> hook;
     };
 
-    bool proxy::is_ready() const
-    {
-        // TODO: Check if this can cause problems when combined with `.release()`
-        return !m_impl->hook;
-    }
-
     proxy::~proxy()
     {
         if (m_impl)

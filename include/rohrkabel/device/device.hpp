@@ -5,6 +5,7 @@
 #include "../spa/pod/pod.hpp"
 
 #include <map>
+#include <future>
 #include <memory>
 #include <cstdint>
 
@@ -20,9 +21,6 @@ namespace pipewire
 
       private:
         std::unique_ptr<impl> m_impl;
-
-      protected:
-        bool is_ready() const final;
 
       public:
         ~device() final;
@@ -40,7 +38,7 @@ namespace pipewire
 
       public:
         [[nodiscard]] device_info info() const;
-        [[nodiscard]] [[needs_sync]] const std::map<std::uint32_t, spa::pod> &params() const;
+        [[nodiscard]] [[needs_sync]] std::future<std::map<std::uint32_t, spa::pod>> params() const;
 
       public:
         [[nodiscard]] pw_device *get() const;

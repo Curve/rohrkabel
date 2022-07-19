@@ -17,9 +17,6 @@ namespace pipewire
       private:
         std::unique_ptr<impl> m_impl;
 
-      protected:
-        virtual bool is_ready() const;
-
       public:
         virtual ~proxy();
 

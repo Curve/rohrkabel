@@ -8,19 +8,11 @@ namespace pipewire
 {
     struct device::impl
     {
+        listener hook;
         device_info info;
         pw_device *device;
         pw_device_events events;
-        std::unique_ptr<listener> hook;
-
-        int last_seq;
-        std::map<std::uint32_t, spa::pod> params;
     };
-
-    bool device::is_ready() const
-    {
-        return !m_impl->hook || !m_impl->params.empty();
-    }
 
     device::~device() = default;
 
@@ -31,42 +23,20 @@ namespace pipewire
 
         m_impl->events.info = [](void *data, const pw_device_info *info) {
             auto &m_impl = *reinterpret_cast<impl *>(data);
-            m_impl.info = {info->props, info->id, info->change_mask};
+            m_impl.info = {info->props, info->id, info->change_mask, std::vector<param_info>(info->n_params)};
 
             if (info->params)
             {
                 for (auto i = 0u; i < info->n_params; i++)
                 {
                     auto param = info->params[i];
-
-                    if (param.flags & SPA_PARAM_INFO_READ)
-                    {
-                        // NOLINTNEXTLINE
-                        m_impl.last_seq = pw_device_enum_params(m_impl.device, 0, param.id, 0, -1, nullptr);
-                    }
+                    m_impl.info.params.emplace_back(param_info{param.id, static_cast<param_info_flags>(param.flags)});
                 }
             }
-            else
-            {
-                m_impl.hook.reset();
-            }
         };
-        m_impl->events.param = [](void *data, int seq, uint32_t id, uint32_t, uint32_t, const struct spa_pod *param) {
-            auto &m_impl = *reinterpret_cast<impl *>(data);
-
-            if (seq == m_impl.last_seq)
-            {
-                m_impl.hook.reset();
-            }
-
-            // TODO: Check for duplicate ids.
-            m_impl.params.emplace(id, param);
-        };
-
-        m_impl->hook = std::make_unique<listener>();
 
         // NOLINTNEXTLINE
-        pw_device_add_listener(m_impl->device, &m_impl->hook->get(), &m_impl->events, m_impl.get());
+        pw_device_add_listener(m_impl->device, &m_impl->hook.get(), &m_impl->events, m_impl.get());
     }
 
     device::device(device &&device) noexcept : proxy(std::move(device)), m_impl(std::move(device.m_impl)) {}
@@ -91,9 +61,39 @@ namespace pipewire
         return m_impl->info;
     }
 
-    const std::map<std::uint32_t, spa::pod> &device::params() const
+    std::future<std::map<std::uint32_t, spa::pod>> device::params() const
     {
-        return m_impl->params;
+        struct state
+        {
+            listener hook;
+            pw_device_events events;
+            std::map<std::uint32_t, spa::pod> params;
+        };
+
+        auto m_state = std::make_shared<state>();
+        m_state->events.version = PW_VERSION_DEVICE_EVENTS;
+
+        for (const auto &param : m_impl->info.params)
+        {
+            // NOLINTNEXTLINE
+            pw_device_enum_params(m_impl->device, 0, param.id, 0, -1, nullptr);
+        }
+
+        m_state->events.param = [](void *data, int, uint32_t id, [[maybe_unused]] uint32_t index, uint32_t, const struct spa_pod *param) {
+            auto &m_state = *reinterpret_cast<state *>(data);
+
+            // TODO: Check for duplicate ids.
+            m_state.params.emplace(id, param);
+        };
+
+        // NOLINTNEXTLINE
+        pw_device_add_listener(m_impl->device, &m_state->hook.get(), &m_state->events, m_state.get());
+
+        return std::async(std::launch::deferred, [m_state] {
+            auto rtn = std::map<std::uint32_t, spa::pod>{};
+            rtn.merge(std::move(m_state->params));
+            return rtn;
+        });
     }
 
     pw_device *device::get() const
