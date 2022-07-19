@@ -1,6 +1,8 @@
 #pragma once
 #include "proxy.hpp"
 
+#include <cassert>
+
 namespace pipewire
 {
     template <typename T, typename U> safe_proxy<T, U>::~safe_proxy()
@@ -17,7 +19,7 @@ namespace pipewire
 
     template <typename T, typename U> T &safe_proxy<T, U>::get_safe()
     {
-        // TODO: Check if it is safe to retrieve value
+        assert((void("get_safe should only be used in a safe context!"), m_loop.is_safe()));
         return *m_instance;
     }
 } // namespace pipewire
