@@ -55,7 +55,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE "include/rohrkabel")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 find_package(PipeWire REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PipeWire_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PipeWire_LIBRARIES} pthread)
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${PipeWire_INCLUDE_DIRS} ${Spa_INCLUDE_DIRS})
 
 # --------------------------------------------------------------------------------------------------------
