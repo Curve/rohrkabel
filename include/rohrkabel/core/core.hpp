@@ -57,6 +57,11 @@ namespace pipewire
         [[nodiscard]] context &get_context();
     };
 
+    template <> void core::update<update_strategy::none>();
+    template <> void core::update<update_strategy::best>();
+    template <> void core::update<update_strategy::sync>();
+    template <> [[thread_safe]] void core::update<update_strategy::wait_safe>();
+
     template <> core_listener core::listen();
     template <> link_factory core::create(const factories_t::get_t<link_factory> &, update_strategy);
 } // namespace pipewire
