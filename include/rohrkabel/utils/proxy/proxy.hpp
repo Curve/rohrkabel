@@ -21,10 +21,10 @@ namespace pipewire
         safe_proxy(safe_proxy &&) noexcept = delete;
 
       public:
-        const T *operator->() const;
+        [[nodiscard]] const T *operator->() const;
 
       public:
-        T &get_safe();
+        [[nodiscard]] T &get_safe();
     };
 } // namespace pipewire
 
