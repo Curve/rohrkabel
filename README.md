@@ -92,6 +92,10 @@ Since the pipewire-api is not thread-safe by default² , special mechanisms have
 
 <hr/>
 
+### Documentation
+
+Documentation can be found [here](https://curve.github.io/rohrkabel.docs/).
+
 ### Projects using _Rohrkabel_
 <img src="https://avatars.githubusercontent.com/u/74979035?s=200&v=4" width=15/> <b>[Soundux](https://github.com/Soundux)</b>
 
