@@ -33,7 +33,7 @@ void dump(const pw::spa::pod &pod, std::size_t I = 0)
     {
         std::cout << std::string(I, '\t') << " - " << pod.name() << " (" << static_cast<int>(pod.type()) << ")" << std::endl;
     }
-};
+}
 
 int main()
 {
