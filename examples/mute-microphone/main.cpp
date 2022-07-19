@@ -60,7 +60,7 @@ int main()
         if (result)
         {
             std::cout << "Mute-Prop: " << result->name() << " (" << pod_id << ") [" << result->key() << "]" << std::endl;
-            result->value().as<bool>() = true;
+            result->value().write(!result->value().as<bool>());
 
             device.set_param(pod_id, pod.get());
             core.update();
