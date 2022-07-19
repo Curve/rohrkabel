@@ -60,7 +60,11 @@ Depending on personal demand from Soundux or the community more portions of the 
 | Ubuntu 20.04               |       ❌        | Supplied PipeWire-Version too old, works with PPA¹ |
 | Ubuntu 21.10 _(and later)_ |       ✅        |                                                    |
 
-¹ `sudo add-apt-repository ppa:pipewire-debian/pipewire-upstream`
+<div align="left">
+
+> ¹ `sudo add-apt-repository ppa:pipewire-debian/pipewire-upstream`
+
+</div>
 
 </center>
 
@@ -70,6 +74,19 @@ Depending on personal demand from Soundux or the community more portions of the 
 
 The name `rohrkabel` is a 1 to 1 translation of `pipewire` to german.  
 I chose this name because I would occasionally rant about some things that I didn't like about pipewire to my german friends and thought it would be funny if I call the thing `rohrkabel` instead.
+
+</div>
+
+### Thread-Safety
+
+
+<div align="left">
+
+Since the pipewire-api is not thread-safe by default² , special mechanisms have to be used to ensure thread-safety.  
+
+*Rohrkabel*s `main_loop` offers a `call_safe` method which can be used to execute arbitrary code from the `main_loop`s thread, every method that is not explicitly marked `thread_safe` should only be used in a safe-context, i.e. with `call_safe`.
+
+> ² https://docs.pipewire.org/page_thread_loop.html
 
 </div>
 
