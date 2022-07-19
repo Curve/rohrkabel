@@ -45,12 +45,12 @@ namespace pipewire
         [[nodiscard]] int sync(int seq);
 
       public:
-        template <class EventListener> [[needs_sync]] [[nodiscard]] EventListener listen() = delete;
-        [[nodiscard]] [[needs_sync]] proxy create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version,
-                                                  update_strategy strategy = update_strategy::sync);
+        template <class EventListener> [[needs_update]] [[nodiscard]] EventListener listen() = delete;
+        [[nodiscard]] [[needs_update]] proxy create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version,
+                                                    update_strategy strategy = update_strategy::sync);
 
       public:
-        template <typename Type> [[nodiscard]] [[needs_sync]] Type create(const factories_t::get_t<Type> &param, update_strategy strategy = update_strategy::sync) = delete;
+        template <typename Type> [[nodiscard]] [[needs_update]] Type create(const factories_t::get_t<Type> &param, update_strategy strategy = update_strategy::sync) = delete;
 
       public:
         [[nodiscard]] pw_core *get() const;

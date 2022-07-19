@@ -27,8 +27,8 @@ namespace pipewire
         registry(core &);
 
       public:
-        template <class EventListener> [[needs_sync]] [[nodiscard]] EventListener listen() = delete;
-        template <class Interface> [[needs_sync]] [[nodiscard]] Interface bind(std::uint32_t, update_strategy strategy = update_strategy::sync) = delete;
+        template <class EventListener> [[needs_update]] [[nodiscard]] EventListener listen() = delete;
+        template <class Interface> [[needs_update]] [[nodiscard]] Interface bind(std::uint32_t, update_strategy strategy = update_strategy::sync) = delete;
 
       public:
         [[nodiscard]] core &get_core();

@@ -1,7 +1,7 @@
-#ifndef needs_sync
-#define needs_sync
+#ifndef needs_update
+#define needs_update
 #else
-#undef needs_sync
+#undef needs_update
 #endif
 
 #ifndef thread_safe
