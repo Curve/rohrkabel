@@ -17,7 +17,7 @@ namespace pipewire
         std::shared_ptr<core_listener> listener;
         auto &loop = m_context.get_loop();
 
-        assert((void("wait_safe should not be used from main-thread"), !loop.is_safe()));
+        assert((void("wait_safe should only be used when main_loop is running on another thread"), !loop.is_safe()));
 
         loop.call_safe([this, &listener, &done] {
             int pending = sync(0);
