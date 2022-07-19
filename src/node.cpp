@@ -73,7 +73,7 @@ namespace pipewire
         return m_impl->info;
     }
 
-    std::future<std::map<std::uint32_t, spa::pod>> node::params() const
+    std::future<std::map<std::uint32_t, spa::pod>> node::params()
     {
         struct state
         {

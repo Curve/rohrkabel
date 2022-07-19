@@ -38,7 +38,7 @@ namespace pipewire
 
       public:
         [[nodiscard]] node_info info() const;
-        [[nodiscard]] [[needs_sync]] std::future<std::map<std::uint32_t, spa::pod>> params() const;
+        [[nodiscard]] [[needs_sync]] std::future<std::map<std::uint32_t, spa::pod>> params();
 
       public:
         [[nodiscard]] pw_node *get() const;

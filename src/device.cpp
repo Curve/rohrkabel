@@ -61,7 +61,7 @@ namespace pipewire
         return m_impl->info;
     }
 
-    std::future<std::map<std::uint32_t, spa::pod>> device::params() const
+    std::future<std::map<std::uint32_t, spa::pod>> device::params()
     {
         struct state
         {
