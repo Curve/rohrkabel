@@ -13,9 +13,10 @@ namespace pipewire
 {
     enum class update_strategy
     {
-        none,
+        wait_safe,
         sync,
-        wait,
+        best,
+        none,
     };
 
     class core
@@ -38,7 +39,7 @@ namespace pipewire
         core(context &);
 
       public:
-        void update(update_strategy strategy = update_strategy::sync);
+        void update(update_strategy strategy = update_strategy::best);
 
       public:
         [[nodiscard]] int sync(int seq);

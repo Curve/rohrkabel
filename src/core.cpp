@@ -11,7 +11,28 @@ namespace pipewire
         pw_core *core;
     };
 
-    template <> void core::update<update_strategy::none>() {}
+    template <> void core::update<update_strategy::wait_safe>()
+    {
+        std::promise<void> done;
+        std::shared_ptr<core_listener> listener;
+        auto &loop = m_context.get_loop();
+
+        assert((void("wait_safe should not be used from main-thread"), !loop.is_safe()));
+
+        loop.call_safe([this, &listener, &done] {
+            int pending = sync(0);
+            listener = std::make_shared<core_listener>(listen<core_listener>());
+
+            listener->on<core_event::done>([pending, &done](std::uint32_t id, int seq) {
+                if (id == PW_ID_CORE && seq == pending)
+                {
+                    done.set_value();
+                }
+            });
+        });
+
+        return done.get_future().get();
+    }
 
     template <> void core::update<update_strategy::sync>()
     {
@@ -33,21 +54,19 @@ namespace pipewire
         }
     }
 
-    template <> void core::update<update_strategy::wait>()
+    template <> void core::update<update_strategy::best>()
     {
-        std::promise<void> done;
-        int pending = sync(0);
-        auto listener = listen<core_listener>();
-
-        listener.on<core_event::done>([&](std::uint32_t id, int seq) {
-            if (id == PW_ID_CORE && seq == pending)
-            {
-                done.set_value();
-            }
-        });
-
-        return done.get_future().get();
+        if (m_context.get_loop().is_safe())
+        {
+            update<update_strategy::sync>();
+        }
+        else
+        {
+            update<update_strategy::wait_safe>();
+        }
     }
+
+    template <> void core::update<update_strategy::none>() {}
 
     core::~core()
     {
@@ -67,11 +86,14 @@ namespace pipewire
         case update_strategy::none:
             update<update_strategy::none>();
             break;
+        case update_strategy::best:
+            update<update_strategy::best>();
+            break;
         case update_strategy::sync:
             update<update_strategy::sync>();
             break;
-        case update_strategy::wait:
-            update<update_strategy::wait>();
+        case update_strategy::wait_safe:
+            update<update_strategy::wait_safe>();
             break;
         }
     }
