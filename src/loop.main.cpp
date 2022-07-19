@@ -13,8 +13,15 @@ namespace pipewire
         spa_source *cleanup_source;
         spa_source *call_safe_source;
 
+        std::thread::id running_thread;
+
         static inline std::once_flag flag;
     };
+
+    bool main_loop::is_safe() const
+    {
+        return m_impl->running_thread == std::this_thread::get_id();
+    }
 
     void main_loop::emit_event() const
     {
@@ -80,6 +87,7 @@ namespace pipewire
 
     void main_loop::run() const
     {
+        m_impl->running_thread = std::this_thread::get_id();
         pw_main_loop_run(m_impl->main_loop);
     }
 

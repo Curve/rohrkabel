@@ -4,15 +4,16 @@
 #include <queue>
 #include <mutex>
 
+#include "../utils/annotations.hpp"
 struct pw_loop;
 struct pw_main_loop;
-
 namespace pipewire
 {
     class proxy;
     class main_loop
     {
         template <typename, typename> friend class safe_proxy;
+        friend class core;
         struct impl;
 
       private:
@@ -26,7 +27,10 @@ namespace pipewire
         std::recursive_mutex m_proxy_mutex;
         std::vector<std::shared_ptr<proxy>> m_proxies;
 
-      private:
+      protected:
+        bool is_safe() const;
+
+      protected:
         void emit_event() const;
         void emit_cleanup() const;
 
@@ -43,8 +47,9 @@ namespace pipewire
         [[nodiscard]] pw_main_loop *get_main_loop() const;
 
       public:
-        template <typename Function> [[nodiscard]] auto call_safe(Function &&function);
+        template <typename Function> [[thread_safe]] [[nodiscard]] auto call_safe(Function &&function);
     };
 } // namespace pipewire
+#include "../utils/annotations.hpp"
 
 #include "main.inl"
