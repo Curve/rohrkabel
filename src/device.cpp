@@ -76,24 +76,17 @@ namespace pipewire
         for (const auto &param : m_impl->info.params)
         {
             // NOLINTNEXTLINE
-            pw_device_enum_params(m_impl->device, 0, param.id, 0, -1, nullptr);
+            pw_device_enum_params(m_impl->device, 0, param.id, 0, 1, nullptr);
         }
 
-        m_state->events.param = [](void *data, int, uint32_t id, [[maybe_unused]] uint32_t index, uint32_t, const struct spa_pod *param) {
+        m_state->events.param = [](void *data, int, uint32_t id, uint32_t, uint32_t, const struct spa_pod *param) {
             auto &m_state = *reinterpret_cast<state *>(data);
-
-            // TODO: Check for duplicate ids.
             m_state.params.emplace(id, param);
         };
 
         // NOLINTNEXTLINE
         pw_device_add_listener(m_impl->device, &m_state->hook.get(), &m_state->events, m_state.get());
-
-        return std::async(std::launch::deferred, [m_state] {
-            auto rtn = std::map<std::uint32_t, spa::pod>{};
-            rtn.merge(std::move(m_state->params));
-            return rtn;
-        });
+        return std::async(std::launch::deferred, [m_state] { return std::map<std::uint32_t, spa::pod>(std::move(m_state->params)); });
     }
 
     pw_device *device::get() const
