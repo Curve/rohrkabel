@@ -52,20 +52,20 @@ int main()
                                {"media.class", "Audio/Source/Virtual"},    //
                                {"factory.name", "support.null-audio-sink"} //
                            },
-                           pw::node::type,                 //
-                           pw::node::version,              //
-                           pipewire::update_strategy::none //? Don't update automatically to not cause the main-loop to quit
+                           pw::node::type,           //
+                           pw::node::version,        //
+                           pw::update_strategy::none //? Don't update automatically to not cause the main-loop to quit
         );
     });
 
     core.update(); // ! Make sure we update before accessing anything
     std::cout << "Virt Mic: " << virt_mic->id() << std::endl;
 
-    auto virt_mic_node = loop.call_safe([&reg, &virt_mic] { return reg->bind<pw::node>(virt_mic->id(), pipewire::update_strategy::none); });
+    auto virt_mic_node = loop.call_safe([&reg, &virt_mic] { return reg->bind<pw::node>(virt_mic->id(), pw::update_strategy::none); });
     core.update();
 
     auto virt_mic_params = loop.call_safe([&] { return virt_mic_node.get_safe().params(); });
-    core.update(); // ! Make sure to update after receiving the params, otherwise the will be unset
+    core.update(); // ! Make sure to update after receiving the params, otherwise they will be unset
 
     for (const auto &pod : virt_mic_params.get())
     {
