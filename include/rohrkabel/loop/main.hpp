@@ -9,8 +9,10 @@ struct pw_main_loop;
 
 namespace pipewire
 {
+    class proxy;
     class main_loop
     {
+        template <typename, typename> friend class safe_proxy;
         struct impl;
 
       private:
@@ -21,7 +23,12 @@ namespace pipewire
         std::queue<std::function<void()>> m_queue;
 
       private:
+        std::recursive_mutex m_proxy_mutex;
+        std::vector<std::shared_ptr<proxy>> m_proxies;
+
+      private:
         void emit_event() const;
+        void emit_cleanup() const;
 
       public:
         main_loop();

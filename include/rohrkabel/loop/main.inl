@@ -1,5 +1,6 @@
 #pragma once
 #include "main.hpp"
+#include "../utils/proxy/proxy.hpp"
 
 #include <future>
 
@@ -20,13 +21,23 @@ namespace pipewire
             }
             else
             {
-                rtn.set_value(function());
+                rtn.set_value(std::move(function()));
             }
         });
+        emit_event();
         m_queue_mutex.unlock();
 
-        emit_event();
+        if constexpr (std::is_base_of_v<proxy, return_t>)
+        {
+            std::lock_guard guard(m_proxy_mutex);
+            auto shared_rtn = std::make_shared<return_t>(std::move(rtn.get_future().get()));
 
-        return rtn.get_future().get();
+            m_proxies.emplace_back(shared_rtn);
+            return safe_proxy(shared_rtn, *this);
+        }
+        else
+        {
+            return rtn.get_future().get();
+        }
     }
 } // namespace pipewire
