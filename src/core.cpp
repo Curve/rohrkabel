@@ -104,7 +104,7 @@ namespace pipewire
         return pw_core_sync(m_impl->core, PW_ID_CORE, seq);
     }
 
-    template <> core_listener core::listen<core_listener>()
+    template <> core_listener core::listen()
     {
         return {*this};
     }
@@ -116,7 +116,7 @@ namespace pipewire
         return rtn;
     }
 
-    template <> link_factory core::create<link_factory>(const factories_t::get_t<link_factory> &params, update_strategy strategy)
+    template <> link_factory core::create(const factories_t::get_t<link_factory> &params, update_strategy strategy)
     {
         auto rtn = std::apply([&](auto &&...params) { return link_factory(*this, std::forward<decltype(params)>(params)...); }, params);
         update(strategy);

@@ -57,7 +57,7 @@ namespace pipewire
         [[nodiscard]] context &get_context();
     };
 
-    template <> core_listener core::listen<core_listener>();
-    template <> link_factory core::create<link_factory>(const factories_t::get_t<link_factory> &, update_strategy);
+    template <> core_listener core::listen();
+    template <> link_factory core::create(const factories_t::get_t<link_factory> &, update_strategy);
 } // namespace pipewire
 #include "../utils/annotations.hpp"

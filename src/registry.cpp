@@ -21,12 +21,12 @@ namespace pipewire
         assert((void("Failed to get registry"), m_impl->registry));
     }
 
-    template <> registry_listener registry::listen<registry_listener>()
+    template <> registry_listener registry::listen()
     {
         return {*this};
     }
 
-    template <> node registry::bind<node>(std::uint32_t id, update_strategy strategy)
+    template <> node registry::bind(std::uint32_t id, update_strategy strategy)
     {
         node rtn{*this, id};
 
@@ -35,7 +35,7 @@ namespace pipewire
         return rtn;
     }
 
-    template <> port registry::bind<port>(std::uint32_t id, update_strategy strategy)
+    template <> port registry::bind(std::uint32_t id, update_strategy strategy)
     {
         port rtn{*this, id};
 
@@ -44,7 +44,7 @@ namespace pipewire
         return rtn;
     }
 
-    template <> client registry::bind<client>(std::uint32_t id, update_strategy strategy)
+    template <> client registry::bind(std::uint32_t id, update_strategy strategy)
     {
         client rtn{*this, id};
 
@@ -53,7 +53,7 @@ namespace pipewire
         return rtn;
     }
 
-    template <> device registry::bind<device>(std::uint32_t id, update_strategy strategy)
+    template <> device registry::bind(std::uint32_t id, update_strategy strategy)
     {
         device rtn{*this, id};
 
@@ -62,7 +62,7 @@ namespace pipewire
         return rtn;
     }
 
-    template <> metadata registry::bind<metadata>(std::uint32_t id, update_strategy strategy)
+    template <> metadata registry::bind(std::uint32_t id, update_strategy strategy)
     {
         metadata rtn{*this, id};
 

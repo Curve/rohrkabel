@@ -35,12 +35,12 @@ namespace pipewire
         [[nodiscard]] pw_registry *get() const;
     };
 
-    template <> registry_listener registry::listen<registry_listener>();
+    template <> registry_listener registry::listen();
 
-    template <> node registry::bind<node>(std::uint32_t, update_strategy);
-    template <> port registry::bind<port>(std::uint32_t, update_strategy);
-    template <> client registry::bind<client>(std::uint32_t, update_strategy);
-    template <> device registry::bind<device>(std::uint32_t, update_strategy);
-    template <> metadata registry::bind<metadata>(std::uint32_t, update_strategy);
+    template <> node registry::bind(std::uint32_t, update_strategy);
+    template <> port registry::bind(std::uint32_t, update_strategy);
+    template <> client registry::bind(std::uint32_t, update_strategy);
+    template <> device registry::bind(std::uint32_t, update_strategy);
+    template <> metadata registry::bind(std::uint32_t, update_strategy);
 } // namespace pipewire
 #include "../utils/annotations.hpp"
