@@ -1,6 +1,7 @@
 #include "spa/pod/pod.hpp"
 #include "spa/pod/object/body.hpp"
 
+#include <cassert>
 #include <spa/debug/pod.h>
 #include <spa/pod/builder.h>
 
@@ -55,14 +56,43 @@ namespace pipewire::spa
         return m_impl->type->name;
     }
 
-    template <> bool &pod::as<bool>() const
+    template <> bool pod::as() const
     {
-        return reinterpret_cast<bool &>(reinterpret_cast<spa_pod_bool *>(m_impl->pod)->value);
+        assert(type() == pod_type::boolean);
+        return reinterpret_cast<spa_pod_bool *>(m_impl->pod)->value;
+    }
+
+    template <> float pod::as() const
+    {
+        assert(type() == pod_type::num_float);
+        return reinterpret_cast<spa_pod_float *>(m_impl->pod)->value;
+    }
+
+    template <> std::string pod::as() const
+    {
+        assert(type() == pod_type::string);
+
+        // NOLINTNEXTLINE
+        const auto *content = reinterpret_cast<const char *>(SPA_POD_CONTENTS(spa_pod_string, m_impl->pod));
+
+        return {content};
     }
 
     template <> pod_object_body pod::body<pod_object_body>() const
     {
         return {*this};
+    }
+
+    template <> void pod::write(const bool &value)
+    {
+        assert(type() == pod_type::boolean);
+        reinterpret_cast<spa_pod_bool *>(m_impl->pod)->value = value;
+    }
+
+    template <> void pod::write(const float &value)
+    {
+        assert(type() == pod_type::num_float);
+        reinterpret_cast<spa_pod_float *>(m_impl->pod)->value = value;
     }
 
     spa_pod *pod::get() const

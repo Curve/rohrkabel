@@ -9,8 +9,10 @@ namespace pipewire::spa
 {
     enum class pod_type
     {
+        string = 8,
         boolean = 2,
         object = 15,
+        num_float = 6,
     };
 
     class pod_object_body;
@@ -40,14 +42,21 @@ namespace pipewire::spa
         std::string name() const;
 
       public:
-        template <typename T> T &as() const = delete;
+        template <typename T> T as() const = delete;
         template <typename T> T body() const = delete;
+        template <typename T> void write(const T &) = delete;
 
       public:
         spa_pod *get() const;
         const spa_type_info *get_type() const;
     };
 
-    template <> bool &pod::as<bool>() const;
+    template <> bool pod::as() const;
+    template <> float pod::as() const;
+    template <> std::string pod::as() const;
+
     template <> pod_object_body pod::body<pod_object_body>() const;
+
+    template <> void pod::write(const bool &);
+    template <> void pod::write(const float &);
 } // namespace pipewire::spa
