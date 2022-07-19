@@ -44,7 +44,7 @@ namespace pipewire
 
                 while (!thiz->m_queue.empty())
                 {
-                    auto &&function = std::move(thiz->m_queue.front());
+                    auto function = std::move(thiz->m_queue.front());
                     thiz->m_queue.pop();
                     function();
                 }
