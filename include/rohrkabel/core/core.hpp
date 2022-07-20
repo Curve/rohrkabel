@@ -13,7 +13,6 @@ namespace pipewire
 {
     enum class update_strategy
     {
-        wait_safe,
         wait_lock,
         internal,
         sync,
@@ -63,7 +62,6 @@ namespace pipewire
     template <> void core::update<update_strategy::best>();
     template <> void core::update<update_strategy::sync>();
     template <> void core::update<update_strategy::internal>();
-    template <> [[thread_safe]] void core::update<update_strategy::wait_safe>();
     template <> [[thread_safe]] void core::update<update_strategy::wait_lock>();
 
     template <> core_listener core::listen();

@@ -89,8 +89,6 @@ All operations that can be traced back to a `context` created from the `thread_l
 `std::lock_guard` can be used to automate the locking and unlocking.  
 For an example on how to use the `thread_loop` see [this example](examples/thread-loop/main.cpp).
 
-*Rohrkabel*s `main_loop` offers a `call_safe` method which can be used to execute arbitrary code from the `main_loop`s thread, every method that is not explicitly marked `thread_safe` should only be used in a safe-context, i.e. with `call_safe`.
-
 > ² https://docs.pipewire.org/page_thread_loop.html
 
 </div>

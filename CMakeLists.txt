@@ -68,7 +68,6 @@ if (rohrkabel_examples)
     add_subdirectory("examples/thread-loop")
     add_subdirectory("examples/link-app-to-mic")
     add_subdirectory("examples/mute-microphone")
-    add_subdirectory("examples/main-loop-threaded")
 endif()
 
 # --------------------------------------------------------------------------------------------------------
