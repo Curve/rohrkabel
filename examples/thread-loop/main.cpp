@@ -66,7 +66,10 @@ int main()
     auto params = virt_mic_node->params();
     loop.unlock();
 
+    core.update();
+
     std::cout << "Virt Mic: " << virt_mic->id() << std::endl;
+
     for (const auto &pod : params.get())
     {
         std::cout << pod.first << " - ";
