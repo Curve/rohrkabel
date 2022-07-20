@@ -1,8 +1,10 @@
 #pragma once
-#include <functional>
-#include <memory>
-#include <queue>
+#include "loop.hpp"
+
 #include <mutex>
+#include <queue>
+#include <memory>
+#include <functional>
 
 #include "../utils/annotations.hpp"
 struct pw_loop;
@@ -10,7 +12,7 @@ struct pw_main_loop;
 namespace pipewire
 {
     class proxy;
-    class main_loop
+    class main_loop final : public loop
     {
         template <typename, typename> friend class safe_proxy;
         friend class core;
@@ -36,14 +38,14 @@ namespace pipewire
 
       public:
         main_loop();
-        ~main_loop();
+        ~main_loop() final;
 
       public:
-        void run() const;
-        void quit() const;
+        void run() const final;
+        void quit() const final;
 
       public:
-        [[nodiscard]] pw_loop *get() const;
+        [[nodiscard]] pw_loop *get() const final;
         [[nodiscard]] pw_main_loop *get_main_loop() const;
 
       public:

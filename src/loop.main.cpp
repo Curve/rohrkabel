@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <cassert>
+#include <optional>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -13,14 +14,16 @@ namespace pipewire
         spa_source *cleanup_source;
         spa_source *call_safe_source;
 
-        std::thread::id running_thread;
-
-        static inline std::once_flag flag;
+        std::optional<std::thread::id> running_thread;
     };
 
     bool main_loop::is_safe() const
     {
-        return m_impl->running_thread == std::this_thread::get_id();
+        if (m_impl->running_thread)
+        {
+            return m_impl->running_thread == std::this_thread::get_id();
+        }
+        return true;
     }
 
     void main_loop::emit_event() const
@@ -37,8 +40,6 @@ namespace pipewire
 
     main_loop::main_loop() : m_impl(std::make_unique<impl>())
     {
-        std::call_once(impl::flag, [] { pw_init(nullptr, nullptr); });
-
         m_impl->main_loop = pw_main_loop_new(nullptr);
         assert((void("Failed to create main_loop"), m_impl->main_loop));
 
