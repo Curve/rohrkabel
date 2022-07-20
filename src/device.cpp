@@ -8,10 +8,10 @@ namespace pipewire
 {
     struct device::impl
     {
-        listener hook;
         device_info info;
         pw_device *device;
         pw_device_events events;
+        std::unique_ptr<listener> hook;
     };
 
     device::~device() = default;
@@ -33,10 +33,14 @@ namespace pipewire
                     m_impl.info.params.emplace_back(param_info{param.id, static_cast<param_info_flags>(param.flags)});
                 }
             }
+
+            m_impl.hook.reset();
         };
 
+        m_impl->hook = std::make_unique<listener>();
+
         // NOLINTNEXTLINE
-        pw_device_add_listener(m_impl->device, &m_impl->hook.get(), &m_impl->events, m_impl.get());
+        pw_device_add_listener(m_impl->device, &m_impl->hook->get(), &m_impl->events, m_impl.get());
     }
 
     device::device(device &&device) noexcept : proxy(std::move(device)), m_impl(std::move(device.m_impl)) {}

@@ -12,9 +12,9 @@ namespace pipewire
     struct node::impl
     {
         pw_node *node;
-        listener hook;
         node_info info;
         pw_node_events events;
+        std::unique_ptr<listener> hook;
     };
 
     node::~node() = default;
@@ -45,10 +45,14 @@ namespace pipewire
                     m_impl.info.params.emplace_back(param_info{param.id, static_cast<param_info_flags>(param.flags)});
                 }
             }
+
+            m_impl.hook.reset();
         };
 
+        m_impl->hook = std::make_unique<listener>();
+
         // NOLINTNEXTLINE
-        pw_node_add_listener(m_impl->node, &m_impl->hook.get(), &m_impl->events, m_impl.get());
+        pw_node_add_listener(m_impl->node, &m_impl->hook->get(), &m_impl->events, m_impl.get());
     }
 
     node::node(node &&node) noexcept : proxy(std::move(node)), m_impl(std::move(node.m_impl)) {}

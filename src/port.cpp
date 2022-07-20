@@ -9,9 +9,9 @@ namespace pipewire
     struct port::impl
     {
         pw_port *port;
-        listener hook;
         port_info info;
         pw_port_events events;
+        std::unique_ptr<listener> hook;
     };
 
     port::~port() = default;
@@ -33,10 +33,14 @@ namespace pipewire
                     m_impl.info.params.emplace_back(param_info{param.id, static_cast<param_info_flags>(param.flags)});
                 }
             }
+
+            m_impl.hook.reset();
         };
 
+        m_impl->hook = std::make_unique<listener>();
+
         // NOLINTNEXTLINE
-        pw_port_add_listener(m_impl->port, &m_impl->hook.get(), &m_impl->events, m_impl.get());
+        pw_port_add_listener(m_impl->port, &m_impl->hook->get(), &m_impl->events, m_impl.get());
     }
 
     port::port(port &&port) noexcept : proxy(std::move(port)), m_impl(std::move(port.m_impl)) {}
