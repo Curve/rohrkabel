@@ -2,6 +2,7 @@
 #include "client/client.hpp"
 #include "registry/registry.hpp"
 
+#include <optional>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -11,7 +12,7 @@ namespace pipewire
         client_info info;
         pw_client *client;
         pw_client_events events;
-        std::unique_ptr<listener> hook;
+        std::optional<listener> hook;
     };
 
     client::~client()
@@ -34,7 +35,7 @@ namespace pipewire
             m_impl.hook.reset();
         };
 
-        m_impl->hook = std::make_unique<listener>();
+        m_impl->hook.emplace();
         m_impl->client = reinterpret_cast<pw_client *>(pw_registry_bind(registry.get(), id, type.c_str(), version, sizeof(void *)));
 
         // NOLINTNEXTLINE

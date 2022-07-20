@@ -2,6 +2,7 @@
 #include "device/device.hpp"
 #include "registry/registry.hpp"
 
+#include <optional>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -11,7 +12,7 @@ namespace pipewire
         device_info info;
         pw_device *device;
         pw_device_events events;
-        std::unique_ptr<listener> hook;
+        std::optional<listener> hook;
     };
 
     device::~device() = default;
@@ -37,7 +38,7 @@ namespace pipewire
             m_impl.hook.reset();
         };
 
-        m_impl->hook = std::make_unique<listener>();
+        m_impl->hook.emplace();
 
         // NOLINTNEXTLINE
         pw_device_add_listener(m_impl->device, &m_impl->hook->get(), &m_impl->events, m_impl.get());

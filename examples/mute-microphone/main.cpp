@@ -1,10 +1,11 @@
 #include <memory>
 #include <iostream>
+#include <optional>
 #include <rohrkabel/loop/main.hpp>
 #include <rohrkabel/registry/registry.hpp>
 #include <rohrkabel/spa/pod/object/body.hpp>
 
-void search_mute_prop(std::unique_ptr<pipewire::spa::pod_prop> &result, const pipewire::spa::pod &pod, pipewire::spa::pod_prop *parent_prop = nullptr);
+void search_mute_prop(std::optional<pipewire::spa::pod_prop> &result, const pipewire::spa::pod &pod, pipewire::spa::pod_prop *parent_prop = nullptr);
 
 int main()
 {
@@ -54,7 +55,7 @@ int main()
 
     for (const auto &[pod_id, pod] : params.get())
     {
-        std::unique_ptr<pipewire::spa::pod_prop> result;
+        std::optional<pipewire::spa::pod_prop> result;
         search_mute_prop(result, pod);
 
         if (result)
@@ -85,7 +86,7 @@ int main()
 }
 
 // NOLINTNEXTLINE
-void search_mute_prop(std::unique_ptr<pipewire::spa::pod_prop> &result, const pipewire::spa::pod &pod, pipewire::spa::pod_prop *parent_prop)
+void search_mute_prop(std::optional<pipewire::spa::pod_prop> &result, const pipewire::spa::pod &pod, pipewire::spa::pod_prop *parent_prop)
 {
     if (pod.type() == pipewire::spa::pod_type::object)
     {
@@ -98,7 +99,7 @@ void search_mute_prop(std::unique_ptr<pipewire::spa::pod_prop> &result, const pi
     {
         if (parent_prop && parent_prop->name().find("mute") != std::string::npos)
         {
-            result = std::make_unique<pipewire::spa::pod_prop>(std::move(*parent_prop));
+            result.emplace(std::move(*parent_prop));
         }
     }
 }

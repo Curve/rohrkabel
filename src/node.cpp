@@ -1,11 +1,10 @@
 #include "listener.hpp"
+#include "spa/param.hpp"
 #include "node/node.hpp"
 #include "registry/registry.hpp"
-#include "spa/param.hpp"
 
-#include <exception>
+#include <optional>
 #include <pipewire/pipewire.h>
-#include <pipewire/extensions/metadata.h>
 
 namespace pipewire
 {
@@ -14,7 +13,7 @@ namespace pipewire
         pw_node *node;
         node_info info;
         pw_node_events events;
-        std::unique_ptr<listener> hook;
+        std::optional<listener> hook;
     };
 
     node::~node() = default;
@@ -49,7 +48,7 @@ namespace pipewire
             m_impl.hook.reset();
         };
 
-        m_impl->hook = std::make_unique<listener>();
+        m_impl->hook.emplace();
 
         // NOLINTNEXTLINE
         pw_node_add_listener(m_impl->node, &m_impl->hook->get(), &m_impl->events, m_impl.get());

@@ -1,7 +1,6 @@
 #include "proxy.hpp"
 #include "error.hpp"
 #include "listener.hpp"
-#include "core/core.hpp"
 
 #include <optional>
 #include <pipewire/pipewire.h>
@@ -13,7 +12,7 @@ namespace pipewire
         pw_proxy *proxy;
         std::uint32_t id;
         pw_proxy_events events;
-        std::unique_ptr<listener> hook;
+        std::optional<listener> hook;
     };
 
     proxy::~proxy()
@@ -44,7 +43,7 @@ namespace pipewire
             throw error(seq, res, message);
         };
 
-        m_impl->hook = std::make_unique<listener>();
+        m_impl->hook.emplace();
         pw_proxy_add_listener(m_impl->proxy, &m_impl->hook->get(), &m_impl->events, m_impl.get());
     }
 

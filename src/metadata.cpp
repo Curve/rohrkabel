@@ -2,6 +2,7 @@
 #include "metadata/metadata.hpp"
 #include "registry/registry.hpp"
 
+#include <optional>
 #include <pipewire/pipewire.h>
 #include <pipewire/extensions/metadata.h>
 
@@ -12,7 +13,7 @@ namespace pipewire
         pw_metadata *metadata;
         properties_t properties;
         pw_metadata_events events;
-        std::unique_ptr<listener> hook;
+        std::optional<listener> hook;
     };
 
     metadata::~metadata()
@@ -36,7 +37,7 @@ namespace pipewire
             return 0;
         };
 
-        m_impl->hook = std::make_unique<listener>();
+        m_impl->hook.emplace();
         m_impl->metadata = reinterpret_cast<pw_metadata *>(pw_registry_bind(registry.get(), id, type.c_str(), version, sizeof(void *)));
 
         // NOLINTNEXTLINE

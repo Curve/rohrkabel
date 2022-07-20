@@ -1,9 +1,10 @@
 #include <iostream>
+#include <optional>
 #include <rohrkabel/loop/main.hpp>
 #include <rohrkabel/registry/registry.hpp>
 
 std::map<std::uint32_t, pipewire::port> ports;
-std::unique_ptr<pipewire::port> virt_fl, virt_fr;
+std::optional<pipewire::port> virt_fl, virt_fr;
 
 std::map<std::uint32_t, pipewire::node> nodes;
 std::map<std::uint32_t, pipewire::link_factory> links;
@@ -102,11 +103,11 @@ int main()
                 {
                     if (info.props["audio.channel"] == "FL")
                     {
-                        virt_fl = std::make_unique<pipewire::port>(std::move(port));
+                        virt_fl.emplace(std::move(port));
                     }
                     else
                     {
-                        virt_fr = std::make_unique<pipewire::port>(std::move(port));
+                        virt_fr.emplace(std::move(port));
                     }
                 }
                 else

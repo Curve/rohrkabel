@@ -1,4 +1,5 @@
 #include <iostream>
+#include <optional>
 #include <rohrkabel/loop/thread.hpp>
 #include <rohrkabel/registry/registry.hpp>
 #include <rohrkabel/spa/pod/object/body.hpp>
@@ -41,24 +42,23 @@ int main()
 
     loop.run();
 
-    std::unique_ptr<pipewire::proxy> virt_mic;
+    std::optional<pipewire::proxy> virt_mic;
     {
         std::lock_guard guard(loop);
-        virt_mic = std::make_unique<pipewire::proxy>(core.create("adapter", //
-                                                                 {
-                                                                     {"node.name", "Virtual Mic"},               //
-                                                                     {"media.class", "Audio/Source/Virtual"},    //
-                                                                     {"factory.name", "support.null-audio-sink"} //
-                                                                 },
-                                                                 pw::node::type, pw::node::version));
+        virt_mic.emplace(core.create("adapter", //
+                                     {
+                                         {"node.name", "Virtual Mic"},               //
+                                         {"media.class", "Audio/Source/Virtual"},    //
+                                         {"factory.name", "support.null-audio-sink"} //
+                                     },
+                                     pw::node::type, pw::node::version));
     }
     core.update();
 
-    std::unique_ptr<pipewire::node> virt_mic_node;
+    std::optional<pipewire::node> virt_mic_node;
     {
         std::lock_guard guard(loop);
-
-        virt_mic_node = std::make_unique<pipewire::node>(reg->bind<pw::node>(virt_mic->id()));
+        virt_mic_node.emplace(reg->bind<pw::node>(virt_mic->id()));
     }
     core.update();
 

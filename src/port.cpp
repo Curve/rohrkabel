@@ -2,6 +2,7 @@
 #include "port/port.hpp"
 #include "registry/registry.hpp"
 
+#include <optional>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -11,7 +12,7 @@ namespace pipewire
         pw_port *port;
         port_info info;
         pw_port_events events;
-        std::unique_ptr<listener> hook;
+        std::optional<listener> hook;
     };
 
     port::~port() = default;
@@ -37,7 +38,7 @@ namespace pipewire
             m_impl.hook.reset();
         };
 
-        m_impl->hook = std::make_unique<listener>();
+        m_impl->hook.emplace();
 
         // NOLINTNEXTLINE
         pw_port_add_listener(m_impl->port, &m_impl->hook->get(), &m_impl->events, m_impl.get());
