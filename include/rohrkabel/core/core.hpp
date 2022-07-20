@@ -14,6 +14,8 @@ namespace pipewire
     enum class update_strategy
     {
         wait_safe,
+        wait_lock,
+        internal,
         sync,
         best,
         none,
@@ -47,10 +49,10 @@ namespace pipewire
       public:
         template <class EventListener> [[needs_update]] [[nodiscard]] EventListener listen() = delete;
         [[nodiscard]] [[needs_update]] proxy create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version,
-                                                    update_strategy strategy = update_strategy::sync);
+                                                    update_strategy strategy = update_strategy::internal);
 
       public:
-        template <typename Type> [[nodiscard]] [[needs_update]] Type create(const factories_t::get_t<Type> &param, update_strategy strategy = update_strategy::sync) = delete;
+        template <typename Type> [[nodiscard]] [[needs_update]] Type create(const factories_t::get_t<Type> &param, update_strategy strategy = update_strategy::internal) = delete;
 
       public:
         [[nodiscard]] pw_core *get() const;
@@ -60,7 +62,9 @@ namespace pipewire
     template <> void core::update<update_strategy::none>();
     template <> void core::update<update_strategy::best>();
     template <> void core::update<update_strategy::sync>();
+    template <> void core::update<update_strategy::internal>();
     template <> [[thread_safe]] void core::update<update_strategy::wait_safe>();
+    template <> [[thread_safe]] void core::update<update_strategy::wait_lock>();
 
     template <> core_listener core::listen();
     template <> link_factory core::create(const factories_t::get_t<link_factory> &, update_strategy);

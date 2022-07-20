@@ -1,4 +1,6 @@
 #include "core/core.hpp"
+#include "loop/main.hpp"
+#include "loop/thread.hpp"
 
 #include <future>
 #include <cassert>
@@ -15,7 +17,7 @@ namespace pipewire
     {
         std::promise<void> done;
         std::shared_ptr<core_listener> listener;
-        auto &loop = m_context.get_loop();
+        auto &loop = dynamic_cast<main_loop &>(m_context.get_loop());
 
         assert((void("wait_safe should only be used when main_loop is running on another thread"), !loop.is_safe()));
 
@@ -32,6 +34,48 @@ namespace pipewire
         });
 
         return done.get_future().get();
+    }
+
+    template <> void core::update<update_strategy::wait_lock>()
+    {
+        std::promise<void> done;
+        std::shared_ptr<core_listener> listener;
+        auto &loop = dynamic_cast<thread_loop &>(m_context.get_loop());
+
+        {
+            std::lock_guard guard(loop);
+
+            int pending = sync(0);
+            listener = std::make_shared<core_listener>(listen<core_listener>());
+
+            listener->on<core_event::done>([pending, &done](std::uint32_t id, int seq) {
+                if (id == PW_ID_CORE && seq == pending)
+                {
+                    done.set_value();
+                }
+            });
+        }
+
+        return done.get_future().get();
+    }
+
+    template <> void core::update<update_strategy::internal>()
+    {
+        if (auto *loop = dynamic_cast<main_loop *>(&m_context.get_loop()); loop)
+        {
+            if (loop->is_safe())
+            {
+                update<update_strategy::sync>();
+            }
+            else
+            {
+                update<update_strategy::wait_safe>();
+            }
+        }
+        else
+        {
+            update<update_strategy::none>();
+        }
     }
 
     template <> void core::update<update_strategy::sync>()
@@ -56,13 +100,20 @@ namespace pipewire
 
     template <> void core::update<update_strategy::best>()
     {
-        if (m_context.get_loop().is_safe())
+        if (auto *loop = dynamic_cast<main_loop *>(&m_context.get_loop()); loop)
         {
-            update<update_strategy::sync>();
+            if (loop->is_safe())
+            {
+                update<update_strategy::sync>();
+            }
+            else
+            {
+                update<update_strategy::wait_safe>();
+            }
         }
         else
         {
-            update<update_strategy::wait_safe>();
+            update<update_strategy::wait_lock>();
         }
     }
 
@@ -91,6 +142,12 @@ namespace pipewire
             break;
         case update_strategy::sync:
             update<update_strategy::sync>();
+            break;
+        case update_strategy::internal:
+            update<update_strategy::internal>();
+            break;
+        case update_strategy::wait_lock:
+            update<update_strategy::wait_lock>();
             break;
         case update_strategy::wait_safe:
             update<update_strategy::wait_safe>();
