@@ -11,7 +11,6 @@ namespace pipewire
 {
     class thread_loop final : public loop
     {
-        friend class core;
         struct impl;
 
       private:

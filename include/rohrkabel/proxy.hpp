@@ -8,10 +8,8 @@
 struct pw_proxy;
 namespace pipewire
 {
-    class core;
     class proxy
     {
-        friend class registry;
         struct impl;
 
       private:

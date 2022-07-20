@@ -55,7 +55,7 @@ namespace pipewire
         return m_impl->info;
     }
 
-    std::future<std::map<std::uint32_t, spa::pod>> port::params()
+    port::params_t port::params() const
     {
         struct state
         {

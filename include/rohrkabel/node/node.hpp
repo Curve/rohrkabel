@@ -16,7 +16,6 @@ namespace pipewire
     class registry;
     class node final : public proxy
     {
-        friend class registry;
         struct impl;
 
       private:

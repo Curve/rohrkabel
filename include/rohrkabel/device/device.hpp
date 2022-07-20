@@ -1,7 +1,6 @@
 #pragma once
 #include "info.hpp"
 #include "../proxy.hpp"
-#include "../global.hpp"
 #include "../spa/pod/pod.hpp"
 
 #include <map>
@@ -16,8 +15,8 @@ namespace pipewire
     class registry;
     class device final : public proxy
     {
-        friend class registry;
         struct impl;
+        using params_t = std::future<std::map<std::uint32_t, spa::pod>>;
 
       private:
         std::unique_ptr<impl> m_impl;
@@ -38,7 +37,7 @@ namespace pipewire
 
       public:
         [[nodiscard]] device_info info() const;
-        [[nodiscard]] [[needs_update]] std::future<std::map<std::uint32_t, spa::pod>> params();
+        [[nodiscard]] [[needs_update]] params_t params() const;
 
       public:
         [[nodiscard]] pw_device *get() const;

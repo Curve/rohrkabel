@@ -15,8 +15,8 @@ namespace pipewire
     class registry;
     class port final : public proxy
     {
-        friend class registry;
         struct impl;
+        using params_t = std::future<std::map<std::uint32_t, spa::pod>>;
 
       private:
         std::unique_ptr<impl> m_impl;
@@ -34,7 +34,7 @@ namespace pipewire
 
       public:
         [[nodiscard]] port_info info() const;
-        [[nodiscard]] [[needs_update]] std::future<std::map<std::uint32_t, spa::pod>> params();
+        [[nodiscard]] [[needs_update]] params_t params() const;
 
       public:
         [[nodiscard]] pw_port *get() const;

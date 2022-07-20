@@ -1,7 +1,7 @@
 #pragma once
 #include "property.hpp"
-#include "../global.hpp"
 
+#include <map>
 #include <memory>
 
 struct pw_metadata;

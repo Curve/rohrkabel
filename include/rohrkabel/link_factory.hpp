@@ -1,7 +1,6 @@
 #pragma once
 #include "proxy.hpp"
 
-#include <memory>
 #include <cstdint>
 
 namespace pipewire

@@ -2,7 +2,6 @@
 #include "../spa/dict.hpp"
 #include "../spa/param.hpp"
 
-#include <string>
 #include <vector>
 #include <cstdint>
 
