@@ -1,4 +1,5 @@
 #include <iostream>
+#include <rohrkabel/loop/main.hpp>
 #include <rohrkabel/registry/registry.hpp>
 
 std::map<std::uint32_t, pipewire::port> ports;
