@@ -34,7 +34,7 @@ Depending on personal demand from Soundux or the community more portions of the 
   ```cmake
   include(FetchContent)
 
-  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Soundux/rohrkabel" GIT_TAG v1.1)
+  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Soundux/rohrkabel" GIT_TAG v1.2)
   FetchContent_MakeAvailable(rohrkabel)
 
   target_link_libraries(<target> rohrkabel)
