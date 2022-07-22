@@ -121,11 +121,11 @@ int main()
             {
                 if (info.props["audio.channel"] == "FL")
                 {
-                    links.emplace_back(core.create<pipewire::link_factory>({virt_in_fl->info().id, info.id}));
+                    links.emplace_back(core.create_simple<pipewire::link_factory>(virt_in_fl->info().id, info.id));
                 }
                 else if (info.props["audio.channel"] == "FR")
                 {
-                    links.emplace_back(core.create<pipewire::link_factory>({virt_in_fr->info().id, info.id}));
+                    links.emplace_back(core.create_simple<pipewire::link_factory>(virt_in_fr->info().id, info.id));
                 }
             }
         }
