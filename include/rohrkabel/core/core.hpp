@@ -2,8 +2,9 @@
 #include "events.hpp"
 #include "../proxy.hpp"
 #include "../context.hpp"
+
+#include "../node/node.hpp"
 #include "../link_factory.hpp"
-#include "../utils/factories/factories.hpp"
 
 #include <memory>
 
@@ -23,10 +24,7 @@ namespace pipewire
     class core
     {
         struct impl;
-
-        using factories_t = factory_handler<                    //
-            factory<link_factory, std::uint32_t, std::uint32_t> //
-            >;
+        template <typename Source, typename Desired> using tie_to_t = std::enable_if_t<std::is_same_v<Source, Desired>, Desired>;
 
       private:
         context &m_context;
@@ -47,11 +45,15 @@ namespace pipewire
 
       public:
         template <class EventListener> [[needs_update]] [[nodiscard]] EventListener listen() = delete;
-        [[nodiscard]] [[needs_update]] proxy create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version,
-                                                    update_strategy strategy = update_strategy::internal);
+
+        template <typename T = proxy>
+        [[nodiscard]] [[needs_update]] T create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version,
+                                                update_strategy strategy = update_strategy::internal) = delete;
 
       public:
-        template <typename Type> [[nodiscard]] [[needs_update]] Type create(const factories_t::get_t<Type> &param, update_strategy strategy = update_strategy::internal) = delete;
+        template <typename Type>
+        [[nodiscard]] [[needs_update]] tie_to_t<Type, link_factory> create_simple(std::uint32_t input, std::uint32_t output,
+                                                                                  update_strategy strategy = update_strategy::internal) = delete;
 
       public:
         [[nodiscard]] pw_core *get() const;
@@ -65,6 +67,10 @@ namespace pipewire
     template <> [[thread_safe]] void core::update<update_strategy::wait_lock>();
 
     template <> core_listener core::listen();
-    template <> link_factory core::create(const factories_t::get_t<link_factory> &, update_strategy);
+
+    template <> node core::create(const std::string &, const properties &, const std::string &, std::uint32_t, update_strategy);
+    template <> proxy core::create(const std::string &, const properties &, const std::string &, std::uint32_t, update_strategy);
+
+    template <> link_factory core::create_simple<link_factory>(std::uint32_t input, std::uint32_t output, update_strategy strategy);
 } // namespace pipewire
 #include "../utils/annotations.hpp"
