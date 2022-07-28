@@ -1,10 +1,10 @@
 #pragma once
 #include "events.hpp"
-#include "../proxy.hpp"
 #include "../context.hpp"
 
+#include "../proxy.hpp"
 #include "../node/node.hpp"
-#include "../link_factory.hpp"
+#include "../link/link.hpp"
 
 #include <memory>
 
@@ -44,13 +44,13 @@ namespace pipewire
         template <class EventListener> [[needs_update]] [[nodiscard]] EventListener listen() = delete;
 
         template <typename T = proxy>
-        [[nodiscard]] [[needs_update]] T create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version,
-                                                update_strategy strategy = update_strategy::sync) = delete;
+        [[nodiscard]] [[needs_update]] lazy_expected<T> create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version,
+                                                               update_strategy strategy = update_strategy::sync) = delete;
 
       public:
         template <typename Type>
-        [[nodiscard]] [[needs_update]] tie_to_t<Type, link_factory> create_simple(std::uint32_t input, std::uint32_t output,
-                                                                                  update_strategy strategy = update_strategy::sync) = delete;
+        [[nodiscard]] [[needs_update]] lazy_expected<tie_to_t<Type, link>> create_simple(std::uint32_t input_port, std::uint32_t output_port,
+                                                                                         update_strategy strategy = update_strategy::sync) = delete;
 
       public:
         [[nodiscard]] pw_core *get() const;
@@ -62,9 +62,10 @@ namespace pipewire
 
     template <> core_listener core::listen();
 
-    template <> node core::create(const std::string &, const properties &, const std::string &, std::uint32_t, update_strategy);
-    template <> proxy core::create(const std::string &, const properties &, const std::string &, std::uint32_t, update_strategy);
+    template <> lazy_expected<node> core::create(const std::string &, const properties &, const std::string &, std::uint32_t, update_strategy);
+    template <> lazy_expected<link> core::create(const std::string &, const properties &, const std::string &, std::uint32_t, update_strategy);
+    template <> lazy_expected<proxy> core::create(const std::string &, const properties &, const std::string &, std::uint32_t, update_strategy);
 
-    template <> link_factory core::create_simple<link_factory>(std::uint32_t input, std::uint32_t output, update_strategy strategy);
+    template <> lazy_expected<link> core::create_simple<link>(std::uint32_t input, std::uint32_t output, update_strategy strategy);
 } // namespace pipewire
 #include "../utils/annotations.hpp"

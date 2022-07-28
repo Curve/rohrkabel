@@ -68,23 +68,32 @@ namespace pipewire
         return {*this};
     }
 
-    template <> node core::create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version, update_strategy strategy)
+    template <> lazy_expected<node> core::create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version, update_strategy strategy)
     {
-        node rtn{reinterpret_cast<pw_node *>(pw_core_create_object(get(), factory_name.c_str(), type.c_str(), version, &props.get()->dict, sizeof(void *)))};
+        auto rtn = node::bind(reinterpret_cast<pw_node *>(pw_core_create_object(get(), factory_name.c_str(), type.c_str(), version, &props.get()->dict, sizeof(void *))));
         update(strategy);
         return rtn;
     }
 
-    template <> proxy core::create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version, update_strategy strategy)
+    template <> lazy_expected<link> core::create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version, update_strategy strategy)
     {
-        proxy rtn{reinterpret_cast<pw_proxy *>(pw_core_create_object(get(), factory_name.c_str(), type.c_str(), version, &props.get()->dict, sizeof(void *)))};
+        auto rtn = link::bind(reinterpret_cast<pw_link *>(pw_core_create_object(get(), factory_name.c_str(), type.c_str(), version, &props.get()->dict, sizeof(void *))));
         update(strategy);
         return rtn;
     }
 
-    template <> link_factory core::create_simple<link_factory>(std::uint32_t input, std::uint32_t output, update_strategy strategy)
+    template <>
+    lazy_expected<proxy> core::create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version, update_strategy strategy)
     {
-        link_factory rtn{*this, input, output};
+        auto rtn = proxy::bind(reinterpret_cast<pw_proxy *>(pw_core_create_object(get(), factory_name.c_str(), type.c_str(), version, &props.get()->dict, sizeof(void *))));
+        update(strategy);
+        return rtn;
+    }
+
+    template <> lazy_expected<link> core::create_simple<link>(std::uint32_t input_port, std::uint32_t output_port, update_strategy strategy)
+    {
+        auto props = properties{{"link.input.port", std::to_string(input_port)}, {"link.output.port", std::to_string(output_port)}};
+        auto rtn = link::bind(reinterpret_cast<pw_link *>(pw_core_create_object(get(), "link-factory", link::type.c_str(), link::version, &props.get()->dict, sizeof(void *))));
         update(strategy);
         return rtn;
     }

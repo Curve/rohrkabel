@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
+#include <future>
 #include <stdexcept>
+#include <tl/expected.hpp>
 
 namespace pipewire
 {
@@ -17,4 +19,6 @@ namespace pipewire
         int res() const noexcept;
         const char *what() const noexcept override;
     };
+
+    template <typename T> using lazy_expected = std::future<tl::expected<T, error>>;
 } // namespace pipewire

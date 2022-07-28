@@ -1,18 +1,12 @@
 #pragma once
 #include "info.hpp"
 #include "../proxy.hpp"
-#include "../global.hpp"
 #include "../spa/pod/pod.hpp"
-
-#include <map>
-#include <future>
-#include <memory>
 
 #include "../utils/annotations.hpp"
 struct pw_port;
 namespace pipewire
 {
-    class registry;
     class port final : public proxy
     {
         struct impl;
@@ -25,12 +19,14 @@ namespace pipewire
         ~port() final;
 
       public:
-        port(pw_port *);
         port(port &&) noexcept;
-        port(registry &, std::uint32_t);
+        port(proxy &&, port_info);
 
       public:
         port &operator=(port &&) noexcept;
+
+      public:
+        static [[needs_update]] lazy_expected<port> bind(pw_port *);
 
       public:
         [[nodiscard]] port_info info() const;

@@ -1,33 +1,33 @@
 #pragma once
+#include "../proxy.hpp"
 #include "property.hpp"
 
-#include <map>
-#include <memory>
-
+#include "../utils/annotations.hpp"
 struct pw_metadata;
 namespace pipewire
 {
-    class registry;
-    class metadata
+    class metadata final : public proxy
     {
         struct impl;
-        using properties_t = std::map<const std::string, const metadata_property>;
 
       private:
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~metadata();
+        ~metadata() final;
 
       public:
         metadata(metadata &&) noexcept;
-        metadata(registry &, std::uint32_t);
+        metadata(proxy &&, std::map<const std::string, const metadata_property>);
 
       public:
         metadata &operator=(metadata &&) noexcept;
 
       public:
-        [[nodiscard]] properties_t properties() const;
+        static [[needs_update]] lazy_expected<metadata> bind(pw_metadata *);
+
+      public:
+        [[nodiscard]] std::map<const std::string, const metadata_property> properties() const;
 
       public:
         [[nodiscard]] pw_metadata *get() const;
@@ -37,3 +37,4 @@ namespace pipewire
         static const std::uint32_t version;
     };
 } // namespace pipewire
+#include "../utils/annotations.hpp"

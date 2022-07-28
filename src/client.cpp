@@ -1,6 +1,5 @@
 #include "listener.hpp"
 #include "client/client.hpp"
-#include "registry/registry.hpp"
 
 #include <optional>
 #include <pipewire/pipewire.h>
@@ -9,37 +8,55 @@ namespace pipewire
 {
     struct client::impl
     {
-        client_info info;
         pw_client *client;
-        pw_client_events events;
-        std::optional<listener> hook;
+        client_info info;
     };
 
-    client::~client()
+    client::~client() = default;
+
+    client::client(client &&client) noexcept : proxy(std::move(client)), m_impl(std::move(client.m_impl)) {}
+
+    client::client(proxy &&_proxy, client_info info) : proxy(std::move(_proxy)), m_impl(std::make_unique<impl>())
     {
-        if (m_impl)
-        {
-            pw_proxy_destroy(reinterpret_cast<pw_proxy *>(m_impl->client));
-        }
+        m_impl->info = std::move(info);
+        m_impl->client = reinterpret_cast<pw_client *>(proxy::get());
     }
 
-    client::client(client &&client) noexcept : m_impl(std::move(client.m_impl)) {}
-
-    client::client(registry &registry, std::uint32_t id) : m_impl(std::make_unique<impl>())
+    lazy_expected<client> client::bind(pw_client *raw_client)
     {
-        m_impl->events.version = PW_VERSION_CLIENT_EVENTS;
-
-        m_impl->events.info = [](void *data, const pw_client_info *info) {
-            auto &m_impl = *reinterpret_cast<impl *>(data);
-            m_impl.info = {info->props, info->id, info->change_mask};
-            m_impl.hook.reset();
+        struct state
+        {
+            pw_client_events events;
+            std::optional<listener> hook;
+            std::promise<client_info> info;
         };
 
-        m_impl->hook.emplace();
-        m_impl->client = reinterpret_cast<pw_client *>(pw_registry_bind(registry.get(), id, type.c_str(), version, sizeof(void *)));
+        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw_client));
+        auto m_state = std::make_shared<state>();
+
+        m_state->hook.emplace();
+        m_state->events.version = PW_VERSION_CLIENT_EVENTS;
+
+        m_state->events.info = [](void *data, const pw_client_info *info) {
+            auto &m_state = *reinterpret_cast<state *>(data);
+
+            m_state.info.set_value({info->props, info->id, info->change_mask});
+            m_state.hook.reset();
+        };
 
         // NOLINTNEXTLINE
-        pw_client_add_listener(m_impl->client, &m_impl->hook->get(), &m_impl->events, m_impl.get());
+        pw_client_add_listener(raw_client, &m_state->hook->get(), &m_state->events, m_state.get());
+
+        return std::async(std::launch::deferred, [m_state, proxy_fut = std::move(proxy)]() mutable -> tl::expected<client, error> {
+            auto proxy = proxy_fut.get();
+
+            if (!proxy.has_value())
+            {
+                return tl::make_unexpected(proxy.error());
+            }
+
+            return client(std::move(proxy.value()), m_state->info.get_future().get());
+        });
     }
 
     client &client::operator=(client &&client) noexcept

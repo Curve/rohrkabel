@@ -1,6 +1,5 @@
 #include "listener.hpp"
 #include "device/device.hpp"
-#include "registry/registry.hpp"
 
 #include <optional>
 #include <pipewire/pipewire.h>
@@ -9,50 +8,75 @@ namespace pipewire
 {
     struct device::impl
     {
-        device_info info;
         pw_device *device;
-        pw_device_events events;
-        std::optional<listener> hook;
+        device_info info;
     };
 
     device::~device() = default;
 
-    device::device(pw_device *device) : proxy(reinterpret_cast<pw_proxy *>(device)), m_impl(std::make_unique<impl>())
-    {
-        m_impl->device = device;
-        m_impl->events.version = PW_VERSION_DEVICE_EVENTS;
-
-        m_impl->events.info = [](void *data, const pw_device_info *info) {
-            auto &m_impl = *reinterpret_cast<impl *>(data);
-            m_impl.info = {info->props, info->id, info->change_mask, std::vector<param_info>(info->n_params)};
-
-            if (info->params)
-            {
-                for (auto i = 0u; i < info->n_params; i++)
-                {
-                    auto param = info->params[i];
-                    m_impl.info.params.emplace_back(param_info{param.id, static_cast<param_info_flags>(param.flags)});
-                }
-            }
-
-            m_impl.hook.reset();
-        };
-
-        m_impl->hook.emplace();
-
-        // NOLINTNEXTLINE
-        pw_device_add_listener(m_impl->device, &m_impl->hook->get(), &m_impl->events, m_impl.get());
-    }
-
     device::device(device &&device) noexcept : proxy(std::move(device)), m_impl(std::move(device.m_impl)) {}
 
-    device::device(registry &registry, std::uint32_t id) : device(reinterpret_cast<pw_device *>(pw_registry_bind(registry.get(), id, type.c_str(), version, sizeof(void *)))) {}
+    device::device(proxy &&_proxy, device_info info) : proxy(std::move(_proxy)), m_impl(std::make_unique<impl>())
+    {
+        m_impl->info = std::move(info);
+        m_impl->device = reinterpret_cast<pw_device *>(proxy::get());
+    }
 
     device &device::operator=(device &&node) noexcept
     {
         proxy::operator=(std::move(node));
         m_impl = std::move(node.m_impl);
         return *this;
+    }
+
+    lazy_expected<device> device::bind(pw_device *raw_device)
+    {
+        struct state
+        {
+            pw_device_events events;
+            std::optional<listener> hook;
+            std::promise<device_info> info;
+        };
+
+        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw_device));
+        auto m_state = std::make_shared<state>();
+
+        m_state->hook.emplace();
+        m_state->events.version = PW_VERSION_DEVICE_EVENTS;
+
+        m_state->events.info = [](void *data, const pw_device_info *info) {
+            auto &m_state = *reinterpret_cast<state *>(data);
+            device_info m_info = {info->props,
+                                  info->id,          //
+                                  info->change_mask, //
+                                  std::vector<param_info>(info->n_params)};
+
+            if (info->params)
+            {
+                for (auto i = 0u; i < info->n_params; i++)
+                {
+                    auto param = info->params[i];
+                    m_info.params.emplace_back(param_info{param.id, static_cast<param_info_flags>(param.flags)});
+                }
+            }
+
+            m_state.info.set_value(m_info);
+            m_state.hook.reset();
+        };
+
+        // NOLINTNEXTLINE
+        pw_device_add_listener(raw_device, &m_state->hook->get(), &m_state->events, m_state.get());
+
+        return std::async(std::launch::deferred, [m_state, proxy_fut = std::move(proxy)]() mutable -> tl::expected<device, error> {
+            auto proxy = proxy_fut.get();
+
+            if (!proxy.has_value())
+            {
+                return tl::make_unexpected(proxy.error());
+            }
+
+            return device(std::move(proxy.value()), m_state->info.get_future().get());
+        });
     }
 
     void device::set_param(std::uint32_t id, const spa::pod &pod)
@@ -66,7 +90,7 @@ namespace pipewire
         return m_impl->info;
     }
 
-    device::params_t device::params() const
+    std::future<std::map<std::uint32_t, spa::pod>> device::params() const
     {
         struct state
         {

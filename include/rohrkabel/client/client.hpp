@@ -1,13 +1,12 @@
 #pragma once
 #include "info.hpp"
+#include "../proxy.hpp"
 
-#include <memory>
-
+#include "../utils/annotations.hpp"
 struct pw_client;
 namespace pipewire
 {
-    class registry;
-    class client
+    class client final : public proxy
     {
         struct impl;
 
@@ -15,11 +14,14 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~client();
+        ~client() final;
 
       public:
         client(client &&) noexcept;
-        client(registry &, std::uint32_t);
+        client(proxy &&, client_info);
+
+      public:
+        static [[needs_update]] lazy_expected<client> bind(pw_client *);
 
       public:
         client &operator=(client &&) noexcept;
@@ -35,3 +37,4 @@ namespace pipewire
         static const std::uint32_t version;
     };
 } // namespace pipewire
+#include "../utils/annotations.hpp"

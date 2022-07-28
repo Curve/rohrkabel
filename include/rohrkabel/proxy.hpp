@@ -1,10 +1,12 @@
 #pragma once
+#include "error.hpp"
 #include "properties.hpp"
 
 #include <memory>
 #include <string>
 #include <cstdint>
 
+#include "utils/annotations.hpp"
 struct pw_proxy;
 namespace pipewire
 {
@@ -26,6 +28,9 @@ namespace pipewire
         proxy &operator=(proxy &&) noexcept;
 
       public:
+        static [[needs_update]] lazy_expected<proxy> bind(pw_proxy *);
+
+      public:
         [[nodiscard]] std::uint32_t id() const;
 
       public:
@@ -33,3 +38,4 @@ namespace pipewire
         [[nodiscard]] std::uint32_t release();
     };
 } // namespace pipewire
+#include "utils/annotations.hpp"

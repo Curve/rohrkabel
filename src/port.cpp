@@ -1,6 +1,5 @@
 #include "listener.hpp"
 #include "port/port.hpp"
-#include "registry/registry.hpp"
 
 #include <optional>
 #include <pipewire/pipewire.h>
@@ -11,48 +10,74 @@ namespace pipewire
     {
         pw_port *port;
         port_info info;
-        pw_port_events events;
-        std::optional<listener> hook;
     };
 
     port::~port() = default;
 
-    port::port(pw_port *port) : proxy(reinterpret_cast<pw_proxy *>(port)), m_impl(std::make_unique<impl>())
-    {
-        m_impl->port = port;
-        m_impl->events.version = PW_VERSION_PORT_EVENTS;
-
-        m_impl->events.info = [](void *data, const pw_port_info *info) {
-            auto &m_impl = *reinterpret_cast<impl *>(data);
-            m_impl.info = {info->id, static_cast<port_direction>(info->direction), info->change_mask, info->props, std::vector<param_info>(info->n_params)};
-
-            if (info->params)
-            {
-                for (auto i = 0u; i < info->n_params; i++)
-                {
-                    auto param = info->params[i];
-                    m_impl.info.params.emplace_back(param_info{param.id, static_cast<param_info_flags>(param.flags)});
-                }
-            }
-
-            m_impl.hook.reset();
-        };
-
-        m_impl->hook.emplace();
-
-        // NOLINTNEXTLINE
-        pw_port_add_listener(m_impl->port, &m_impl->hook->get(), &m_impl->events, m_impl.get());
-    }
-
     port::port(port &&port) noexcept : proxy(std::move(port)), m_impl(std::move(port.m_impl)) {}
 
-    port::port(registry &registry, std::uint32_t id) : port(reinterpret_cast<pw_port *>(pw_registry_bind(registry.get(), id, type.c_str(), version, sizeof(void *)))) {}
+    port::port(proxy &&_proxy, port_info info) : proxy(std::move(_proxy)), m_impl(std::make_unique<impl>())
+    {
+        m_impl->info = std::move(info);
+        m_impl->port = reinterpret_cast<pw_port *>(proxy::get());
+    }
 
     port &port::operator=(port &&port) noexcept
     {
         proxy::operator=(std::move(port));
         m_impl = std::move(port.m_impl);
         return *this;
+    }
+
+    lazy_expected<port> port::bind(pw_port *raw_port)
+    {
+        struct state
+        {
+            pw_port_events events;
+            std::optional<listener> hook;
+            std::promise<port_info> info;
+        };
+
+        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw_port));
+        auto m_state = std::make_shared<state>();
+
+        m_state->hook.emplace();
+        m_state->events.version = PW_VERSION_PORT_EVENTS;
+
+        m_state->events.info = [](void *data, const pw_port_info *info) {
+            auto &m_state = *reinterpret_cast<state *>(data);
+            port_info m_info = {info->id,                                     //
+                                static_cast<port_direction>(info->direction), //
+                                info->change_mask,                            //
+                                info->props,                                  //
+                                std::vector<param_info>(info->n_params)};
+
+            if (info->params)
+            {
+                for (auto i = 0u; i < info->n_params; i++)
+                {
+                    auto param = info->params[i];
+                    m_info.params.emplace_back(param_info{param.id, static_cast<param_info_flags>(param.flags)});
+                }
+            }
+
+            m_state.info.set_value(m_info);
+            m_state.hook.reset();
+        };
+
+        // NOLINTNEXTLINE
+        pw_port_add_listener(raw_port, &m_state->hook->get(), &m_state->events, m_state.get());
+
+        return std::async(std::launch::deferred, [m_state, proxy_fut = std::move(proxy)]() mutable -> tl::expected<port, error> {
+            auto proxy = proxy_fut.get();
+
+            if (!proxy.has_value())
+            {
+                return tl::make_unexpected(proxy.error());
+            }
+
+            return port(std::move(proxy.value()), m_state->info.get_future().get());
+        });
     }
 
     port_info port::info() const

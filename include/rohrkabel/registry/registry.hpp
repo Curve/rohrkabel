@@ -28,7 +28,7 @@ namespace pipewire
 
       public:
         template <class EventListener> [[needs_update]] [[nodiscard]] EventListener listen() = delete;
-        template <class Interface> [[needs_update]] [[nodiscard]] Interface bind(std::uint32_t id, update_strategy strategy = update_strategy::sync) = delete;
+        template <class T> [[needs_update]] [[nodiscard]] lazy_expected<T> bind(std::uint32_t id, update_strategy strategy = update_strategy::sync) = delete;
 
       public:
         [[nodiscard]] core &get_core();
@@ -37,10 +37,10 @@ namespace pipewire
 
     template <> registry_listener registry::listen();
 
-    template <> node registry::bind(std::uint32_t, update_strategy);
-    template <> port registry::bind(std::uint32_t, update_strategy);
-    template <> client registry::bind(std::uint32_t, update_strategy);
-    template <> device registry::bind(std::uint32_t, update_strategy);
-    template <> metadata registry::bind(std::uint32_t, update_strategy);
+    template <> lazy_expected<node> registry::bind(std::uint32_t, update_strategy);
+    template <> lazy_expected<port> registry::bind(std::uint32_t, update_strategy);
+    template <> lazy_expected<client> registry::bind(std::uint32_t, update_strategy);
+    template <> lazy_expected<device> registry::bind(std::uint32_t, update_strategy);
+    template <> lazy_expected<metadata> registry::bind(std::uint32_t, update_strategy);
 } // namespace pipewire
 #include "../utils/annotations.hpp"

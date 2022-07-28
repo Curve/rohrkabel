@@ -1,19 +1,12 @@
 #pragma once
 #include "info.hpp"
 #include "../proxy.hpp"
-#include "../global.hpp"
 #include "../spa/pod/pod.hpp"
-
-#include <map>
-#include <future>
-#include <memory>
-#include <cstdint>
 
 #include "../utils/annotations.hpp"
 struct pw_node;
 namespace pipewire
 {
-    class registry;
     class node final : public proxy
     {
         struct impl;
@@ -25,12 +18,14 @@ namespace pipewire
         ~node() final;
 
       public:
-        node(pw_node *);
         node(node &&) noexcept;
-        node(registry &, std::uint32_t);
+        node(proxy &&, node_info);
 
       public:
         node &operator=(node &&) noexcept;
+
+      public:
+        static [[needs_update]] lazy_expected<node> bind(pw_node *);
 
       public:
         [[needs_update]] void set_param(std::uint32_t id, const spa::pod &pod);

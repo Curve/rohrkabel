@@ -26,48 +26,38 @@ namespace pipewire
         return {*this};
     }
 
-    template <> node registry::bind(std::uint32_t id, update_strategy strategy)
+    template <> lazy_expected<node> registry::bind(std::uint32_t id, update_strategy strategy)
     {
-        node rtn{*this, id};
-
+        auto rtn = node::bind(reinterpret_cast<pw_node *>(pw_registry_bind(get(), id, node::type.c_str(), node::version, sizeof(void *))));
         m_core.update(strategy);
-
         return rtn;
     }
 
-    template <> port registry::bind(std::uint32_t id, update_strategy strategy)
+    template <> lazy_expected<port> registry::bind(std::uint32_t id, update_strategy strategy)
     {
-        port rtn{*this, id};
-
+        auto rtn = port::bind(reinterpret_cast<pw_port *>(pw_registry_bind(get(), id, port::type.c_str(), port::version, sizeof(void *))));
         m_core.update(strategy);
-
         return rtn;
     }
 
-    template <> client registry::bind(std::uint32_t id, update_strategy strategy)
+    template <> lazy_expected<client> registry::bind(std::uint32_t id, update_strategy strategy)
     {
-        client rtn{*this, id};
-
+        auto rtn = client::bind(reinterpret_cast<pw_client *>(pw_registry_bind(get(), id, client::type.c_str(), client::version, sizeof(void *))));
         m_core.update(strategy);
-
         return rtn;
     }
 
-    template <> device registry::bind(std::uint32_t id, update_strategy strategy)
+    template <> lazy_expected<device> registry::bind(std::uint32_t id, update_strategy strategy)
     {
-        device rtn{*this, id};
-
+        auto rtn = device::bind(reinterpret_cast<pw_device *>(pw_registry_bind(get(), id, device::type.c_str(), device::version, sizeof(void *))));
         m_core.update(strategy);
-
         return rtn;
     }
 
-    template <> metadata registry::bind(std::uint32_t id, update_strategy strategy)
+    template <> lazy_expected<metadata> registry::bind(std::uint32_t id, update_strategy strategy)
     {
-        metadata rtn{*this, id};
-
+        auto rtn = metadata::bind(reinterpret_cast<pw_metadata *>(pw_registry_bind(get(), id, metadata::type.c_str(), metadata::version, sizeof(void *))));
         m_core.update(strategy);
-
         return rtn;
     }
 

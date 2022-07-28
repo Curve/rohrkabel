@@ -5,7 +5,8 @@ project(rohrkabel LANGUAGES CXX VERSION 1.2)
 # Library options
 # --------------------------------------------------------------------------------------------------------
 
-option(rohrkabel_examples "Build examples" OFF)
+option(rohrkabel_examples       "Build examples" OFF)
+option(rohrkabel_prefer_remote  "Prefer remote packages over local packages" ON)
 
 # --------------------------------------------------------------------------------------------------------
 # Warning for non unix platforms
@@ -49,12 +50,29 @@ target_include_directories(${PROJECT_NAME} PUBLIC "include")
 target_include_directories(${PROJECT_NAME} PRIVATE "include/rohrkabel")
 
 # --------------------------------------------------------------------------------------------------------
+# Fetch / Find required libraries
+# --------------------------------------------------------------------------------------------------------
+
+include(FetchContent)
+
+if (NOT rohrkabel_prefer_remote)
+    find_package(tl-expected CONFIG REQUIRED)
+else()    
+    set(EXPECTED_BUILD_TESTS OFF)
+    set(EXPECTED_BUILD_PACKAGE OFF)
+    
+    FetchContent_Declare(expected GIT_REPOSITORY "https://github.com/TartanLlama/expected")
+    FetchContent_MakeAvailable(expected)
+endif()
+
+# --------------------------------------------------------------------------------------------------------
 # Link required libraries
 # --------------------------------------------------------------------------------------------------------
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 find_package(PipeWire REQUIRED)
 
+target_link_libraries(${PROJECT_NAME} PUBLIC tl::expected)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PipeWire_LIBRARIES} pthread)
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${PipeWire_INCLUDE_DIRS} ${Spa_INCLUDE_DIRS})
 
@@ -65,7 +83,6 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${PipeWire_INCLUDE_DIR
 if (rohrkabel_examples)
     add_subdirectory("examples/roundtrip")
     add_subdirectory("examples/virtual-mic")
-    add_subdirectory("examples/thread-loop")
     add_subdirectory("examples/link-app-to-mic")
     add_subdirectory("examples/mute-microphone")
 endif()

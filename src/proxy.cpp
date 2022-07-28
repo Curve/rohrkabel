@@ -10,9 +10,6 @@ namespace pipewire
     struct proxy::impl
     {
         pw_proxy *proxy;
-        std::uint32_t id;
-        pw_proxy_events events;
-        std::optional<listener> hook;
     };
 
     proxy::~proxy()
@@ -28,29 +25,55 @@ namespace pipewire
     proxy::proxy(pw_proxy *proxy) : m_impl(std::make_unique<impl>())
     {
         m_impl->proxy = proxy;
-        m_impl->events.version = PW_VERSION_PROXY_EVENTS;
-
-        m_impl->events.bound = [](void *data, std::uint32_t id) {
-            auto &m_impl = *reinterpret_cast<impl *>(data);
-
-            m_impl.id = id;
-            m_impl.hook.reset();
-        };
-        m_impl->events.error = []([[maybe_unused]] void *data, int seq, int res, const char *message) {
-            auto &m_impl = *reinterpret_cast<impl *>(data);
-
-            m_impl.hook.reset();
-            throw error(seq, res, message);
-        };
-
-        m_impl->hook.emplace();
-        pw_proxy_add_listener(m_impl->proxy, &m_impl->hook->get(), &m_impl->events, m_impl.get());
     }
 
     proxy &proxy::operator=(proxy &&proxy) noexcept
     {
         m_impl = std::move(proxy.m_impl);
         return *this;
+    }
+
+    lazy_expected<proxy> proxy::bind(pw_proxy *raw_proxy)
+    {
+        struct state
+        {
+            listener hook;
+            pw_proxy_events events;
+            std::promise<void> done;
+            std::optional<error> error;
+        };
+
+        auto m_state = std::make_shared<state>();
+        m_state->events.version = PW_VERSION_PROXY_EVENTS;
+
+        m_state->events.bound = [](void *data, uint32_t) {
+            auto &m_state = *reinterpret_cast<state *>(data);
+            m_state.done.set_value();
+        };
+
+        m_state->events.error = [](void *data, int seq, int res, const char *message) {
+            auto &m_state = *reinterpret_cast<state *>(data);
+            m_state.error.emplace(seq, res, message);
+            m_state.done.set_value();
+        };
+
+        pw_proxy_add_listener(raw_proxy, &m_state->hook.get(), &m_state->events, m_state.get());
+
+        return std::async(std::launch::deferred, [m_state, raw_proxy]() -> tl::expected<proxy, error> {
+            m_state->done.get_future().wait();
+
+            if (m_state->error)
+            {
+                return tl::make_unexpected(*m_state->error);
+            }
+
+            return raw_proxy;
+        });
+    }
+
+    std::uint32_t proxy::id() const
+    {
+        return pw_proxy_get_bound_id(m_impl->proxy);
     }
 
     std::uint32_t proxy::id() const
