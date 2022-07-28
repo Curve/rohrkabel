@@ -1,4 +1,5 @@
 #include "properties.hpp"
+
 #include <pipewire/pipewire.h>
 
 namespace pipewire

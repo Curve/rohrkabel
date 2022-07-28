@@ -1,8 +1,9 @@
 #pragma once
-#include <memory>
 #include "info.hpp"
 #include "../listener.hpp"
 #include "../utils/events/events.hpp"
+
+#include <memory>
 
 namespace pipewire
 {
