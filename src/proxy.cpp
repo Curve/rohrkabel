@@ -39,7 +39,7 @@ namespace pipewire
             listener hook;
             pw_proxy_events events;
             std::promise<void> done;
-            std::optional<error> error;
+            std::optional<error> exception;
         };
 
         auto m_state = std::make_shared<state>();
@@ -52,7 +52,7 @@ namespace pipewire
 
         m_state->events.error = [](void *data, int seq, int res, const char *message) {
             auto &m_state = *reinterpret_cast<state *>(data);
-            m_state.error.emplace(seq, res, message);
+            m_state.exception.emplace(seq, res, message);
             m_state.done.set_value();
         };
 
@@ -61,9 +61,9 @@ namespace pipewire
         return std::async(std::launch::deferred, [m_state, raw_proxy]() -> tl::expected<proxy, error> {
             m_state->done.get_future().wait();
 
-            if (m_state->error)
+            if (m_state->exception)
             {
-                return tl::make_unexpected(*m_state->error);
+                return tl::make_unexpected(*m_state->exception);
             }
 
             return raw_proxy;
