@@ -1,5 +1,4 @@
 #include "proxy.hpp"
-#include "error.hpp"
 #include "listener.hpp"
 
 #include <optional>
@@ -76,20 +75,21 @@ namespace pipewire
         return pw_proxy_get_bound_id(m_impl->proxy);
     }
 
-    std::uint32_t proxy::id() const
+    std::string proxy::type() const
     {
-        return m_impl->id;
+        return pw_proxy_get_type(m_impl->proxy, nullptr);
+    }
+
+    std::uint32_t proxy::version() const
+    {
+        std::uint32_t version{};
+        static_cast<void>(pw_proxy_get_type(m_impl->proxy, &version));
+
+        return version;
     }
 
     pw_proxy *proxy::get() const
     {
         return m_impl->proxy;
-    }
-
-    std::uint32_t proxy::release()
-    {
-        auto rtn = m_impl->id;
-        m_impl.reset();
-        return rtn;
     }
 } // namespace pipewire

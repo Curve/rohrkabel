@@ -32,10 +32,11 @@ namespace pipewire
 
       public:
         [[nodiscard]] std::uint32_t id() const;
+        [[nodiscard]] std::string type() const;
+        [[nodiscard]] std::uint32_t version() const;
 
       public:
         [[nodiscard]] pw_proxy *get() const;
-        [[nodiscard]] std::uint32_t release();
     };
 } // namespace pipewire
 #include "utils/annotations.hpp"
