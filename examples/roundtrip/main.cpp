@@ -13,8 +13,8 @@ int main()
     reg_listener.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
         if (global.type == pipewire::node::type)
         {
-            auto node = reg.bind<pipewire::node>(global.id);
-            auto info = node.info();
+            auto node = reg.bind<pipewire::node>(global.id).get();
+            auto info = node->info();
 
             std::cout << "Node " << info.id << ": ";
             for (const auto &prop : info.props)
@@ -25,10 +25,10 @@ int main()
         }
         if (global.type == pipewire::metadata::type)
         {
-            auto metadata = reg.bind<pipewire::metadata>(global.id);
+            auto metadata = reg.bind<pipewire::metadata>(global.id).get();
 
             std::cout << "Metadata: ";
-            for (const auto &[key, property] : metadata.properties())
+            for (const auto &[key, property] : metadata->properties())
             {
                 std::cout << "{" << key << ", " << property.value << "} ";
             }
@@ -36,8 +36,8 @@ int main()
         }
         if (global.type == pipewire::port::type)
         {
-            auto port = reg.bind<pipewire::port>(global.id);
-            auto info = port.info();
+            auto port = reg.bind<pipewire::port>(global.id).get();
+            auto info = port->info();
 
             std::cout << "Port " << info.id << ": ";
             for (const auto &prop : info.props)
@@ -48,8 +48,8 @@ int main()
         }
         if (global.type == pipewire::device::type)
         {
-            auto device = reg.bind<pipewire::device>(global.id);
-            auto info = device.info();
+            auto device = reg.bind<pipewire::device>(global.id).get();
+            auto info = device->info();
 
             std::cout << "Device " << info.id << ": ";
             for (const auto &prop : info.props)
@@ -60,8 +60,8 @@ int main()
         }
         if (global.type == pipewire::client::type)
         {
-            auto client = reg.bind<pipewire::client>(global.id);
-            auto info = client.info();
+            auto client = reg.bind<pipewire::client>(global.id).get();
+            auto info = client->info();
 
             std::cout << "Client " << info.id << ": ";
             for (const auto &prop : info.props)

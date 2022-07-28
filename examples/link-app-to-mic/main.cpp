@@ -7,7 +7,7 @@ std::map<std::uint32_t, pipewire::port> ports;
 std::optional<pipewire::port> virt_fl, virt_fr;
 
 std::map<std::uint32_t, pipewire::node> nodes;
-std::map<std::uint32_t, pipewire::link_factory> links;
+std::map<std::uint32_t, pipewire::link> links;
 
 void link(const std::string &target, pipewire::core &core)
 {
@@ -38,12 +38,12 @@ void link(const std::string &target, pipewire::core &core)
 
             if (port.info().props["audio.channel"] == "FL")
             {
-                links.emplace(port_id, core.create_simple<pipewire::link_factory>(virt_fl->info().id, port_id));
+                links.emplace(port_id, *core.create_simple<pipewire::link>(virt_fl->info().id, port_id).get());
                 std::cout << virt_fl->info().id << std::endl;
             }
             else
             {
-                links.emplace(port_id, core.create_simple<pipewire::link_factory>(virt_fr->info().id, port_id));
+                links.emplace(port_id, *core.create_simple<pipewire::link>(virt_fr->info().id, port_id).get());
                 std::cout << virt_fr->info().id << std::endl;
             }
         }
@@ -75,44 +75,45 @@ int main()
                                        {"audio.channels", "2"},                     //
                                        {"audio.position", "FL,FR"}                  //
                                    },
-                                   pipewire::node::type, pipewire::node::version, pipewire::update_strategy::none);
+                                   pipewire::node::type, pipewire::node::version, pipewire::update_strategy::none)
+                           .share();
 
     auto reg_events = reg.listen<pipewire::registry_listener>();
     reg_events.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
         if (global.type == pipewire::node::type)
         {
-            auto node = reg.bind<pipewire::node>(global.id);
-            std::cout << "Added  : " << node.info().props["node.name"] << std::endl;
+            auto node = reg.bind<pipewire::node>(global.id).get();
+            std::cout << "Added  : " << node->info().props["node.name"] << std::endl;
 
             if (!nodes.count(global.id))
             {
-                nodes.emplace(global.id, std::move(node));
+                nodes.emplace(global.id, std::move(*node));
                 link(target, core);
             }
         }
         if (global.type == pipewire::port::type)
         {
-            auto port = reg.bind<pipewire::port>(global.id);
-            auto info = port.info();
+            auto port = reg.bind<pipewire::port>(global.id).get();
+            auto info = port->info();
 
             if (info.props.count("node.id"))
             {
                 auto node_id = std::stoul(info.props["node.id"]);
 
-                if (node_id == virtual_mic.id() && info.direction == pipewire::port_direction::input)
+                if (node_id == virtual_mic.get()->id() && info.direction == pipewire::port_direction::input)
                 {
                     if (info.props["audio.channel"] == "FL")
                     {
-                        virt_fl.emplace(std::move(port));
+                        virt_fl.emplace(std::move(*port));
                     }
                     else
                     {
-                        virt_fr.emplace(std::move(port));
+                        virt_fr.emplace(std::move(*port));
                     }
                 }
                 else
                 {
-                    ports.emplace(global.id, std::move(port));
+                    ports.emplace(global.id, std::move(*port));
                 }
 
                 link(target, core);

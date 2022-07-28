@@ -17,8 +17,8 @@ int main()
     metadata_listener.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
         if (global.type == pipewire::metadata::type)
         {
-            auto metadata = reg.bind<pipewire::metadata>(global.id);
-            auto properties = metadata.properties();
+            auto metadata = reg.bind<pipewire::metadata>(global.id).get();
+            auto properties = metadata->properties();
 
             if (properties.count("default.audio.sink"))
             {
@@ -44,11 +44,11 @@ int main()
         }
         if (global.type == pipewire::node::type)
         {
-            nodes.emplace(global.id, reg.bind<pipewire::node>(global.id));
+            nodes.emplace(global.id, *reg.bind<pipewire::node>(global.id).get());
         }
         if (global.type == pipewire::port::type)
         {
-            ports.emplace_back(reg.bind<pipewire::port>(global.id));
+            ports.emplace_back(*reg.bind<pipewire::port>(global.id).get());
         }
     });
     core.update();
@@ -73,7 +73,8 @@ int main()
     auto old_port_size = ports.size();
 
     auto virtual_mic = core.create("adapter", {{"node.name", "Virtual Mic"}, {"media.class", "Audio/Source/Virtual"}, {"factory.name", "support.null-audio-sink"}},
-                                   pipewire::node::type, pipewire::node::version);
+                                   pipewire::node::type, pipewire::node::version)
+                           .get();
 
     //? The Ports are available shortly after the virtual microphone has been created
     while (ports.size() == old_port_size)
@@ -87,7 +88,7 @@ int main()
         auto info = port.info();
         auto node_id = std::stoll(info.props["node.id"]);
 
-        if (node_id == virtual_mic.id() && info.direction == pipewire::port_direction::input)
+        if (node_id == virtual_mic->id() && info.direction == pipewire::port_direction::input)
         {
             auto audio_channel = info.props["audio.channel"];
             if (audio_channel == "FL")
@@ -107,7 +108,7 @@ int main()
         return 1;
     }
 
-    std::vector<pipewire::proxy> links;
+    std::vector<pipewire::link> links;
     for (const auto &port : ports)
     {
         auto info = port.info();
@@ -121,11 +122,11 @@ int main()
             {
                 if (info.props["audio.channel"] == "FL")
                 {
-                    links.emplace_back(core.create_simple<pipewire::link_factory>(virt_in_fl->info().id, info.id));
+                    links.emplace_back(*core.create_simple<pipewire::link>(virt_in_fl->info().id, info.id).get());
                 }
                 else if (info.props["audio.channel"] == "FR")
                 {
-                    links.emplace_back(core.create_simple<pipewire::link_factory>(virt_in_fr->info().id, info.id));
+                    links.emplace_back(*core.create_simple<pipewire::link>(virt_in_fr->info().id, info.id).get());
                 }
             }
         }

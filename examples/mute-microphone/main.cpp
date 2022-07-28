@@ -20,12 +20,12 @@ int main()
     reg_listener.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
         if (global.type == pipewire::device::type)
         {
-            auto device = reg.bind<pipewire::device>(global.id);
-            auto info = device.info();
+            auto device = reg.bind<pipewire::device>(global.id).get();
+            auto info = device->info();
 
             if (info.props.count("alsa.card_name"))
             {
-                devices.emplace_back(std::move(device));
+                devices.emplace_back(std::move(*device));
             }
         }
     });
