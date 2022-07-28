@@ -1,8 +1,6 @@
 #include "core/core.hpp"
 #include "loop/main.hpp"
-#include "loop/thread.hpp"
 
-#include <future>
 #include <cassert>
 #include <pipewire/pipewire.h>
 
@@ -12,41 +10,6 @@ namespace pipewire
     {
         pw_core *core;
     };
-
-    template <> void core::update<update_strategy::wait_lock>()
-    {
-        std::promise<void> done;
-        std::shared_ptr<core_listener> listener;
-
-        auto &loop = dynamic_cast<thread_loop &>(m_context.get_loop());
-        {
-            std::lock_guard guard(loop);
-
-            int pending = sync(0);
-            listener = std::make_shared<core_listener>(listen<core_listener>());
-
-            listener->on<core_event::done>([pending, &done](std::uint32_t id, int seq) {
-                if (id == PW_ID_CORE && seq == pending)
-                {
-                    done.set_value();
-                }
-            });
-        }
-
-        return done.get_future().get();
-    }
-
-    template <> void core::update<update_strategy::internal>()
-    {
-        if (auto *loop = dynamic_cast<main_loop *>(&m_context.get_loop()); loop)
-        {
-            update<update_strategy::sync>();
-        }
-        else
-        {
-            update<update_strategy::none>();
-        }
-    }
 
     template <> void core::update<update_strategy::sync>()
     {
@@ -65,18 +28,6 @@ namespace pipewire
         while (!done)
         {
             m_context.get_loop().run();
-        }
-    }
-
-    template <> void core::update<update_strategy::best>()
-    {
-        if (auto *loop = dynamic_cast<main_loop *>(&m_context.get_loop()); loop)
-        {
-            update<update_strategy::sync>();
-        }
-        else
-        {
-            update<update_strategy::wait_lock>();
         }
     }
 
@@ -100,17 +51,8 @@ namespace pipewire
         case update_strategy::none:
             update<update_strategy::none>();
             break;
-        case update_strategy::best:
-            update<update_strategy::best>();
-            break;
         case update_strategy::sync:
             update<update_strategy::sync>();
-            break;
-        case update_strategy::internal:
-            update<update_strategy::internal>();
-            break;
-        case update_strategy::wait_lock:
-            update<update_strategy::wait_lock>();
             break;
         }
     }

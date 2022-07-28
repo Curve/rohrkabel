@@ -1,13 +1,11 @@
 #pragma once
-#include "loop.hpp"
-
 #include <memory>
 
 struct pw_loop;
 struct pw_main_loop;
 namespace pipewire
 {
-    class main_loop final : public loop
+    class main_loop
     {
         struct impl;
 
@@ -16,14 +14,14 @@ namespace pipewire
 
       public:
         main_loop();
-        ~main_loop() final;
+        ~main_loop();
 
       public:
-        void run() const final;
-        void quit() const final;
+        void run() const;
+        void quit() const;
 
       public:
-        [[nodiscard]] pw_loop *get() const final;
+        [[nodiscard]] pw_loop *get() const;
         [[nodiscard]] pw_main_loop *get_main_loop() const;
     };
 } // namespace pipewire

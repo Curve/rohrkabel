@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "loop/loop.hpp"
+#include "loop/main.hpp"
 
 struct pw_context;
 namespace pipewire
@@ -10,15 +10,15 @@ namespace pipewire
         struct impl;
 
       private:
-        loop &m_loop;
+        main_loop &m_loop;
         std::unique_ptr<impl> m_impl;
 
       public:
         ~context();
-        context(loop &);
+        context(main_loop &);
 
       public:
-        [[nodiscard]] loop &get_loop();
+        [[nodiscard]] main_loop &get_loop();
         [[nodiscard]] pw_context *get() const;
     };
 } // namespace pipewire

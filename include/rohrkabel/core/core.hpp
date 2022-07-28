@@ -14,10 +14,7 @@ namespace pipewire
 {
     enum class update_strategy
     {
-        wait_lock,
-        internal,
         sync,
-        best,
         none,
     };
 
@@ -38,7 +35,7 @@ namespace pipewire
         core(context &);
 
       public:
-        void update(update_strategy strategy = update_strategy::best);
+        void update(update_strategy strategy = update_strategy::sync);
 
       public:
         [[nodiscard]] int sync(int seq);
@@ -48,12 +45,12 @@ namespace pipewire
 
         template <typename T = proxy>
         [[nodiscard]] [[needs_update]] T create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version,
-                                                update_strategy strategy = update_strategy::internal) = delete;
+                                                update_strategy strategy = update_strategy::sync) = delete;
 
       public:
         template <typename Type>
         [[nodiscard]] [[needs_update]] tie_to_t<Type, link_factory> create_simple(std::uint32_t input, std::uint32_t output,
-                                                                                  update_strategy strategy = update_strategy::internal) = delete;
+                                                                                  update_strategy strategy = update_strategy::sync) = delete;
 
       public:
         [[nodiscard]] pw_core *get() const;
@@ -61,10 +58,7 @@ namespace pipewire
     };
 
     template <> void core::update<update_strategy::none>();
-    template <> void core::update<update_strategy::best>();
     template <> void core::update<update_strategy::sync>();
-    template <> void core::update<update_strategy::internal>();
-    template <> [[thread_safe]] void core::update<update_strategy::wait_lock>();
 
     template <> core_listener core::listen();
 
