@@ -7,49 +7,9 @@
 #include <condition_variable>
 
 #include "../utils/annotations.hpp"
-namespace cr
-{
-    template <typename... Messages> class sender
-    {
-        using variant_t = std::variant<Messages...>;
-
-      private:
-        std::shared_ptr<std::mutex> m_mutex;
-        std::shared_ptr<std::queue<variant_t>> m_queue;
-        std::shared_ptr<std::condition_variable> m_cond;
-
-      public:
-        sender(sender &&) noexcept;
-        sender(decltype(m_mutex), decltype(m_queue), decltype(m_cond));
-
-      public:
-        template <typename T> //
-        [[thread_safe]] void send(T && = {});
-    };
-
-    template <typename... Messages> class receiver
-    {
-        using variant_t = std::variant<Messages...>;
-
-      private:
-        std::shared_ptr<std::mutex> m_mutex;
-        std::shared_ptr<std::queue<variant_t>> m_queue;
-        std::shared_ptr<std::condition_variable> m_cond;
-
-      public:
-        receiver(receiver &&) noexcept;
-        receiver(decltype(m_mutex), decltype(m_queue), decltype(m_cond));
-
-      public:
-        template <typename Callback> //
-        [[blocking]] [[thread_safe]] void receive(Callback &&);
-    };
-
-    template <typename... Messages> std::pair<sender<Messages...>, receiver<Messages...>> channel();
-} // namespace cr
-
 namespace pipewire
 {
+    class proxy;
     class main_loop;
     struct channel_state;
 
@@ -99,6 +59,7 @@ namespace pipewire
     template <typename... Messages> class sender : public sender_impl
     {
         using variant_t = std::variant<Messages...>;
+        static_assert((!std::is_base_of_v<proxy, std::remove_pointer_t<std::remove_cv_t<std::decay_t<Messages>>>> && ...), "pipewire objects may not be exchanged");
 
       private:
         std::shared_ptr<std::mutex> m_mutex;
@@ -116,6 +77,7 @@ namespace pipewire
     template <typename... Messages> class receiver : public receiver_impl
     {
         using variant_t = std::variant<Messages...>;
+        static_assert((!std::is_base_of_v<proxy, std::remove_pointer_t<std::remove_cv_t<std::decay_t<Messages>>>> && ...), "pipewire objects may not be exchanged");
 
       private:
         std::shared_ptr<std::mutex> m_mutex;
@@ -133,6 +95,49 @@ namespace pipewire
     std::shared_ptr<channel_state> make_state();
     template <typename... Messages> std::pair<sender<Messages...>, receiver<Messages...>> channel();
 } // namespace pipewire
+
+namespace cr
+{
+    template <typename... Messages> class sender
+    {
+        using variant_t = std::variant<Messages...>;
+        static_assert((!std::is_base_of_v<pipewire::proxy, std::remove_pointer_t<std::remove_cv_t<std::decay_t<Messages>>>> && ...), "pipewire objects may not be exchanged");
+
+      private:
+        std::shared_ptr<std::mutex> m_mutex;
+        std::shared_ptr<std::queue<variant_t>> m_queue;
+        std::shared_ptr<std::condition_variable> m_cond;
+
+      public:
+        sender(sender &&) noexcept;
+        sender(decltype(m_mutex), decltype(m_queue), decltype(m_cond));
+
+      public:
+        template <typename T> //
+        [[thread_safe]] void send(T && = {});
+    };
+
+    template <typename... Messages> class receiver
+    {
+        using variant_t = std::variant<Messages...>;
+        static_assert((!std::is_base_of_v<pipewire::proxy, std::remove_pointer_t<std::remove_cv_t<std::decay_t<Messages>>>> && ...), "pipewire objects may not be exchanged");
+
+      private:
+        std::shared_ptr<std::mutex> m_mutex;
+        std::shared_ptr<std::queue<variant_t>> m_queue;
+        std::shared_ptr<std::condition_variable> m_cond;
+
+      public:
+        receiver(receiver &&) noexcept;
+        receiver(decltype(m_mutex), decltype(m_queue), decltype(m_cond));
+
+      public:
+        template <typename Callback> //
+        [[blocking]] [[thread_safe]] void receive(Callback &&);
+    };
+
+    template <typename... Messages> std::pair<sender<Messages...>, receiver<Messages...>> channel();
+} // namespace cr
 #include "../utils/annotations.hpp"
 
 #include "channel.inl"
