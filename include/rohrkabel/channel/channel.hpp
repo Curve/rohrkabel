@@ -24,7 +24,7 @@ namespace pipewire
       public:
         ~sender_impl();
 
-      public:
+      protected:
         sender_impl(sender_impl &&) noexcept;
         sender_impl(std::shared_ptr<channel_state>);
 
@@ -47,7 +47,7 @@ namespace pipewire
       public:
         ~receiver_impl();
 
-      public:
+      protected:
         receiver_impl(receiver_impl &&) noexcept;
         receiver_impl(std::shared_ptr<channel_state>);
 
