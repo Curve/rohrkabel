@@ -12,7 +12,7 @@
 
 <hr/>
 
-## Description
+## 📃 Description
 
 <div align="left">
 
@@ -24,7 +24,7 @@ Depending on personal demand from Soundux or the community more portions of the 
 
 </div>
 
-## Installation
+## 📦 Installation
 
 <div align="left">
 
@@ -51,7 +51,7 @@ Depending on personal demand from Soundux or the community more portions of the 
 
 </div>
 
-## Problematic Distributions
+## ⚠️ Problematic Distributions
 
 <center>
 
@@ -68,7 +68,7 @@ Depending on personal demand from Soundux or the community more portions of the 
 
 </center>
 
-### Why `rohrkabel`?
+## ❔ Why `rohrkabel`?
 
 <div align="left">
 
@@ -77,7 +77,7 @@ I chose this name because I would occasionally rant about some things that I did
 
 </div>
 
-### Thread-Safety
+## 🧵 Thread-Safety
 
 
 <div align="left">
@@ -95,9 +95,7 @@ For more information check out the [example](examples/channels/main.cpp).
 
 </div>
 
-<hr/>
-
-## Documentation
+## 📚 Documentation
 
 Documentation can be found [here](https://curve.github.io/rohrkabel.docs/).
 
