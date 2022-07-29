@@ -25,14 +25,14 @@ namespace pipewire
         pw_main_loop_destroy(m_impl->main_loop);
     }
 
-    void main_loop::run() const
-    {
-        pw_main_loop_run(m_impl->main_loop);
-    }
-
     void main_loop::quit() const
     {
         pw_main_loop_quit(m_impl->main_loop);
+    }
+
+    void main_loop::run() const
+    {
+        pw_main_loop_run(m_impl->main_loop);
     }
 
     pw_loop *main_loop::get() const
