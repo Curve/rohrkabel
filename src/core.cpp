@@ -1,5 +1,5 @@
 #include "core/core.hpp"
-#include "loop/main.hpp"
+#include "main_loop.hpp"
 
 #include <cassert>
 #include <pipewire/pipewire.h>

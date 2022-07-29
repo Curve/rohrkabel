@@ -1,7 +1,7 @@
 #include <memory>
 #include <iostream>
 #include <optional>
-#include <rohrkabel/loop/main.hpp>
+#include <rohrkabel/main_loop.hpp>
 #include <rohrkabel/registry/registry.hpp>
 #include <rohrkabel/spa/pod/object/body.hpp>
 

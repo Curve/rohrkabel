@@ -1,5 +1,5 @@
 #include <iostream>
-#include <rohrkabel/loop/main.hpp>
+#include <rohrkabel/main_loop.hpp>
 #include <rohrkabel/registry/registry.hpp>
 
 int main()

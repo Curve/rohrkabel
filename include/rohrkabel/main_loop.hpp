@@ -7,10 +7,16 @@ namespace pipewire
 {
     class main_loop
     {
+        friend class registry;
+        friend class context;
+        friend class core;
         struct impl;
 
       private:
         std::unique_ptr<impl> m_impl;
+
+      private:
+        bool is_safe() const;
 
       public:
         main_loop();

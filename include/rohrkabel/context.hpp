@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "loop/main.hpp"
+#include "main_loop.hpp"
 
 struct pw_context;
 namespace pipewire
