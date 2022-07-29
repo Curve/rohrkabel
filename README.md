@@ -12,13 +12,11 @@
 
 <hr/>
 
-<div align="center">
-
-### Description
+## Description
 
 <div align="left">
 
-_Rohrkabel_ is a RAII wrapper around the pipewire-api that aims to simplify work with it, at the moment _Rohrkabel_ is only used by Soundux to reduce LOC and simplify the work with pipewire.  
+_Rohrkabel_ is a RAII wrapper around the pipewire-api that aims to simplify work with it.
 
 **Currently only a portion of the pipewire-api is supported.**  
 
@@ -26,7 +24,7 @@ Depending on personal demand from Soundux or the community more portions of the 
 
 </div>
 
-### Installation
+## Installation
 
 <div align="left">
 
@@ -34,14 +32,16 @@ Depending on personal demand from Soundux or the community more portions of the 
   ```cmake
   include(FetchContent)
 
-  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Soundux/rohrkabel" GIT_TAG v1.2)
+  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Soundux/rohrkabel" GIT_TAG v1.3)
   FetchContent_MakeAvailable(rohrkabel)
 
   target_link_libraries(<target> rohrkabel)
   ```
 - As Git-Submodule
   ```bash
-  $ git clone https://github.com/Soundux/rohrkabel
+  $ git submodule add https://github.com/Soundux/rohrkabel
+  $ cd rohrkabel
+  $ git checkout v1.3
   ```
   ```cmake
   add_subdirectory(rohrkabel)
