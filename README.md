@@ -101,7 +101,15 @@ For more information check out the [example](examples/channels/main.cpp).
 
 Documentation can be found [here](https://curve.github.io/rohrkabel.docs/).
 
+---
+
+<div align="center">
+
 ### Projects using _Rohrkabel_
 <img src="https://avatars.githubusercontent.com/u/74979035?s=200&v=4" width=15/> <b>[Soundux](https://github.com/Soundux)</b>
 
+<img src="https://raw.githubusercontent.com/maltejur/discord-screenaudio/master/assets/de.shorsh.discord-screenaudio.png" width=15/> <b>[discord-screenaudio](https://github.com/maltejur/discord-screenaudio)</b>
+
 </div>
+
+---
