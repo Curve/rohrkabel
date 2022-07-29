@@ -55,7 +55,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE "include/rohrkabel")
 
 include(FetchContent)
 
-if (NOT rohrkabel_prefer_remote)
+if (NOT rohrkabel_prefer_remote AND NOT TARGET tl::expected)
     find_package(tl-expected CONFIG REQUIRED)
 else()    
     set(EXPECTED_BUILD_TESTS OFF)
