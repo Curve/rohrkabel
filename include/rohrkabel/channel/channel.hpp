@@ -132,6 +132,9 @@ namespace cr
         receiver(decltype(m_mutex), decltype(m_queue), decltype(m_cond));
 
       public:
+        template <typename T> //
+        [[blocking]] [[thread_safe]] T receive_as();
+
         template <typename Callback> //
         [[blocking]] [[thread_safe]] void receive(Callback &&);
     };

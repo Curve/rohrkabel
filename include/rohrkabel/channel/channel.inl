@@ -91,6 +91,19 @@ namespace cr
     }
 
     template <typename... Messages> //
+    template <typename T>
+    T receiver<Messages...>::receive_as()
+    {
+        std::unique_lock lock(*m_mutex);
+        m_cond->wait(lock, [this] { return !m_queue->empty(); });
+
+        auto entry = std::move(m_queue->front());
+        m_queue->pop();
+
+        return std::get<T>(entry);
+    }
+
+    template <typename... Messages> //
     template <typename Callback>
     void receiver<Messages...>::receive(Callback &&callback)
     {
