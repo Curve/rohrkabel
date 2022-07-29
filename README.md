@@ -51,7 +51,7 @@ Depending on personal demand from Soundux or the community more portions of the 
 
 </div>
 
-### Problematic Distributions
+## Problematic Distributions
 
 <center>
 
@@ -84,18 +84,20 @@ I chose this name because I would occasionally rant about some things that I did
 
 Since the pipewire-api is not thread-safe by default² , special mechanisms have to be used to ensure thread-safety.  
 
-*Rohrkabel* supports *pipewire*s `pw_thread_loop`.  
-All operations that can be traced back to a `context` created from the `thread_loop` should `lock()` and `unlock()` the `thread_loop`.  
-`std::lock_guard` can be used to automate the locking and unlocking.  
-For an example on how to use the `thread_loop` see [this example](examples/thread-loop/main.cpp).
+*Rohrkabel* supports `channel`s.  
+Channels can be used for inter-thread communication and should be used if you want to communicate with a thread that is executing the `main_loop`.
 
-> ² https://docs.pipewire.org/page_thread_loop.html
+For more information check out the [example](examples/channels/main.cpp).
+
+> ² https://docs.pipewire.org/page_thread_loop.html  
+
+> The idea for the `channel` mechanism was borrowed from [`pipewire-rs`](https://pipewire.pages.freedesktop.org/pipewire-rs/pipewire/channel/index.html#examples) 
 
 </div>
 
 <hr/>
 
-### Documentation
+## Documentation
 
 Documentation can be found [here](https://curve.github.io/rohrkabel.docs/).
 
