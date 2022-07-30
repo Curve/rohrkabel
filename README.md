@@ -87,7 +87,7 @@ Since the pipewire-api is not thread-safe by default² , special mechanisms have
 *Rohrkabel* supports `channel`s.  
 Channels can be used for inter-thread communication and should be used if you want to communicate with a thread that is executing the `main_loop`.
 
-For more information check out the [example](examples/channels/main.cpp).
+For more information check out the [example](examples/channels/).
 
 > ² https://docs.pipewire.org/page_thread_loop.html  
 
