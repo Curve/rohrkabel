@@ -4,6 +4,7 @@
 #include <rohrkabel/main_loop.hpp>
 #include <rohrkabel/registry/registry.hpp>
 
+#include <cr/channel.hpp>
 #include <rohrkabel/channel/channel.hpp>
 
 struct create_virtual_mic

@@ -22,9 +22,14 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Soundux/rohrkabel")
     FetchContent_MakeAvailable(rohrkabel)
 endif()
+    
+if (NOT TARGET cr::channel)
+    FetchContent_Declare(channel GIT_REPOSITORY "https://github.com/Soundux/channel")
+    FetchContent_MakeAvailable(channel)
+endif()
 
 # --------------------------------------------------------------------------------------------------------
 # Link required libraries
 # --------------------------------------------------------------------------------------------------------
 
-target_link_libraries(${PROJECT_NAME} PRIVATE rohrkabel)
+target_link_libraries(${PROJECT_NAME} PRIVATE rohrkabel cr::channel)
