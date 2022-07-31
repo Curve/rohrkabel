@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(rohrkabel LANGUAGES CXX VERSION 1.3)
+project(rohrkabel LANGUAGES CXX VERSION 1.4)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -21,7 +21,7 @@ endif()
 # --------------------------------------------------------------------------------------------------------
 
 add_library(${PROJECT_NAME})
-add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(soundux::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror -Wextra -pedantic -fno-strict-aliasing)
