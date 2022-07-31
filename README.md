@@ -32,7 +32,7 @@ Depending on personal demand from Soundux or the community more portions of the 
   ```cmake
   include(FetchContent)
 
-  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Soundux/rohrkabel" GIT_TAG v1.3)
+  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Soundux/rohrkabel" GIT_TAG v1.4)
   FetchContent_MakeAvailable(rohrkabel)
 
   target_link_libraries(<target> rohrkabel)
@@ -41,7 +41,7 @@ Depending on personal demand from Soundux or the community more portions of the 
   ```bash
   $ git submodule add https://github.com/Soundux/rohrkabel
   $ cd rohrkabel
-  $ git checkout v1.3
+  $ git checkout v1.4
   ```
   ```cmake
   add_subdirectory(rohrkabel)
