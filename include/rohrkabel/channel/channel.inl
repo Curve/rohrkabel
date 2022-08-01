@@ -57,4 +57,6 @@ namespace pipewire
 
         return {sender<Messages...>{state, mutex, queue}, receiver<Messages...>{state, mutex, queue}};
     }
+
+    template <typename... Messages> channel_from<channel_t<Messages...>>::channel_from() : std::pair<sender<Messages...>, receiver<Messages...>>(channel<Messages...>()) {}
 } // namespace pipewire
