@@ -61,6 +61,7 @@ namespace pipewire
 
     client &client::operator=(client &&client) noexcept
     {
+        proxy::operator=(std::move(client));
         m_impl = std::move(client.m_impl);
         return *this;
     }

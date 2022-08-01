@@ -14,12 +14,17 @@ namespace pipewire::spa
         const spa_type_info *type;
     };
 
-    pod::~pod()
+    void pod::destroy()
     {
         if (m_impl && m_impl->is_copy)
         {
             free(m_impl->pod);
         }
+    }
+
+    pod::~pod()
+    {
+        destroy();
     }
 
     pod::pod(spa_pod *pod) : m_impl(std::make_unique<impl>())
@@ -37,7 +42,9 @@ namespace pipewire::spa
 
     pod &pod::operator=(pod &&pod) noexcept
     {
+        destroy();
         m_impl = std::move(pod.m_impl);
+
         return *this;
     }
 

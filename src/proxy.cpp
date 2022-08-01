@@ -11,12 +11,17 @@ namespace pipewire
         pw_proxy *proxy;
     };
 
-    proxy::~proxy()
+    void proxy::destroy()
     {
         if (m_impl)
         {
             pw_proxy_destroy(m_impl->proxy);
         }
+    }
+
+    proxy::~proxy()
+    {
+        destroy();
     }
 
     proxy::proxy(proxy &&proxy) noexcept : m_impl(std::move(proxy.m_impl)) {}
@@ -28,7 +33,9 @@ namespace pipewire
 
     proxy &proxy::operator=(proxy &&proxy) noexcept
     {
+        destroy();
         m_impl = std::move(proxy.m_impl);
+
         return *this;
     }
 

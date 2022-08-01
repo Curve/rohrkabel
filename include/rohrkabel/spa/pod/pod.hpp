@@ -23,6 +23,9 @@ namespace pipewire::spa
       private:
         std::unique_ptr<impl> m_impl;
 
+      private:
+        void destroy();
+
       public:
         ~pod();
 

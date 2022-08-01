@@ -22,10 +22,10 @@ namespace pipewire
         m_impl->device = reinterpret_cast<pw_device *>(proxy::get());
     }
 
-    device &device::operator=(device &&node) noexcept
+    device &device::operator=(device &&device) noexcept
     {
-        proxy::operator=(std::move(node));
-        m_impl = std::move(node.m_impl);
+        proxy::operator=(std::move(device));
+        m_impl = std::move(device.m_impl);
         return *this;
     }
 

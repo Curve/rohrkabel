@@ -9,12 +9,17 @@ namespace pipewire
         spa_hook hook;
     };
 
-    listener::~listener()
+    void listener::destroy()
     {
         if (m_impl)
         {
             spa_hook_remove(&m_impl->hook);
         }
+    }
+
+    listener::~listener()
+    {
+        destroy();
     }
 
     listener::listener() : m_impl(std::make_unique<impl>())
@@ -26,7 +31,9 @@ namespace pipewire
 
     listener &listener::operator=(listener &&listener) noexcept
     {
+        destroy();
         m_impl = std::move(listener.m_impl);
+
         return *this;
     }
 
