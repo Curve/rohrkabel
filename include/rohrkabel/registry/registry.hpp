@@ -4,6 +4,7 @@
 
 #include "../node/node.hpp"
 #include "../port/port.hpp"
+#include "../link/link.hpp"
 #include "../client/client.hpp"
 #include "../device/device.hpp"
 #include "../metadata/metadata.hpp"
@@ -39,6 +40,7 @@ namespace pipewire
 
     template <> lazy_expected<node> registry::bind(std::uint32_t, update_strategy);
     template <> lazy_expected<port> registry::bind(std::uint32_t, update_strategy);
+    template <> lazy_expected<link> registry::bind(std::uint32_t, update_strategy);
     template <> lazy_expected<client> registry::bind(std::uint32_t, update_strategy);
     template <> lazy_expected<device> registry::bind(std::uint32_t, update_strategy);
     template <> lazy_expected<metadata> registry::bind(std::uint32_t, update_strategy);

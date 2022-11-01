@@ -40,6 +40,13 @@ namespace pipewire
         return rtn;
     }
 
+    template <> lazy_expected<link> registry::bind(std::uint32_t id, update_strategy strategy)
+    {
+        auto rtn = link::bind(reinterpret_cast<pw_link *>(pw_registry_bind(get(), id, link::type.c_str(), link::version, sizeof(void *))));
+        m_core.update(strategy);
+        return rtn;
+    }
+
     template <> lazy_expected<client> registry::bind(std::uint32_t id, update_strategy strategy)
     {
         auto rtn = client::bind(reinterpret_cast<pw_client *>(pw_registry_bind(get(), id, client::type.c_str(), client::version, sizeof(void *))));
