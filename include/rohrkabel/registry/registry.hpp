@@ -1,48 +1,54 @@
 #pragma once
 #include "events.hpp"
 #include "../core/core.hpp"
-
-#include "../node/node.hpp"
-#include "../port/port.hpp"
-#include "../link/link.hpp"
-#include "../client/client.hpp"
-#include "../device/device.hpp"
-#include "../metadata/metadata.hpp"
+#include "../utils/lazy.hpp"
 
 #include <memory>
+#include <cstdint>
 
-#include "../utils/annotations.hpp"
 struct pw_registry;
+
 namespace pipewire
 {
     class registry
     {
+        friend class core;
+
+      private:
         struct impl;
 
       private:
-        core &m_core;
         std::unique_ptr<impl> m_impl;
+
+      private:
+        void *bind(std::uint32_t, const char *, std::uint32_t) const;
 
       public:
         ~registry();
-        registry(core &);
+
+      protected:
+        registry(std::shared_ptr<core>);
 
       public:
-        template <class EventListener> [[needs_update]] [[nodiscard]] EventListener listen() = delete;
-        template <class T> [[needs_update]] [[nodiscard]] lazy_expected<T> bind(std::uint32_t id, update_strategy strategy = update_strategy::sync) = delete;
+        template <class Listener = registry_listener>
+        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
 
       public:
-        [[nodiscard]] core &get_core();
+        template <class T>
+            requires valid_proxy<T>
+        [[nodiscard]] lazy<expected<T>> bind(std::uint32_t id, update_strategy strategy = update_strategy::sync);
+
+      public:
         [[nodiscard]] pw_registry *get() const;
+        [[nodiscard]] std::shared_ptr<core> core() const;
+
+      public:
+        [[nodiscard]] operator pw_registry *() const &;
+        [[nodiscard]] operator pw_registry *() const && = delete;
     };
 
-    template <> registry_listener registry::listen();
-
-    template <> lazy_expected<node> registry::bind(std::uint32_t, update_strategy);
-    template <> lazy_expected<port> registry::bind(std::uint32_t, update_strategy);
-    template <> lazy_expected<link> registry::bind(std::uint32_t, update_strategy);
-    template <> lazy_expected<client> registry::bind(std::uint32_t, update_strategy);
-    template <> lazy_expected<device> registry::bind(std::uint32_t, update_strategy);
-    template <> lazy_expected<metadata> registry::bind(std::uint32_t, update_strategy);
+    template <>
+    registry_listener registry::listen();
 } // namespace pipewire
-#include "../utils/annotations.hpp"
+
+#include "registry.inl"
