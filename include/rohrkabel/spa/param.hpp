@@ -3,16 +3,16 @@
 
 namespace pipewire
 {
-    enum class param_info_flags
+    enum class param_flags : std::uint8_t
     {
-        read = 2,
-        write = 4,
+        read       = 2,
+        write      = 4,
         read_write = read | write,
     };
 
     struct param_info
     {
         std::uint32_t id;
-        param_info_flags flags;
+        param_flags flags;
     };
 } // namespace pipewire
