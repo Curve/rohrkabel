@@ -8,7 +8,7 @@
 
 namespace pipewire
 {
-    enum class node_state
+    enum class node_state : std::int8_t
     {
         error = -1,
         suspended,
@@ -20,11 +20,17 @@ namespace pipewire
     {
         std::uint32_t id;
 
-        std::uint32_t max_input_ports;
-        std::uint32_t max_output_ports;
+        struct
+        {
+            std::uint32_t max;
+            std::uint32_t current;
+        } input;
 
-        std::uint32_t n_input_ports;
-        std::uint32_t n_output_ports;
+        struct
+        {
+            std::uint32_t max;
+            std::uint32_t current;
+        } output;
 
         spa::dict props;
         node_state state;

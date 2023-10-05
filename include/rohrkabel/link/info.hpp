@@ -1,12 +1,11 @@
 #pragma once
 #include "../spa/dict.hpp"
 
-#include <string>
 #include <cstdint>
 
 namespace pipewire
 {
-    enum class link_state
+    enum class link_state : std::int8_t
     {
         error = -2,
         unlinked,
@@ -19,16 +18,22 @@ namespace pipewire
 
     struct link_info
     {
-        std::uint32_t id;
-
-        std::uint32_t input_port_id;
-        std::uint32_t input_node_id;
-        std::uint32_t output_port_id;
-        std::uint32_t output_node_id;
-
-        std::uint64_t change_mask;
-
         spa::dict props;
         link_state state;
+
+        std::uint32_t id;
+        std::uint64_t change_mask;
+
+        struct
+        {
+            std::uint32_t port;
+            std::uint32_t node;
+        } input;
+
+        struct
+        {
+            std::uint32_t port;
+            std::uint32_t node;
+        } output;
     };
 } // namespace pipewire

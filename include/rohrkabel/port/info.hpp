@@ -7,7 +7,7 @@
 
 namespace pipewire
 {
-    enum class port_direction
+    enum class port_direction : std::uint8_t
     {
         input,
         output
