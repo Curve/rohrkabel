@@ -1,6 +1,5 @@
 #pragma once
-#include "../pod.hpp"
-#include "iterator.hpp"
+#include "../prop.hpp"
 
 #include <memory>
 #include <cstdint>
@@ -14,33 +13,49 @@ namespace pipewire::spa
     {
         struct impl;
 
+      public:
+        class iterator;
+        class sentinel;
+
       private:
         std::unique_ptr<impl> m_impl;
 
       public:
         ~pod_object_body();
 
+      private:
+        pod_object_body();
+
       public:
-        pod_object_body(const pod &);
         pod_object_body(pod_object_body &&) noexcept;
+        pod_object_body(const pod_object_body &) noexcept;
 
       public:
         pod_object_body &operator=(pod_object_body &&) noexcept;
+        pod_object_body &operator=(const pod_object_body &) noexcept;
 
       public:
-        bool has(std::uint32_t key) const;
-        pod_prop at(std::uint32_t key) const;
+        [[nodiscard]] bool has(std::uint32_t key) const;
+        [[nodiscard]] pod_prop at(std::uint32_t key) const;
 
       public:
-        pod_object_body_iterator end() const;
-        pod_object_body_iterator begin() const;
+        [[nodiscard]] std::size_t size() const;
 
       public:
-        pod_type type() const;
-        std::uint32_t id() const;
+        [[nodiscard]] sentinel end() const;
+        [[nodiscard]] iterator begin() const;
 
       public:
-        spa_pod_object_body *get() const;
-        const spa_type_info *get_type() const;
+        [[nodiscard]] pod_type type() const;
+        [[nodiscard]] std::uint32_t id() const;
+
+      public:
+        [[nodiscard]] spa_pod_object_body *get() const;
+        [[nodiscard]] const spa_type_info *type_info() const;
+
+      public:
+        [[nodiscard]] static pod_object_body view(spa_pod_object_body *body, std::size_t size);
     };
 } // namespace pipewire::spa
+
+#include "iterator.hpp"

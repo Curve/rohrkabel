@@ -1,43 +1,47 @@
-#include "spa/pod/object/body.hpp"
 #include "spa/pod/object/iterator.hpp"
 
 #include <spa/pod/iter.h>
 
 namespace pipewire::spa
 {
-    struct pod_object_body_iterator::impl
-    {
-        std::size_t size;
-        spa_pod_prop *iter;
+    using iterator = pod_object_body::iterator;
 
-        spa_pod_object_body *body;
-        const spa_type_info *type;
+    struct iterator::impl
+    {
+        spa_pod_prop *iter;
+        const pod_object_body *body;
     };
 
-    pod_object_body_iterator::~pod_object_body_iterator() = default;
+    iterator::~iterator() = default;
 
-    pod_object_body_iterator::pod_object_body_iterator(std::size_t size, spa_pod_prop *iter, const pod_object_body &body) : m_impl(std::make_unique<impl>())
+    iterator::iterator() : m_impl(std::make_unique<impl>()) {}
+
+    iterator::iterator(const iterator &other) : iterator()
     {
-        m_impl->size = size;
-        m_impl->iter = iter;
-
-        m_impl->body = body.get();
-        m_impl->type = body.get_type();
+        *m_impl = *other.m_impl;
     }
 
-    pod_prop pod_object_body_iterator::operator*()
+    iterator::iterator(const pod_object_body *body) : iterator()
     {
-        return {m_impl->iter, m_impl->type};
+        m_impl->iter = spa_pod_prop_first(body->get());
+        m_impl->body = body;
     }
 
-    std::unique_ptr<pod_prop> pod_object_body_iterator::operator->()
+    iterator &iterator::operator=(const iterator &other)
     {
-        return std::make_unique<pod_prop>(m_impl->iter, m_impl->type);
+        if (&other != this)
+        {
+            *m_impl = *other.m_impl;
+        }
+
+        return *this;
     }
 
-    pod_object_body_iterator &pod_object_body_iterator::operator++()
+    iterator &iterator::operator++()
     {
-        if (spa_pod_prop_is_inside(m_impl->body, m_impl->size, m_impl->iter))
+        static constexpr auto end = sentinel{};
+
+        if (*this != end)
         {
             m_impl->iter = spa_pod_prop_next(m_impl->iter);
         }
@@ -45,8 +49,26 @@ namespace pipewire::spa
         return *this;
     }
 
-    bool pod_object_body_iterator::operator!=(const pod_object_body_iterator &other)
+    iterator iterator::operator++(int) const &
     {
-        return m_impl->iter != other.m_impl->iter;
+        iterator copy{*this};
+        ++copy;
+
+        return copy;
+    }
+
+    pod_prop iterator::operator*() const
+    {
+        return pod_prop::view(m_impl->iter, m_impl->body->type_info());
+    }
+
+    bool iterator::operator==(const iterator &other) const
+    {
+        return m_impl->iter == other.m_impl->iter && m_impl->body == other.m_impl->body;
+    }
+
+    bool iterator::operator==(const sentinel &) const
+    {
+        return !spa_pod_prop_is_inside(m_impl->body->get(), m_impl->body->size(), m_impl->iter);
     }
 } // namespace pipewire::spa

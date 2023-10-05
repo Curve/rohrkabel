@@ -1,29 +1,49 @@
 #pragma once
-#include "../prop.hpp"
+#include "body.hpp"
 
 #include <memory>
+#include <cstddef>
+#include <iterator>
 
 struct spa_pod_prop;
+
 namespace pipewire::spa
 {
-    class pod_object_body;
-    class pod_object_body_iterator
+    class pod_object_body::sentinel
+    {
+    };
+
+    class pod_object_body::iterator : public std::forward_iterator_tag
     {
         struct impl;
+
+      public:
+        using value_type      = pod_prop;
+        using difference_type = std::ptrdiff_t;
 
       private:
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~pod_object_body_iterator();
+        ~iterator();
 
       public:
-        pod_object_body_iterator(std::size_t, spa_pod_prop *, const pod_object_body &);
+        iterator();
+        iterator(const iterator &);
+        iterator(const pod_object_body *);
 
       public:
-        pod_prop operator*();
-        std::unique_ptr<pod_prop> operator->();
-        pod_object_body_iterator &operator++();
-        bool operator!=(const pod_object_body_iterator &);
+        iterator &operator=(const iterator &);
+
+      public:
+        iterator &operator++();
+        iterator operator++(int) const &;
+
+      public:
+        pod_prop operator*() const;
+
+      public:
+        bool operator==(const iterator &) const;
+        bool operator==(const sentinel &) const;
     };
 } // namespace pipewire::spa

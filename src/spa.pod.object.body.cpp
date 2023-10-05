@@ -1,6 +1,10 @@
 #include "spa/pod/object/body.hpp"
+#include "spa/pod/object/iterator.hpp"
 
+#include <format>
 #include <stdexcept>
+#include <algorithm>
+
 #include <spa/pod/pod.h>
 #include <spa/pod/iter.h>
 #include <spa/debug/pod.h>
@@ -11,65 +15,69 @@ namespace pipewire::spa
     {
         std::size_t size;
         spa_pod_object_body *body;
-        const spa_type_info *type;
     };
 
     pod_object_body::~pod_object_body() = default;
 
-    pod_object_body::pod_object_body(const pod &pod) : m_impl(std::make_unique<impl>())
+    pod_object_body::pod_object_body() : m_impl(std::make_unique<impl>()) {}
+
+    pod_object_body::pod_object_body(pod_object_body &&other) noexcept : m_impl(std::move(other.m_impl)) {}
+
+    pod_object_body::pod_object_body(const pod_object_body &other) noexcept : pod_object_body()
     {
-        m_impl->size = pod.size();
-        m_impl->body = reinterpret_cast<spa_pod_object_body *>(SPA_POD_BODY(pod.get())); // NOLINT
-        m_impl->type = spa_debug_type_find(nullptr, m_impl->body->type);
+        *m_impl = *other.m_impl;
     }
 
-    pod_object_body::pod_object_body(pod_object_body &&body) noexcept : m_impl(std::move(body.m_impl)) {}
-
-    pod_object_body &pod_object_body::operator=(pod_object_body &&body) noexcept
+    pod_object_body &pod_object_body::operator=(pod_object_body &&other) noexcept
     {
-        m_impl = std::move(body.m_impl);
+        m_impl = std::move(other.m_impl);
+        return *this;
+    }
+
+    pod_object_body &pod_object_body::operator=(const pod_object_body &other) noexcept
+    {
+        if (&other != this)
+        {
+            *m_impl = *other.m_impl;
+        }
+
         return *this;
     }
 
     bool pod_object_body::has(std::uint32_t key) const
     {
-        spa_pod_prop *iter{};
-        SPA_POD_OBJECT_BODY_FOREACH(m_impl->body, m_impl->size, iter)
-        {
-            if (iter->key == key)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return std::ranges::any_of(*this, [&](const auto &item) { return item.key() == key; });
     }
 
     pod_prop pod_object_body::at(std::uint32_t key) const
     {
-        spa_pod_prop *iter{};
-        SPA_POD_OBJECT_BODY_FOREACH(m_impl->body, m_impl->size, iter)
+        for (auto item : *this)
         {
-            if (iter->key == key)
+            if (item.key() != key)
             {
-                return {iter, m_impl->type};
+                continue;
             }
+
+            return item;
         }
 
-        throw std::out_of_range("object with key does not exist");
+        [[unlikely]] throw std::out_of_range(std::format("{} does not exist", key));
     }
 
-    pod_object_body_iterator pod_object_body::end() const
+    std::size_t pod_object_body::size() const
     {
-        spa_pod_prop *end{};
-        SPA_POD_OBJECT_BODY_FOREACH(m_impl->body, m_impl->size, end) {}
-
-        return {m_impl->size, end, *this};
+        return m_impl->size;
     }
 
-    pod_object_body_iterator pod_object_body::begin() const
+    // NOLINTNEXTLINE(*-static)
+    pod_object_body::sentinel pod_object_body::end() const
     {
-        return {m_impl->size, spa_pod_prop_first(m_impl->body), *this};
+        return {};
+    }
+
+    pod_object_body::iterator pod_object_body::begin() const
+    {
+        return {this};
     }
 
     pod_type pod_object_body::type() const
@@ -87,8 +95,18 @@ namespace pipewire::spa
         return m_impl->body;
     }
 
-    const spa_type_info *pod_object_body::get_type() const
+    const spa_type_info *pod_object_body::type_info() const
     {
-        return m_impl->type;
+        return spa_debug_type_find(nullptr, m_impl->body->type);
+    }
+
+    pod_object_body pod_object_body::view(spa_pod_object_body *body, std::size_t size)
+    {
+        pod_object_body rtn;
+
+        rtn.m_impl->size = size;
+        rtn.m_impl->body = body;
+
+        return rtn;
     }
 } // namespace pipewire::spa
