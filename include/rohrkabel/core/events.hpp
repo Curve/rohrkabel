@@ -1,13 +1,14 @@
 #pragma once
 #include "info.hpp"
+#include "../error.hpp"
 #include "../listener.hpp"
-#include "../utils/events/events.hpp"
 
 #include <memory>
+#include <ereignis/manager.hpp>
 
 namespace pipewire
 {
-    enum class core_event
+    enum class core_event : std::uint8_t
     {
         info,
         done,
@@ -15,16 +16,20 @@ namespace pipewire
     };
 
     class core;
+
     class core_listener : listener
     {
         struct impl;
 
-        using events_t = event_handler<event<core_event::info, void(const core_info &)>,                            //
-                                       event<core_event::done, void(std::uint32_t, int)>,                           //
-                                       event<core_event::error, void(std::uint32_t, int, int, const std::string &)> //
-                                       >;
+      private:
+        using events = ereignis::manager<                                          //
+            ereignis::event<core_event::info, void(const core_info &)>,            //
+            ereignis::event<core_event::done, void(std::uint32_t, int)>,           //
+            ereignis::event<core_event::error, void(std::uint32_t, const error &)> //
+            >;
 
       private:
+        events m_events;
         std::unique_ptr<impl> m_impl;
 
       public:
@@ -35,10 +40,18 @@ namespace pipewire
         core_listener(core_listener &&) noexcept;
 
       public:
-        template <core_event Event> void on(events_t::get_t<Event> &&) = delete;
+        void clear(core_event event);
+        void remove(core_event event, std::uint64_t id);
+
+      public:
+        template <core_event Event>
+        std::uint64_t on(events::type_t<Event> &&) = delete;
     };
 
-    template <> void core_listener::on<core_event::info>(events_t::get_t<core_event::info> &&);
-    template <> void core_listener::on<core_event::done>(events_t::get_t<core_event::done> &&);
-    template <> void core_listener::on<core_event::error>(events_t::get_t<core_event::error> &&);
+    template <>
+    std::uint64_t core_listener::on<core_event::info>(events::type_t<core_event::info> &&);
+    template <>
+    std::uint64_t core_listener::on<core_event::done>(events::type_t<core_event::done> &&);
+    template <>
+    std::uint64_t core_listener::on<core_event::error>(events::type_t<core_event::error> &&);
 } // namespace pipewire
