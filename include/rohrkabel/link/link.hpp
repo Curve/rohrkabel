@@ -1,11 +1,18 @@
 #pragma once
 #include "info.hpp"
 #include "../proxy.hpp"
+#include "../utils/lazy.hpp"
 
-#include "../utils/annotations.hpp"
 struct pw_link;
+
 namespace pipewire
 {
+    struct link_factory
+    {
+        std::uint32_t input;
+        std::uint32_t output;
+    };
+
     class link final : public proxy
     {
         struct impl;
@@ -24,17 +31,18 @@ namespace pipewire
         link &operator=(link &&) noexcept;
 
       public:
-        static [[needs_update]] lazy_expected<link> bind(pw_link *);
-
-      public:
+        [[nodiscard]] pw_link *get() const;
         [[nodiscard]] link_info info() const;
 
       public:
-        [[nodiscard]] pw_link *get() const;
+        [[nodiscard]] operator pw_link *() const &;
+        [[nodiscard]] operator pw_link *() const && = delete;
 
       public:
-        static const std::string type;
+        [[rk::needs_update]] static lazy<expected<link>> bind(pw_link *);
+
+      public:
+        static const char *type;
         static const std::uint32_t version;
     };
 } // namespace pipewire
-#include "../utils/annotations.hpp"

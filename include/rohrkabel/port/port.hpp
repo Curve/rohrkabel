@@ -1,16 +1,23 @@
 #pragma once
 #include "info.hpp"
 #include "../proxy.hpp"
+#include "../utils/lazy.hpp"
 #include "../spa/pod/pod.hpp"
 
-#include "../utils/annotations.hpp"
+#include <map>
+#include <memory>
+#include <cstdint>
+
 struct pw_port;
+
 namespace pipewire
 {
     class port final : public proxy
     {
         struct impl;
-        using params_t = std::future<std::map<std::uint32_t, spa::pod>>;
+
+      private:
+        using params_t = std::map<std::uint32_t, spa::pod>;
 
       private:
         std::unique_ptr<impl> m_impl;
@@ -26,18 +33,21 @@ namespace pipewire
         port &operator=(port &&) noexcept;
 
       public:
-        static [[needs_update]] lazy_expected<port> bind(pw_port *);
-
-      public:
-        [[nodiscard]] port_info info() const;
-        [[nodiscard]] [[needs_update]] params_t params() const;
+        [[nodiscard]] [[rk::needs_update]] lazy<params_t> params() const;
 
       public:
         [[nodiscard]] pw_port *get() const;
+        [[nodiscard]] port_info info() const;
 
       public:
-        static const std::string type;
+        [[nodiscard]] operator pw_port *() const &;
+        [[nodiscard]] operator pw_port *() const && = delete;
+
+      public:
+        [[rk::needs_update]] static lazy<expected<port>> bind(pw_port *);
+
+      public:
+        static const char *type;
         static const std::uint32_t version;
     };
 } // namespace pipewire
-#include "../utils/annotations.hpp"

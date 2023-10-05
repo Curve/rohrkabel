@@ -1,15 +1,23 @@
 #pragma once
 #include "info.hpp"
 #include "../proxy.hpp"
+#include "../utils/lazy.hpp"
 #include "../spa/pod/pod.hpp"
 
-#include "../utils/annotations.hpp"
+#include <map>
+#include <memory>
+#include <cstdint>
+
 struct pw_device;
+
 namespace pipewire
 {
     class device final : public proxy
     {
         struct impl;
+
+      private:
+        using underlying = std::map<std::uint32_t, spa::pod>;
 
       private:
         std::unique_ptr<impl> m_impl;
@@ -25,21 +33,24 @@ namespace pipewire
         device &operator=(device &&) noexcept;
 
       public:
-        static [[needs_update]] lazy_expected<device> bind(pw_device *);
+        [[rk::needs_update]] void set_param(std::uint32_t id, std::uint32_t flags, const spa::pod &pod);
 
       public:
-        [[needs_update]] void set_param(std::uint32_t id, const spa::pod &pod);
-
-      public:
-        [[nodiscard]] device_info info() const;
-        [[nodiscard]] [[needs_update]] std::future<std::map<std::uint32_t, spa::pod>> params() const;
+        [[nodiscard]] [[rk::needs_update]] lazy<underlying> params() const;
 
       public:
         [[nodiscard]] pw_device *get() const;
+        [[nodiscard]] device_info info() const;
 
       public:
-        static const std::string type;
+        [[nodiscard]] operator pw_device *() const &;
+        [[nodiscard]] operator pw_device *() const && = delete;
+
+      public:
+        [[rk::needs_update]] static lazy<expected<device>> bind(pw_device *);
+
+      public:
+        static const char *type;
         static const std::uint32_t version;
     };
 } // namespace pipewire
-#include "../utils/annotations.hpp"

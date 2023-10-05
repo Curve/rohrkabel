@@ -1,11 +1,19 @@
 #pragma once
-#include "info.hpp"
 #include "../proxy.hpp"
+#include "../spa/dict.hpp"
+#include "../utils/lazy.hpp"
 
-#include "../utils/annotations.hpp"
 struct pw_client;
+
 namespace pipewire
 {
+    struct client_info
+    {
+        spa::dict props;
+        std::uint32_t id;
+        std::uint64_t change_mask;
+    };
+
     class client final : public proxy
     {
         struct impl;
@@ -21,20 +29,21 @@ namespace pipewire
         client(proxy &&, client_info);
 
       public:
-        static [[needs_update]] lazy_expected<client> bind(pw_client *);
-
-      public:
         client &operator=(client &&) noexcept;
 
       public:
+        [[nodiscard]] pw_client *get() const;
         [[nodiscard]] client_info info() const;
 
       public:
-        [[nodiscard]] pw_client *get() const;
+        [[nodiscard]] operator pw_client *() const &;
+        [[nodiscard]] operator pw_client *() const && = delete;
 
       public:
-        static const std::string type;
+        [[rk::needs_update]] static lazy<expected<client>> bind(pw_client *);
+
+      public:
+        static const char *type;
         static const std::uint32_t version;
     };
 } // namespace pipewire
-#include "../utils/annotations.hpp"

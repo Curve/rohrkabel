@@ -1,15 +1,23 @@
 #pragma once
 #include "info.hpp"
 #include "../proxy.hpp"
+#include "../utils/lazy.hpp"
 #include "../spa/pod/pod.hpp"
 
-#include "../utils/annotations.hpp"
+#include <map>
+#include <memory>
+#include <cstdint>
+
 struct pw_node;
+
 namespace pipewire
 {
     class node final : public proxy
     {
         struct impl;
+
+      private:
+        using params_t = std::map<std::uint32_t, spa::pod>;
 
       private:
         std::unique_ptr<impl> m_impl;
@@ -25,21 +33,24 @@ namespace pipewire
         node &operator=(node &&) noexcept;
 
       public:
-        static [[needs_update]] lazy_expected<node> bind(pw_node *);
+        [[rk::needs_update]] void set_param(std::uint32_t id, std::uint32_t flags, const spa::pod &pod);
 
       public:
-        [[needs_update]] void set_param(std::uint32_t id, const spa::pod &pod);
-
-      public:
-        [[nodiscard]] node_info info() const;
-        [[nodiscard]] [[needs_update]] std::future<std::map<std::uint32_t, spa::pod>> params();
+        [[nodiscard]] [[rk::needs_update]] lazy<params_t> params();
 
       public:
         [[nodiscard]] pw_node *get() const;
+        [[nodiscard]] node_info info() const;
 
       public:
-        static const std::string type;
+        [[nodiscard]] operator pw_node *() const &;
+        [[nodiscard]] operator pw_node *() const && = delete;
+
+      public:
+        [[rk::needs_update]] static lazy<expected<node>> bind(pw_node *);
+
+      public:
+        static const char *type;
         static const std::uint32_t version;
     };
 } // namespace pipewire
-#include "../utils/annotations.hpp"

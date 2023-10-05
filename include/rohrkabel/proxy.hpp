@@ -1,13 +1,12 @@
 #pragma once
-#include "error.hpp"
-#include "properties.hpp"
+#include "utils/lazy.hpp"
 
-#include <memory>
 #include <string>
+#include <memory>
 #include <cstdint>
 
-#include "utils/annotations.hpp"
 struct pw_proxy;
+
 namespace pipewire
 {
     class proxy
@@ -16,9 +15,6 @@ namespace pipewire
 
       private:
         std::unique_ptr<impl> m_impl;
-
-      private:
-        void destroy();
 
       public:
         virtual ~proxy();
@@ -31,15 +27,18 @@ namespace pipewire
         proxy &operator=(proxy &&) noexcept;
 
       public:
-        static [[needs_update]] lazy_expected<proxy> bind(pw_proxy *);
-
-      public:
-        [[nodiscard]] std::uint32_t id() const;
         [[nodiscard]] std::string type() const;
+        [[nodiscard]] std::uint32_t id() const;
         [[nodiscard]] std::uint32_t version() const;
 
       public:
         [[nodiscard]] pw_proxy *get() const;
+
+      public:
+        [[nodiscard]] operator pw_proxy *() const &;
+        [[nodiscard]] operator pw_proxy *() const && = delete;
+
+      public:
+        [[rk::needs_update]] static lazy<expected<proxy>> bind(pw_proxy *);
     };
 } // namespace pipewire
-#include "utils/annotations.hpp"

@@ -1,14 +1,20 @@
 #pragma once
-#include "../proxy.hpp"
 #include "property.hpp"
+#include "../proxy.hpp"
+#include "../utils/lazy.hpp"
 
-#include "../utils/annotations.hpp"
+#include <map>
+
 struct pw_metadata;
+
 namespace pipewire
 {
     class metadata final : public proxy
     {
         struct impl;
+
+      private:
+        using properties_t = std::map<std::string, metadata_property>;
 
       private:
         std::unique_ptr<impl> m_impl;
@@ -18,23 +24,24 @@ namespace pipewire
 
       public:
         metadata(metadata &&) noexcept;
-        metadata(proxy &&, std::map<const std::string, const metadata_property>);
+        metadata(proxy &&, properties_t);
 
       public:
         metadata &operator=(metadata &&) noexcept;
 
       public:
-        static [[needs_update]] lazy_expected<metadata> bind(pw_metadata *);
-
-      public:
-        [[nodiscard]] std::map<const std::string, const metadata_property> properties() const;
-
-      public:
         [[nodiscard]] pw_metadata *get() const;
+        [[nodiscard]] properties_t properties() const;
 
       public:
-        static const std::string type;
+        [[nodiscard]] operator pw_metadata *() const &;
+        [[nodiscard]] operator pw_metadata *() const && = delete;
+
+      public:
+        [[rk::needs_update]] static lazy<expected<metadata>> bind(pw_metadata *);
+
+      public:
+        static const char *type;
         static const std::uint32_t version;
     };
 } // namespace pipewire
-#include "../utils/annotations.hpp"
