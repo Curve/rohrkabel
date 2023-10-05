@@ -2,6 +2,7 @@
 #include <memory>
 
 struct spa_hook;
+
 namespace pipewire
 {
     class listener
@@ -10,9 +11,6 @@ namespace pipewire
 
       private:
         std::unique_ptr<impl> m_impl;
-
-      private:
-        void destroy();
 
       public:
         ~listener();
@@ -25,6 +23,10 @@ namespace pipewire
         listener &operator=(listener &&) noexcept;
 
       public:
-        [[nodiscard]] spa_hook &get();
+        [[nodiscard]] spa_hook *get() const;
+
+      public:
+        [[nodiscard]] operator spa_hook *() const &;
+        [[nodiscard]] operator spa_hook *() const && = delete;
     };
 } // namespace pipewire
