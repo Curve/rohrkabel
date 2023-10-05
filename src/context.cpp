@@ -1,4 +1,6 @@
+#include "loop.hpp"
 #include "context.hpp"
+#include "core/core.hpp"
 
 #include <cassert>
 #include <pipewire/pipewire.h>
@@ -8,6 +10,8 @@ namespace pipewire
     struct context::impl
     {
         pw_context *context;
+        std::shared_ptr<main_loop> loop;
+        std::shared_ptr<pipewire::core> core;
     };
 
     context::~context()
@@ -15,15 +19,16 @@ namespace pipewire
         pw_context_destroy(m_impl->context);
     }
 
-    context::context(main_loop &loop) : m_loop(loop), m_impl(std::make_unique<impl>())
-    {
-        m_impl->context = pw_context_new(loop.get(), nullptr, 0);
-        assert((void("Failed to create context"), m_impl->context));
-    }
+    context::context() : m_impl(std::make_unique<impl>()) {}
 
-    main_loop &context::get_loop()
+    std::shared_ptr<core> context::core()
     {
-        return m_loop;
+        if (!m_impl->core)
+        {
+            m_impl->core = std::shared_ptr<pipewire::core>(new pipewire::core{shared_from_this()});
+        }
+
+        return m_impl->core;
     }
 
     pw_context *context::get() const
@@ -31,4 +36,25 @@ namespace pipewire
         return m_impl->context;
     }
 
+    std::shared_ptr<main_loop> context::loop() const
+    {
+        return m_impl->loop;
+    }
+
+    context::operator pw_context *() const &
+    {
+        return get();
+    }
+
+    std::shared_ptr<context> context::create(std::shared_ptr<main_loop> loop)
+    {
+        auto rtn = std::unique_ptr<context>(new context);
+
+        rtn->m_impl->context = pw_context_new(loop->loop(), nullptr, 0);
+        rtn->m_impl->loop    = std::move(loop);
+
+        assert((void("Failed to create context"), rtn->m_impl->context));
+
+        return rtn;
+    }
 } // namespace pipewire

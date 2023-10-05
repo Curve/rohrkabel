@@ -1,4 +1,4 @@
-#include "main_loop.hpp"
+#include "loop.hpp"
 #include "channel/channel.hpp"
 
 #include <future>
@@ -20,8 +20,7 @@ namespace pipewire
     {
         m_state->ready.wait();
 
-        // NOLINTNEXTLINE
-        pw_loop_signal_event(m_state->loop->get(), m_state->signal);
+        pw_loop_signal_event(m_state->loop->loop(), m_state->signal);
     }
 
     sender_impl::~sender_impl() = default;
@@ -36,8 +35,9 @@ namespace pipewire
 
         // NOLINTNEXTLINE
         m_state->signal = pw_loop_add_event(
-            loop->get(),
-            [](void *data, std::uint64_t) {
+            loop->loop(),
+            [](void *data, std::uint64_t)
+            {
                 auto &thiz = *reinterpret_cast<receiver_impl *>(data);
                 thiz.on_receive();
             },
@@ -49,11 +49,12 @@ namespace pipewire
     receiver_impl::~receiver_impl()
     {
         // ? Depending on the scenario, the main_loop may've already removed the source itself, thus we check the fd
-        if (m_state && m_state->ready.valid() && m_state->signal->fd >= 0)
+        if (!m_state || !m_state->ready.valid() || m_state->signal->fd < 0)
         {
-            // NOLINTNEXTLINE
-            pw_loop_remove_source(m_state->loop->get(), m_state->signal);
+            return;
         }
+
+        pw_loop_remove_source(m_state->loop->loop(), m_state->signal);
     }
 
     receiver_impl::receiver_impl(receiver_impl &&) noexcept = default;

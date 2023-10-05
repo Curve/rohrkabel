@@ -14,22 +14,37 @@ namespace pipewire
 
     link::~link() = default;
 
-    link::link(link &&link) noexcept : proxy(std::move(link)), m_impl(std::move(link.m_impl)) {}
+    link::link(link &&other) noexcept : proxy(std::move(other)), m_impl(std::move(other.m_impl)) {}
 
-    link::link(proxy &&_proxy, link_info info) : proxy(std::move(_proxy)), m_impl(std::make_unique<impl>())
+    link::link(proxy &&base, link_info info) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
-        m_impl->info = std::move(info);
         m_impl->link = reinterpret_cast<pw_link *>(proxy::get());
+        m_impl->info = std::move(info);
     }
 
-    link &link::operator=(link &&link) noexcept
+    link &link::operator=(link &&other) noexcept
     {
-        proxy::operator=(std::move(link));
-        m_impl = std::move(link.m_impl);
+        proxy::operator=(std::move(other));
+        m_impl = std::move(other.m_impl);
         return *this;
     }
 
-    lazy_expected<link> link::bind(pw_link *raw_link)
+    pw_link *link::get() const
+    {
+        return m_impl->link;
+    }
+
+    link_info link::info() const
+    {
+        return m_impl->info;
+    }
+
+    link::operator pw_link *() const &
+    {
+        return get();
+    }
+
+    lazy<expected<link>> link::bind(pw_link *raw)
     {
         struct state
         {
@@ -38,50 +53,51 @@ namespace pipewire
             std::promise<link_info> info;
         };
 
-        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw_link));
+        auto proxy   = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
         auto m_state = std::make_shared<state>();
 
         m_state->hook.emplace();
         m_state->events.version = PW_VERSION_LINK_EVENTS;
 
-        m_state->events.info = [](void *data, const pw_link_info *info) {
+        m_state->events.info = [](void *data, const pw_link_info *info)
+        {
             auto &m_state = *reinterpret_cast<state *>(data);
-            m_state.info.set_value({info->id,
-                                    info->input_port_id,                     //
-                                    info->input_node_id,                     //
-                                    info->output_port_id,                    //
-                                    info->output_node_id,                    //
-                                    info->change_mask,                       //
-                                    info->props ? info->props : spa::dict{}, //
-                                    static_cast<link_state>(info->state)});
+
+            m_state.info.set_value({
+                info->props,
+                static_cast<link_state>(info->state),
+                info->id,
+                info->change_mask,
+                {
+                    .port = info->input_port_id,
+                    .node = info->input_node_id,
+                },
+                {
+                    .port = info->output_port_id,
+                    .node = info->output_node_id,
+                },
+            });
+
             m_state.hook.reset();
         };
 
-        // NOLINTNEXTLINE
-        pw_link_add_listener(raw_link, &m_state->hook->get(), &m_state->events, m_state.get());
+        // NOLINTNEXTLINE(*-optional-access)
+        pw_link_add_listener(raw, m_state->hook->get(), &m_state->events, m_state.get());
 
-        return std::async(std::launch::deferred, [m_state, proxy_fut = std::move(proxy)]() mutable -> tl::expected<link, error> {
-            auto proxy = proxy_fut.get();
-
-            if (!proxy.has_value())
+        return make_lazy<expected<link>>(
+            [m_state, fut = std::move(proxy)]() mutable -> expected<link>
             {
-                return tl::make_unexpected(proxy.error());
-            }
+                auto proxy = fut.get();
 
-            return link(std::move(proxy.value()), m_state->info.get_future().get());
-        });
+                if (!proxy.has_value())
+                {
+                    return tl::make_unexpected(proxy.error());
+                }
+
+                return link(std::move(proxy.value()), m_state->info.get_future().get());
+            });
     }
 
-    link_info link::info() const
-    {
-        return m_impl->info;
-    }
-
-    pw_link *link::get() const
-    {
-        return m_impl->link;
-    }
-
-    const std::string link::type = PW_TYPE_INTERFACE_Link;
+    const char *link::type            = PW_TYPE_INTERFACE_Link;
     const std::uint32_t link::version = PW_VERSION_LINK;
 } // namespace pipewire

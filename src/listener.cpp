@@ -4,41 +4,43 @@
 
 namespace pipewire
 {
-    struct listener::impl
+    struct deleter
     {
-        spa_hook hook;
+        void operator()(spa_hook *hook)
+        {
+            spa_hook_remove(hook);
+            delete hook;
+        }
     };
 
-    void listener::destroy()
+    struct listener::impl
     {
-        if (m_impl)
-        {
-            spa_hook_remove(&m_impl->hook);
-        }
-    }
+        std::unique_ptr<spa_hook, deleter> hook;
+    };
 
-    listener::~listener()
-    {
-        destroy();
-    }
+    listener::~listener() = default;
 
     listener::listener() : m_impl(std::make_unique<impl>())
     {
-        spa_zero(m_impl->hook);
+        m_impl->hook = std::unique_ptr<spa_hook, deleter>(new spa_hook);
+        spa_zero(*m_impl->hook);
     }
 
-    listener::listener(listener &&listener) noexcept : m_impl(std::move(listener.m_impl)) {}
+    listener::listener(listener &&other) noexcept : m_impl(std::move(other.m_impl)) {}
 
-    listener &listener::operator=(listener &&listener) noexcept
+    listener &listener::operator=(listener &&other) noexcept
     {
-        destroy();
-        m_impl = std::move(listener.m_impl);
-
+        m_impl = std::move(other.m_impl);
         return *this;
     }
 
-    spa_hook &listener::get()
+    spa_hook *listener::get() const
     {
-        return m_impl->hook;
+        return m_impl->hook.get();
+    }
+
+    listener::operator spa_hook *() const &
+    {
+        return get();
     }
 } // namespace pipewire
