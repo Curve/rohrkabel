@@ -1,113 +1,67 @@
-<hr/>
-
 <div align="center"> 
-    <img src="assets/logo-animated.svg" height=312>
+    <img src="assets/logo.svg" height=312>
 </div>
 
 <br/>
 
 <p align="center">
-    A C++ RAII PipeWire-API Wrapper
+    A C++20 pipewire-api wrapper
 </p>
 
-<hr/>
 
 ## 📃 Description
 
-<div align="left">
+_rohrkabel_ is a wrapper around the pipewire-api that embraces RAII and tries to simplify working with pipewire.
 
-_Rohrkabel_ is a RAII wrapper around the pipewire-api that aims to simplify work with it.
-
-**Currently only a portion of the pipewire-api is supported.**  
-
-Depending on personal demand from Soundux or the community more portions of the API can be covered, simply open an issue if you'd like something to be added.
-
-</div>
+> [!NOTE]  
+> As of writing only a portion of the pipewire-api has been wrapped.  
+> In case we're missing something you need feel free to [open an issue](https://github.com/Soundux/rohrkabel/issues/new).  
+> More portions of the api might be covered in the future depending on personal demand as well as demand from [Soundux](https://github.com/Soundux/Soundux). 
 
 ## 📦 Installation
 
-<div align="left">
+* Using [CPM](https://github.com/cpm-cmake/CPM.cmake)
+  ```cmake
+  CPMFindPackage(
+    NAME           rohrkabel
+    VERSION        2.0
+    GIT_REPOSITORY "https://github.com/Soundux/rohrkabel"
+  )
+  ```
 
-- With FetchContent
+* Using FetchContent
   ```cmake
   include(FetchContent)
 
-  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Soundux/rohrkabel" GIT_TAG v1.5)
+  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Soundux/rohrkabel" GIT_TAG v2.0)
   FetchContent_MakeAvailable(rohrkabel)
 
   target_link_libraries(<target> rohrkabel)
   ```
-- As Git-Submodule
-  ```bash
-  $ git submodule add https://github.com/Soundux/rohrkabel
-  $ cd rohrkabel
-  $ git checkout v1.5
-  ```
-  ```cmake
-  add_subdirectory(rohrkabel)
-  target_link_libraries(<target> rohrkabel)
-  ```
-
-
-</div>
-
-## ⚠️ Problematic Distributions
-
-<center>
-
-| Distro                     | Supported OOTB | Notes                                              |
-| -------------------------- | :------------: | -------------------------------------------------- |
-| Ubuntu 20.04               |       ❌        | Supplied PipeWire-Version too old, works with PPA¹ |
-| Ubuntu 21.10 _(and later)_ |       ✅        |                                                    |
-
-<div align="left">
-
-> ¹ `sudo add-apt-repository ppa:pipewire-debian/pipewire-upstream`
-
-</div>
-
-</center>
-
-## ❔ Why `rohrkabel`?
-
-<div align="left">
-
-The name `rohrkabel` is a 1 to 1 translation of `pipewire` to german.  
-I chose this name because I would occasionally rant about some things that I didn't like about pipewire to my german friends and thought it would be funny if I call the thing `rohrkabel` instead.
-
-</div>
 
 ## 🧵 Thread-Safety
 
+The `pw_main_loop` is not thread-safe, but supplies a [special loop implementation](https://docs.pipewire.org/page_thread_loop.html) meant for threaded-usage. However said special loop is cumbersome to deal with, especially from a RAII perspective, thus _rohrkabel_ uses a different approach inspired by [pipewire-rs](https://pipewire.pages.freedesktop.org/pipewire-rs/pipewire/channel/index.html).
 
-<div align="left">
+The channel based approach greatly simplifies working with _rohrkabel_ in multi-threaded environments.
 
-Since the pipewire-api is not thread-safe by default² , special mechanisms have to be used to ensure thread-safety.  
+For more information check out [this example](examples/channels), or feel free to [open a discussion](https://github.com/Soundux/rohrkabel/discussions/new/choose).
 
-*Rohrkabel* supports `channel`s.  
-Channels can be used for inter-thread communication and should be used if you want to communicate with a thread that is executing the `main_loop`.
-
-For more information check out the [example](examples/channels/).
-
-> ² https://docs.pipewire.org/page_thread_loop.html  
-
-> The idea for the `channel` mechanism was borrowed from [`pipewire-rs`](https://pipewire.pages.freedesktop.org/pipewire-rs/pipewire/channel/index.html#examples) 
-
-</div>
-
-## 📚 Documentation
-
-Documentation can be found [here](https://curve.github.io/rohrkabel.docs/).
-
----
+## 🌎 Who's using rohrkabel?
 
 <div align="center">
+<br>
 
-### Projects using _Rohrkabel_
-<img src="https://avatars.githubusercontent.com/u/74979035?s=200&v=4" width=15/> <b>[Soundux](https://github.com/Soundux)</b>
+<img src="https://avatars.githubusercontent.com/u/74979035?s=200&v=4" width=30/>
 
-<img src="https://raw.githubusercontent.com/maltejur/discord-screenaudio/master/assets/de.shorsh.discord-screenaudio.png" width=15/> <b>[discord-screenaudio](https://github.com/maltejur/discord-screenaudio)</b>
+[Soundux](https://github.com/Soundux)
+
+<img src="https://raw.githubusercontent.com/maltejur/discord-screenaudio/master/assets/de.shorsh.discord-screenaudio.png" width=30/>
+
+[Discord Screenaudio](https://github.com/maltejur/discord-screenaudio)
+
+<img src="https://avatars.githubusercontent.com/u/113042587?s=200&v=4" width=30/>
+
+[Vencord](https://github.com/Vencord/linux-virtmic)
 
 </div>
-
----
