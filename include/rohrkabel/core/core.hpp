@@ -1,38 +1,53 @@
 #pragma once
 #include "events.hpp"
 #include "../context.hpp"
-
-#include "../proxy.hpp"
-#include "../node/node.hpp"
-#include "../link/link.hpp"
+#include "../properties.hpp"
+#include "../utils/lazy.hpp"
 
 #include <memory>
+#include <optional>
 
-#include "../utils/annotations.hpp"
 struct pw_core;
+
 namespace pipewire
 {
-    enum class update_strategy
+    enum class update_strategy : std::uint8_t
     {
         sync,
         none,
     };
 
-    class core
+    struct factory
     {
+        std::string name;
+        properties props;
+
+      public:
+        std::optional<std::string> type;
+        std::optional<std::uint32_t> version;
+    };
+
+    class registry;
+
+    class core : public std::enable_shared_from_this<core>
+    {
+        friend class context;
+
+      private:
         struct impl;
-        template <typename Source, typename Desired> using tie_to_t = std::enable_if_t<std::is_same_v<Source, Desired>, Desired>;
 
       private:
-        context &m_context;
         std::unique_ptr<impl> m_impl;
-
-      private:
-        template <update_strategy Strategy> void update();
 
       public:
         ~core();
-        core(context &);
+
+      private:
+        core(std::shared_ptr<pipewire::context>);
+
+      public:
+        template <update_strategy>
+        void update();
 
       public:
         void update(update_strategy strategy = update_strategy::sync);
@@ -41,31 +56,26 @@ namespace pipewire
         [[nodiscard]] int sync(int seq);
 
       public:
-        template <class EventListener> [[needs_update]] [[nodiscard]] EventListener listen() = delete;
+        template <class Listener = core_listener>
+        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
 
-        template <typename T = proxy>
-        [[nodiscard]] [[needs_update]] lazy_expected<T> create(const std::string &factory_name, const properties &props, const std::string &type, std::uint32_t version,
-                                                               update_strategy strategy = update_strategy::sync) = delete;
+        template <typename T, typename Factory = factory>
+        [[nodiscard]] lazy<expected<T>> create(const Factory &, update_strategy strategy = update_strategy::sync);
 
       public:
-        template <typename Type>
-        [[nodiscard]] [[needs_update]] lazy_expected<tie_to_t<Type, link>> create_simple(std::uint32_t input_port, std::uint32_t output_port,
-                                                                                         update_strategy strategy = update_strategy::sync) = delete;
+        [[nodiscard]] std::shared_ptr<registry> registry();
 
       public:
         [[nodiscard]] pw_core *get() const;
-        [[nodiscard]] context &get_context();
+        [[nodiscard]] std::shared_ptr<context> context() const;
+
+      public:
+        [[nodiscard]] operator pw_core *() const &;
+        [[nodiscard]] operator pw_core *() const && = delete;
     };
 
-    template <> void core::update<update_strategy::none>();
-    template <> void core::update<update_strategy::sync>();
-
-    template <> core_listener core::listen();
-
-    template <> lazy_expected<node> core::create(const std::string &, const properties &, const std::string &, std::uint32_t, update_strategy);
-    template <> lazy_expected<link> core::create(const std::string &, const properties &, const std::string &, std::uint32_t, update_strategy);
-    template <> lazy_expected<proxy> core::create(const std::string &, const properties &, const std::string &, std::uint32_t, update_strategy);
-
-    template <> lazy_expected<link> core::create_simple<link>(std::uint32_t input, std::uint32_t output, update_strategy strategy);
+    template <>
+    core_listener core::listen();
 } // namespace pipewire
-#include "../utils/annotations.hpp"
+
+#include "core.inl"
