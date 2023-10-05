@@ -1,19 +1,12 @@
 #pragma once
+#include "info.hpp"
 #include "../proxy.hpp"
-#include "../spa/dict.hpp"
 #include "../utils/lazy.hpp"
 
 struct pw_client;
 
 namespace pipewire
 {
-    struct client_info
-    {
-        spa::dict props;
-        std::uint32_t id;
-        std::uint64_t change_mask;
-    };
-
     class client final : public proxy
     {
         struct impl;
