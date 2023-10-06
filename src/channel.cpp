@@ -57,10 +57,10 @@ namespace pipewire
             reinterpret_cast<impl *>(data)->callback();
         };
 
-        auto *signal = pw_loop_add_event(loop->loop(), receive, m_impl.get());
-        m_impl->promise.set_value(signal);
-
         m_impl->callback = std::move(callback);
         m_impl->loop     = std::move(loop);
+
+        auto *signal = pw_loop_add_event(m_impl->loop->loop(), receive, m_impl.get());
+        m_impl->promise.set_value(signal);
     }
 } // namespace pipewire
