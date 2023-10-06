@@ -3,60 +3,44 @@
 
 namespace pipewire
 {
-    template <typename... Messages> sender<Messages...>::sender(sender &&other) noexcept = default;
-
-    template <typename... Messages> //
-    sender<Messages...>::sender(std::shared_ptr<channel_state> state, decltype(m_mutex) mutex, decltype(m_queue) queue)
-        : sender_impl(state), m_mutex(std::move(mutex)), m_queue(std::move(queue))
-    {
-    }
-
-    template <typename... Messages> //
     template <typename T>
-    void sender<Messages...>::send(T &&message)
-    {
-        {
-            std::lock_guard guard(*m_mutex);
-            m_queue->emplace(std::forward<T>(message));
-        }
-        emit_signal();
-    }
-
-    template <typename... Messages> receiver<Messages...>::receiver(receiver &&other) noexcept = default;
-
-    template <typename... Messages> //
-    receiver<Messages...>::receiver(std::shared_ptr<channel_state> state, decltype(m_mutex) mutex, decltype(m_queue) queue)
-        : receiver_impl(state), m_mutex(std::move(mutex)), m_queue(std::move(queue))
+    sender<T>::sender(std::shared_ptr<cr::queue<T>> queue, std::shared_ptr<channel_state> state)
+        : cr::sender<T>(queue), m_state(std::move(state))
     {
     }
 
-    template <typename... Messages> //
+    template <typename T>
+    void sender<T>::send(T message)
+    {
+        cr::sender<T>::send(std::move(message));
+        m_state->emit();
+    }
+
+    template <typename T>
+    receiver<T>::receiver(std::shared_ptr<cr::queue<T>> queue, std::shared_ptr<channel_state> state)
+        : cr::receiver<T>(queue), m_state(std::move(state))
+    {
+    }
+
+    template <typename T>
     template <typename Callback>
-    void receiver<Messages...>::attach(main_loop *loop, Callback &&callback)
+        requires cr::visitable<T, Callback>
+    void receiver<T>::attach(const std::shared_ptr<main_loop> &loop, Callback &&callback)
     {
-        receiver_impl::attach(loop);
-
-        on_receive = [this, callback = std::forward<Callback>(callback)]() {
-            std::lock_guard guard(*m_mutex);
-
-            while (!m_queue->empty())
-            {
-                auto entry = std::move(m_queue->front());
-                m_queue->pop();
-
-                std::visit(callback, std::move(entry));
-            }
+        static auto receive = [this, callback = std::forward<Callback>(callback)]()
+        {
+            cr::receiver<T>::recv(callback);
         };
+
+        m_state->attach(loop, std::move(receive));
     }
 
-    template <typename... Messages> std::pair<sender<Messages...>, receiver<Messages...>> channel()
+    template <typename... T>
+    auto channel()
     {
-        auto state = make_state();
-        auto mutex = std::make_shared<std::mutex>();
-        auto queue = std::make_shared<std::queue<std::variant<Messages...>>>();
+        auto queue = std::make_shared<cr::queue<cr::internal::deduce_t<T...>>>();
+        auto state = std::make_shared<channel_state>();
 
-        return {sender<Messages...>{state, mutex, queue}, receiver<Messages...>{state, mutex, queue}};
+        return std::make_pair(sender{queue, state}, receiver{queue, state});
     }
-
-    template <typename... Messages> channel_from<channel_t<Messages...>>::channel_from() : std::pair<sender<Messages...>, receiver<Messages...>>(channel<Messages...>()) {}
 } // namespace pipewire

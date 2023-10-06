@@ -2,67 +2,65 @@
 #include "channel/channel.hpp"
 
 #include <future>
+#include <cstdint>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
 {
-    struct channel_state
+    struct channel_state::impl
     {
-        main_loop *loop;
-        spa_source *signal;
+        std::function<void()> callback;
+        std::shared_ptr<main_loop> loop;
 
       public:
-        std::promise<void> attached;
-        std::future<void> ready = attached.get_future();
+        std::promise<spa_source *> promise;
+        std::shared_future<spa_source *> source;
     };
 
-    void sender_impl::emit_signal()
+    channel_state::~channel_state()
     {
-        m_state->ready.wait();
-
-        pw_loop_signal_event(m_state->loop->loop(), m_state->signal);
-    }
-
-    sender_impl::~sender_impl() = default;
-
-    sender_impl::sender_impl(sender_impl &&) noexcept = default;
-
-    sender_impl::sender_impl(std::shared_ptr<channel_state> state) : m_state(std::move(state)) {}
-
-    void receiver_impl::attach(main_loop *loop)
-    {
-        m_state->loop = loop;
-
-        // NOLINTNEXTLINE
-        m_state->signal = pw_loop_add_event(
-            loop->loop(),
-            [](void *data, std::uint64_t)
-            {
-                auto &thiz = *reinterpret_cast<receiver_impl *>(data);
-                thiz.on_receive();
-            },
-            this);
-
-        m_state->attached.set_value();
-    }
-
-    receiver_impl::~receiver_impl()
-    {
-        // ? Depending on the scenario, the main_loop may've already removed the source itself, thus we check the fd
-        if (!m_state || !m_state->ready.valid() || m_state->signal->fd < 0)
+        if (!m_impl)
         {
             return;
         }
 
-        pw_loop_remove_source(m_state->loop->loop(), m_state->signal);
+        if (!m_impl->source.valid())
+        {
+            return;
+        }
+
+        auto *source = m_impl->source.get();
+
+        if (source->fd < 0)
+        {
+            return;
+        }
+
+        pw_loop_remove_source(m_impl->loop->loop(), source);
     }
 
-    receiver_impl::receiver_impl(receiver_impl &&) noexcept = default;
-
-    receiver_impl::receiver_impl(std::shared_ptr<channel_state> state) : m_state(std::move(state)) {}
-
-    std::shared_ptr<channel_state> make_state()
+    channel_state::channel_state() : m_impl(std::make_unique<impl>())
     {
-        return std::make_shared<channel_state>();
+        m_impl->source = m_impl->promise.get_future().share();
+    }
+
+    void channel_state::emit()
+    {
+        auto *source = m_impl->source.get();
+        pw_loop_signal_event(m_impl->loop->loop(), source);
+    }
+
+    void channel_state::attach(std::shared_ptr<main_loop> loop, std::function<void()> callback)
+    {
+        auto receive = [](void *data, std::uint64_t)
+        {
+            reinterpret_cast<impl *>(data)->callback();
+        };
+
+        auto *signal = pw_loop_add_event(loop->loop(), receive, m_impl.get());
+        m_impl->promise.set_value(signal);
+
+        m_impl->callback = std::move(callback);
+        m_impl->loop     = std::move(loop);
     }
 } // namespace pipewire

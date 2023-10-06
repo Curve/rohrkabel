@@ -68,7 +68,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC "include")
 target_include_directories(${PROJECT_NAME} PRIVATE "include/rohrkabel")
 
 # --------------------------------------------------------------------------------------------------------
-# Fetch / Find required libraries
+# Setup Dependencies
 # --------------------------------------------------------------------------------------------------------
 
 include("cmake/cpm.cmake")
@@ -92,6 +92,14 @@ CPMFindPackage(
   GIT_REPOSITORY "https://github.com/boostorg/callable_traits"
 )
 
+CPMFindPackage(
+  NAME           channel
+  GIT_TAG        48dbdfa
+  GIT_REPOSITORY "https://github.com/Soundux/channel"
+)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC tl::expected soundux::ereignis Boost::callable_traits cr::channel)
+
 # --------------------------------------------------------------------------------------------------------
 # Custom Find-Package configurations
 # --------------------------------------------------------------------------------------------------------
@@ -99,14 +107,12 @@ CPMFindPackage(
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # --------------------------------------------------------------------------------------------------------
-# Link required libraries
+# Setup PipeWire
 # --------------------------------------------------------------------------------------------------------
 
 find_package(PipeWire REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PIPEWIRE_LIBRARIES} pthread)
-target_link_libraries(${PROJECT_NAME} PUBLIC tl::expected soundux::ereignis Boost::callable_traits)
-
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${PIPEWIRE_INCLUDE_DIRS} ${SPA_INCLUDE_DIRS})
 
 # --------------------------------------------------------------------------------------------------------

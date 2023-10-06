@@ -1,112 +1,68 @@
 #pragma once
-#include <map>
-#include <queue>
-#include <memory>
-#include <variant>
 #include <functional>
-#include <condition_variable>
+#include <cr/channel.hpp>
 
-#include "../utils/annotations.hpp"
+struct spa_source;
+
 namespace pipewire
 {
-    class proxy;
     class main_loop;
-    struct channel_state;
 
-    class sender_impl
+    class channel_state
     {
+        struct impl;
+
       private:
+        std::unique_ptr<impl> m_impl;
+
+      public:
+        ~channel_state();
+
+      public:
+        channel_state();
+
+      public:
+        void emit();
+
+      public:
+        void attach(std::shared_ptr<main_loop>, std::function<void()> callback);
+    };
+
+    template <typename T>
+    class sender : private cr::sender<T>
+    {
         std::shared_ptr<channel_state> m_state;
 
-      protected:
-        void emit_signal();
+      public:
+        sender(std::shared_ptr<cr::queue<T>>, std::shared_ptr<channel_state>);
 
       public:
-        ~sender_impl();
-
-      protected:
-        sender_impl(sender_impl &&) noexcept;
-        sender_impl(std::shared_ptr<channel_state>);
-
-      public:
-        sender_impl(const sender_impl &) = delete;
-        sender_impl &operator=(const sender_impl &) = delete;
+        void send(T = {});
     };
 
-    class receiver_impl
+    template <typename T>
+    class receiver : private cr::receiver<T>
     {
-      private:
         std::shared_ptr<channel_state> m_state;
 
-      protected:
-        std::function<void()> on_receive;
-
-      protected:
-        void attach(main_loop *);
+      public:
+        receiver(std::shared_ptr<cr::queue<T>>, std::shared_ptr<channel_state>);
 
       public:
-        ~receiver_impl();
-
-      protected:
-        receiver_impl(receiver_impl &&) noexcept;
-        receiver_impl(std::shared_ptr<channel_state>);
-
-      public:
-        receiver_impl(const sender_impl &) = delete;
-        receiver_impl &operator=(const sender_impl &) = delete;
+        template <typename Callback>
+            requires cr::visitable<T, Callback>
+        void attach(const std::shared_ptr<main_loop> &, Callback &&);
     };
 
-    template <typename... Messages> class sender : public sender_impl
+    template <typename... T>
+    struct recipe
     {
-        using variant_t = std::variant<Messages...>;
-        static_assert((!std::is_base_of_v<proxy, std::remove_pointer_t<std::remove_cv_t<std::decay_t<Messages>>>> && ...), "pipewire objects may not be exchanged");
-
-      private:
-        std::shared_ptr<std::mutex> m_mutex;
-        std::shared_ptr<std::queue<variant_t>> m_queue;
-
-      public:
-        sender(sender &&) noexcept;
-        sender(std::shared_ptr<channel_state>, decltype(m_mutex), decltype(m_queue));
-
-      public:
-        template <typename T> //
-        [[thread_safe]] void send(T && = {});
+        using sender   = sender<cr::internal::deduce_t<T...>>;
+        using receiver = receiver<cr::internal::deduce_t<T...>>;
     };
 
-    template <typename... Messages> class receiver : public receiver_impl
-    {
-        using variant_t = std::variant<Messages...>;
-        static_assert((!std::is_base_of_v<proxy, std::remove_pointer_t<std::remove_cv_t<std::decay_t<Messages>>>> && ...), "pipewire objects may not be exchanged");
-
-      private:
-        std::shared_ptr<std::mutex> m_mutex;
-        std::shared_ptr<std::queue<variant_t>> m_queue;
-
-      public:
-        receiver(receiver &&) noexcept;
-        receiver(std::shared_ptr<channel_state>, decltype(m_mutex), decltype(m_queue));
-
-      public:
-        template <typename Callback> //
-        [[thread_safe]] void attach(main_loop *, Callback &&);
-    };
-
-    std::shared_ptr<channel_state> make_state();
-    template <typename... Messages> std::pair<sender<Messages...>, receiver<Messages...>> channel();
-
-    template <typename... Messages> struct channel_t
-    {
-        using sender_t = sender<Messages...>;
-        using receiver_t = receiver<Messages...>;
-    };
-
-    template <typename> struct channel_from;
-    template <typename... Messages> struct channel_from<channel_t<Messages...>> : public std::pair<sender<Messages...>, receiver<Messages...>>
-    {
-        channel_from();
-    };
+    template <typename... T>
+    auto channel();
 } // namespace pipewire
-#include "../utils/annotations.hpp"
 
 #include "channel.inl"
