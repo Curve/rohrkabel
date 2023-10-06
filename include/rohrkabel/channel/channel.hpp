@@ -57,8 +57,9 @@ namespace pipewire
     template <typename... T>
     struct recipe
     {
-        using sender   = sender<cr::internal::deduce_t<T...>>;
-        using receiver = receiver<cr::internal::deduce_t<T...>>;
+        using is_recipe = std::true_type;
+        using sender    = sender<cr::internal::deduce_t<T...>>;
+        using receiver  = receiver<cr::internal::deduce_t<T...>>;
     };
 
     template <typename... T>
