@@ -39,10 +39,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_EXTENSIONS 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror -pedantic -pedantic-errors -Wfatal-errors)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unknown-warning-option -Wno-missing-field-initializers -Wno-cast-function-type)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unknown-attributes)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(${PROJECT_NAME} PUBLIC -Wno-attributes=rk:: -Wno-changes-meaning)
 else()
-  target_compile_options(${PROJECT_NAME} PUBLIC -Wno-attributes=rk::)
+  target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unknown-attributes)
 endif()
 
 # --------------------------------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ CPMFindPackage(
 
 CPMFindPackage(
   NAME           channel
-  GIT_TAG        48dbdfa
+  GIT_TAG        28664b3
   GIT_REPOSITORY "https://github.com/Soundux/channel"
 )
 
