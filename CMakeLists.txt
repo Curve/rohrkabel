@@ -5,7 +5,7 @@ project(rohrkabel LANGUAGES CXX VERSION 2.0)
 # Library options
 # --------------------------------------------------------------------------------------------------------
 
-option(rohrkabel_examples       "Build examples"                            OFF)
+option(rohrkabel_examples       "Build examples"                             ON)
 option(rohrkabel_prefer_remote  "Prefer remote packages over local packages" ON)
 
 # --------------------------------------------------------------------------------------------------------
@@ -36,14 +36,17 @@ add_library(soundux::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_EXTENSIONS OFF CXX_STANDARD_REQUIRED ON)
 
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror -pedantic -pedantic-errors -Wfatal-errors)
-target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unknown-warning-option -Wno-missing-field-initializers -Wno-cast-function-type)
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror -pedantic -pedantic-errors -Wfatal-errors)
+endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_compile_options(${PROJECT_NAME} PUBLIC -Wno-attributes=rk:: -Wno-changes-meaning)
 else()
   target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unknown-attributes)
 endif()
+
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unknown-warning-option -Wno-missing-field-initializers -Wno-cast-function-type)
 
 # --------------------------------------------------------------------------------------------------------
 # Disable warnings for GNU-Extensions on Clang because PipeWire makes use of them

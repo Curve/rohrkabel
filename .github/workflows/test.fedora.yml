@@ -10,9 +10,9 @@ on:
 
 name: Test on Fedora-Linux
 jobs:
-  test-fedora-36-release:
+  test-fedora-40-release:
     runs-on: ubuntu-latest
-    container: fedora:36
+    container: fedora:40
     strategy:
       fail-fast: false
       matrix:
@@ -28,9 +28,9 @@ jobs:
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON && cmake --build . --config Release"
 
-  test-fedora-36-debug:
+  test-fedora-40-debug:
     runs-on: ubuntu-latest
-    container: fedora:36
+    container: fedora:40
     strategy:
       fail-fast: false
       matrix:
