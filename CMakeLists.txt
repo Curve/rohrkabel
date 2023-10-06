@@ -94,7 +94,7 @@ CPMFindPackage(
 
 CPMFindPackage(
   NAME           channel
-  GIT_TAG        28664b3
+  VERSION        2.1
   GIT_REPOSITORY "https://github.com/Soundux/channel"
 )
 
