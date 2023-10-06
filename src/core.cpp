@@ -30,6 +30,15 @@ namespace pipewire
         assert((void("Failed to connect core"), m_impl->core));
     }
 
+    void *core::create(factory factory) const
+    {
+        auto *dict = &factory.props.get()->dict;
+
+        // NOLINTNEXTLINE(*-optional-access)
+        return pw_core_create_object(get(), factory.name.c_str(), factory.type->c_str(), factory.version.value(), dict,
+                                     0);
+    }
+
     template <>
     void core::update<update_strategy::none>()
     {
@@ -85,7 +94,7 @@ namespace pipewire
     }
 
     template <>
-    lazy<expected<proxy>> core::create(const factory &factory, update_strategy strategy)
+    lazy<expected<proxy>> core::create(factory factory, update_strategy strategy)
     {
         if (!factory.version.has_value() || !factory.type.has_value())
         {
@@ -93,11 +102,7 @@ namespace pipewire
                                               { return tl::make_unexpected(error{.message = "Bad Factory"}); });
         }
 
-        auto version = factory.version.value();
-        auto type    = factory.type.value();
-        auto *dict   = &factory.props.get()->dict;
-
-        auto *proxy = pw_core_create_object(get(), factory.name.c_str(), type.c_str(), version, dict, 0);
+        auto *proxy = create(std::move(factory));
         auto rtn    = proxy::bind(reinterpret_cast<pw_proxy *>(proxy));
 
         update(strategy);

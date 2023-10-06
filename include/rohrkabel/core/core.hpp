@@ -45,6 +45,9 @@ namespace pipewire
       private:
         core(std::shared_ptr<pipewire::context>);
 
+      private:
+        void *create(factory) const;
+
       public:
         template <update_strategy>
         void update();
@@ -60,7 +63,7 @@ namespace pipewire
         [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
 
         template <typename T, typename Factory = factory>
-        [[nodiscard]] lazy<expected<T>> create(const Factory &, update_strategy strategy = update_strategy::sync);
+        [[nodiscard]] lazy<expected<T>> create(Factory, update_strategy strategy = update_strategy::sync);
 
       public:
         [[nodiscard]] std::shared_ptr<registry> registry();
