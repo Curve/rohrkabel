@@ -1,7 +1,6 @@
 #pragma once
 #include "info.hpp"
 #include "../proxy.hpp"
-#include "../utils/lazy.hpp"
 
 struct pw_link;
 

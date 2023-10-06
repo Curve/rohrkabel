@@ -1,7 +1,6 @@
 #pragma once
 #include "property.hpp"
 #include "../proxy.hpp"
-#include "../utils/lazy.hpp"
 
 #include <map>
 
