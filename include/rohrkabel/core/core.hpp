@@ -2,7 +2,7 @@
 #include "events.hpp"
 #include "../context.hpp"
 #include "../properties.hpp"
-#include "../utils/lazy.hpp"
+#include "../utils/traits.hpp"
 
 #include <memory>
 #include <optional>
@@ -61,6 +61,11 @@ namespace pipewire
       public:
         template <class Listener = core_listener>
         [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+
+      public:
+        template <typename T>
+            requires valid_proxy<T>
+        [[nodiscard]] lazy<expected<T>> create(factory, update_strategy strategy = update_strategy::sync);
 
         template <typename T, typename Factory = factory>
         [[nodiscard]] lazy<expected<T>> create(Factory, update_strategy strategy = update_strategy::sync);

@@ -111,7 +111,7 @@ namespace pipewire
     }
 
     template <>
-    lazy<expected<link>> core::create(const link_factory &factory, update_strategy strategy)
+    lazy<expected<link>> core::create(link_factory factory, update_strategy strategy)
     {
         auto props = properties{{"link.input.port", std::to_string(factory.input)},
                                 {"link.output.port", std::to_string(factory.output)}};
@@ -119,7 +119,7 @@ namespace pipewire
         return create<link>({.name = "link-factory", .props = std::move(props)}, strategy);
     }
 
-    std::shared_ptr<registry> core::registry()
+    std::shared_ptr<pipewire::registry> core::registry()
     {
         if (!m_impl->registry)
         {
