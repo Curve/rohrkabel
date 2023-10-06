@@ -1,77 +1,41 @@
+#include <format>
 #include <iostream>
-#include <rohrkabel/main_loop.hpp>
+
+#include <rohrkabel/node/node.hpp>
 #include <rohrkabel/registry/registry.hpp>
+
+namespace pw = pipewire;
 
 int main()
 {
-    auto main_loop = pipewire::main_loop();
-    auto context = pipewire::context(main_loop);
-    auto core = pipewire::core(context);
-    auto reg = pipewire::registry(core);
+    auto loop    = pw::main_loop::create();
+    auto context = pw::context::create(loop);
+    auto core    = context->core();
+    auto reg     = core->registry();
 
-    auto reg_listener = reg.listen<pipewire::registry_listener>();
-    reg_listener.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
-        if (global.type == pipewire::node::type)
+    auto listener = reg->listen();
+
+    auto on_global = [&](const pw::global &global)
+    {
+        if (global.type != pw::node::type)
         {
-            auto node = reg.bind<pipewire::node>(global.id).get();
-            auto info = node->info();
-
-            std::cout << "Node " << info.id << ": ";
-            for (const auto &prop : info.props)
-            {
-                std::cout << "{" << prop.first << ", " << prop.second << "} ";
-            }
-            std::cout << std::endl;
+            return;
         }
-        if (global.type == pipewire::metadata::type)
+
+        auto node = reg->bind<pw::node>(global.id).get();
+        auto info = node->info();
+
+        std::cout << std::format("Node ({}): ", info.id) << std::endl;
+        static auto indent = std::string{4, ' '};
+
+        for (const auto &prop : info.props)
         {
-            auto metadata = reg.bind<pipewire::metadata>(global.id).get();
-
-            std::cout << "Metadata: ";
-            for (const auto &[key, property] : metadata->properties())
-            {
-                std::cout << "{" << key << ", " << property.value << "} ";
-            }
-            std::cout << std::endl;
+            std::cout << std::format("{} \"{}\": {}", indent, prop.first, prop.second) << std::endl;
         }
-        if (global.type == pipewire::port::type)
-        {
-            auto port = reg.bind<pipewire::port>(global.id).get();
-            auto info = port->info();
+    };
 
-            std::cout << "Port " << info.id << ": ";
-            for (const auto &prop : info.props)
-            {
-                std::cout << "{" << prop.first << ", " << prop.second << "} ";
-            }
-            std::cout << std::endl;
-        }
-        if (global.type == pipewire::device::type)
-        {
-            auto device = reg.bind<pipewire::device>(global.id).get();
-            auto info = device->info();
+    listener.on<pw::registry_event::global>(on_global);
+    core->update();
 
-            std::cout << "Device " << info.id << ": ";
-            for (const auto &prop : info.props)
-            {
-                std::cout << "{" << prop.first << ", " << prop.second << "} ";
-            }
-            std::cout << std::endl;
-        }
-        if (global.type == pipewire::client::type)
-        {
-            auto client = reg.bind<pipewire::client>(global.id).get();
-            auto info = client->info();
-
-            std::cout << "Client " << info.id << ": ";
-            for (const auto &prop : info.props)
-            {
-                std::cout << "{" << prop.first << ", " << prop.second << "} ";
-            }
-            std::cout << std::endl;
-        }
-    });
-
-    core.update();
     return 0;
 }

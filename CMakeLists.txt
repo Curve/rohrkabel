@@ -123,7 +123,6 @@ if (rohrkabel_examples)
     add_subdirectory("examples/channels")
     add_subdirectory("examples/roundtrip")
     add_subdirectory("examples/virtual-mic")
-    add_subdirectory("examples/link-app-to-mic")
     add_subdirectory("examples/mute-microphone")
 endif()
 

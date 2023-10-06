@@ -1,42 +1,50 @@
-#include <memory>
+#include <format>
 #include <iostream>
-#include <optional>
-#include <rohrkabel/main_loop.hpp>
+
+#include <rohrkabel/device/device.hpp>
 #include <rohrkabel/registry/registry.hpp>
 #include <rohrkabel/spa/pod/object/body.hpp>
 
-void search_mute_prop(std::optional<pipewire::spa::pod_prop> &result, const pipewire::spa::pod &pod, pipewire::spa::pod_prop *parent_prop = nullptr);
+namespace pw = pipewire;
 
 int main()
 {
-    auto main_loop = pipewire::main_loop();
-    auto context = pipewire::context(main_loop);
-    auto core = pipewire::core(context);
-    auto reg = pipewire::registry(core);
+    auto main_loop = pw::main_loop::create();
+    auto context   = pipewire::context::create(main_loop);
+    auto core      = context->core();
+    auto reg       = core->registry();
 
-    std::vector<pipewire::device> devices;
+    std::vector<pw::device> devices;
 
-    auto reg_listener = reg.listen<pipewire::registry_listener>();
-    reg_listener.on<pipewire::registry_event::global>([&](const pipewire::global &global) {
-        if (global.type == pipewire::device::type)
+    auto listener = reg->listen();
+
+    auto on_global = [&](const pipewire::global &global)
+    {
+        if (global.type != pipewire::device::type)
         {
-            auto device = reg.bind<pipewire::device>(global.id).get();
-            auto info = device->info();
-
-            if (info.props.count("alsa.card_name"))
-            {
-                devices.emplace_back(std::move(*device));
-            }
+            return;
         }
-    });
-    core.update();
+
+        auto device = reg->bind<pipewire::device>(global.id).get();
+        auto info   = device->info();
+
+        if (!info.props.contains("alsa.card_name"))
+        {
+            return;
+        }
+
+        devices.emplace_back(std::move(*device));
+    };
+
+    listener.on<pipewire::registry_event::global>(on_global);
+    core->update();
 
     for (auto i = 0u; devices.size() > i; i++)
     {
         auto &device = devices.at(i);
-        auto name = device.info().props.at("alsa.card_name");
+        auto name    = device.info().props.at("alsa.card_name");
 
-        std::cout << i << ": " << name << std::endl;
+        std::cout << std::format("{}. {}", i, name) << std::endl;
     }
 
     std::cout << std::endl;
@@ -51,55 +59,70 @@ int main()
     std::cout << "Muting: " << device.info().props.at("alsa.card_name") << std::endl;
 
     auto params = device.params();
-    core.update();
+    core->update();
+
+    auto get_mute = [](const pw::spa::pod &pod)
+    {
+        // NOLINTNEXTLINE
+        auto impl = [](const pw::spa::pod_prop *parent, const pw::spa::pod &pod,
+                       auto &self) -> std::optional<pw::spa::pod_prop>
+        {
+            if (pod.type() == pw::spa::pod_type::object)
+            {
+                for (const auto &item : pod.body<pw::spa::pod_object_body>())
+                {
+                    auto rtn = self(&item, item.value(), self);
+
+                    if (!rtn.has_value())
+                    {
+                        continue;
+                    }
+
+                    return rtn;
+                }
+            }
+
+            if (parent && pod.type() == pw::spa::pod_type::boolean && parent->name().find("mute") != std::string::npos)
+            {
+                return *parent;
+            }
+
+            return std::nullopt;
+        };
+
+        return impl(nullptr, pod, impl);
+    };
 
     for (const auto &[pod_id, pod] : params.get())
     {
-        std::optional<pipewire::spa::pod_prop> result;
-        search_mute_prop(result, pod);
+        auto mute = get_mute(pod);
 
-        if (result)
+        if (!mute)
         {
-            std::cout << "Mute-Prop: " << result->name() << " (" << pod_id << ") [" << result->key() << "]" << std::endl;
-            result->value().write(!result->value().as<bool>());
-
-            device.set_param(pod_id, pod.get());
-            core.update();
-
-            std::cout << "Device muted!" << std::endl;
-            return 0;
+            continue;
         }
+
+        std::cout << std::format("Mute-Prop: {} ({}) [{}]", mute->name(), pod_id, mute->key()) << std::endl;
+        mute->value().write(!mute->value().read<bool>());
+
+        device.set_param(pod_id, 0, pod);
+        core->update();
+
+        std::cout << "Device muted!" << std::endl;
+        return 0;
     }
 
     std::cout << "Could not find mute prop for device!" << std::endl;
     return 1;
-
-    //? Instead of enumerating all pods you could also use the short version:
-    /*
-        auto mute = pods.at(13).body<pipewire::spa::pod_object_body>().at(10).value().body<pipewire::spa::pod_object_body>().at(65540).value();
-
-        mute.as<bool>() = !mute.as<bool>();
-        device.set_param(13, pods.at(13).get());
-
-        core.sync();
-    */
 }
 
-// NOLINTNEXTLINE
-void search_mute_prop(std::optional<pipewire::spa::pod_prop> &result, const pipewire::spa::pod &pod, pipewire::spa::pod_prop *parent_prop)
-{
-    if (pod.type() == pipewire::spa::pod_type::object)
-    {
-        for (auto prop : pod.body<pipewire::spa::pod_object_body>())
-        {
-            search_mute_prop(result, prop.value(), &prop);
-        }
-    }
-    if (pod.type() == pipewire::spa::pod_type::boolean)
-    {
-        if (parent_prop && parent_prop->name().find("mute") != std::string::npos)
-        {
-            result.emplace(std::move(*parent_prop));
-        }
-    }
-}
+//? Instead of enumerating all pods you could also use the short version:
+/*
+    auto mute =
+   pods.at(13).body<pipewire::spa::pod_object_body>().at(10).value().body<pipewire::spa::pod_object_body>().at(65540).value();
+
+    mute.as<bool>() = !mute.as<bool>();
+    device.set_param(13, pods.at(13).get());
+
+    core.sync();
+*/

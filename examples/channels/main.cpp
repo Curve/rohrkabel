@@ -1,65 +1,98 @@
-#include <string>
 #include <thread>
 #include <iostream>
-#include <rohrkabel/main_loop.hpp>
+
+#include <rohrkabel/node/node.hpp>
+#include <rohrkabel/channel/channel.hpp>
 #include <rohrkabel/registry/registry.hpp>
 
-#include <cr/channel.hpp>
-#include <rohrkabel/channel/channel.hpp>
+namespace pw = pipewire;
 
 struct create_virtual_mic
 {
     std::string name;
 };
 
+struct check_node
+{
+};
+
 struct terminate
 {
 };
 
-void main_loop_thread(                                          //
-    pipewire::receiver<create_virtual_mic, terminate> receiver, //
-    cr::sender<std::string> sender                              //
-)
-{
-    auto main_loop = pipewire::main_loop();
-    auto context = pipewire::context(main_loop);
-    auto core = pipewire::core(context);
-    auto reg = pipewire::registry(core);
-
-    std::vector<pipewire::lazy_expected<pipewire::proxy>> objects;
-
-    receiver.attach(&main_loop, [&](auto &&arg) {
-        using arg_t = std::decay_t<decltype(arg)>;
-
-        if constexpr (std::is_same_v<arg_t, create_virtual_mic>)
-        {
-            objects.emplace_back(core.create("adapter", {{"node.name", arg.name}, {"media.class", "Audio/Source/Virtual"}, {"factory.name", "support.null-audio-sink"}},
-                                             pipewire::node::type, pipewire::node::version, pipewire::update_strategy::none));
-            sender.send("Node created!");
-        }
-        else if constexpr (std::is_same_v<arg_t, terminate>)
-        {
-            main_loop.quit();
-        }
-    });
-
-    main_loop.run();
-}
+using recipe = pw::recipe<create_virtual_mic, check_node, terminate>;
 
 int main()
 {
-    auto [main_sender, main_receiver] = cr::channel<std::string>();
-    auto [pw_sender, pw_receiver] = pipewire::channel<create_virtual_mic, terminate>();
+    auto [sender, receiver] = pw::channel<recipe>();
 
-    std::thread t(main_loop_thread, std::move(pw_receiver), std::move(main_sender));
+    auto thread = [](recipe::receiver receiver)
+    {
+        auto loop    = pw::main_loop::create();
+        auto context = pw::context::create(loop);
+        auto core    = context->core();
+        auto reg     = core->registry();
 
-    pw_sender.send<create_virtual_mic>({"Test Node"});
+        std::vector<pw::expected<pw::node>> created;
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+        bool exit = false;
 
-    main_receiver.receive([](auto &&arg) { std::cout << arg << std::endl; });
-    pw_sender.send<terminate>();
+        receiver.attach(loop,
+                        [&]<typename T>(const T &msg)
+                        {
+                            if constexpr (std::same_as<T, create_virtual_mic>)
+                            {
+                                auto node = core->create<pw::node>(pw::factory{
+                                    .name = "adapter",
+                                    .props =
+                                        {
+                                            {"node.name", msg.name},
+                                            {"media.class", "Audio/Source/Virtual"},
+                                            {"factory.name", "support.null-audio-sink"},
+                                        },
+                                });
 
-    t.join();
+                                created.emplace_back(std::move(node.get()));
+                            }
+                            else if constexpr (std::same_as<T, check_node>)
+                            {
+                                auto &mic = created.back();
+
+                                if (!mic.has_value())
+                                {
+                                    std::cerr << "Failed to create node!" << std::endl;
+
+                                    auto error = mic.error();
+                                    std::cerr << error.message << std::endl;
+
+                                    return;
+                                }
+
+                                std::cout << "Created successfully!" << std::endl;
+                                std::cout << mic.value().id() << std::endl;
+                            }
+                            else if constexpr (std::same_as<T, terminate>)
+                            {
+                                exit = true;
+                                loop->quit();
+                            }
+                        });
+
+        while (!exit)
+        {
+            loop->run();
+        }
+    };
+
+    std::thread t1{thread, std::move(receiver)};
+
+    sender.send(create_virtual_mic{"Test Node"});
+    std::cin.get();
+    sender.send(check_node{});
+    std::cin.get();
+    sender.send(terminate{});
+
+    t1.join();
+
     return 0;
 }
