@@ -18,7 +18,7 @@ namespace pipewire
     main_loop::main_loop() : m_impl(std::make_unique<impl>())
     {
         m_impl->main_loop = pw_main_loop_new(nullptr);
-        assert((void("Failed to create main_loop"), m_impl->main_loop));
+        assert(m_impl->main_loop && "Failed to create main_loop");
     }
 
     void main_loop::quit() const

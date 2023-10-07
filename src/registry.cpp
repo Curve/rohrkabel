@@ -26,7 +26,7 @@ namespace pipewire
         m_impl->registry = pw_core_get_registry(core->get(), PW_VERSION_REGISTRY, 0);
         m_impl->core     = std::move(core);
 
-        assert((void("Failed to get registry"), m_impl->registry));
+        assert(m_impl->registry && "Failed to get registry");
     }
 
     template <>

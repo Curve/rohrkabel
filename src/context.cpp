@@ -53,7 +53,7 @@ namespace pipewire
         rtn->m_impl->context = pw_context_new(loop->loop(), nullptr, 0);
         rtn->m_impl->loop    = std::move(loop);
 
-        assert((void("Failed to create context"), rtn->m_impl->context));
+        assert(rtn->m_impl->context && "Failed to create context");
 
         return rtn;
     }

@@ -27,7 +27,7 @@ namespace pipewire
         m_impl->core    = pw_context_connect(context->get(), nullptr, 0);
         m_impl->context = std::move(context);
 
-        assert((void("Failed to connect core"), m_impl->core));
+        assert(m_impl->core && "Failed to connect core");
     }
 
     void *core::create(factory factory) const
