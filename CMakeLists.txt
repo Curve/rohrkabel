@@ -5,7 +5,7 @@ project(rohrkabel LANGUAGES CXX VERSION 2.0)
 # Library options
 # --------------------------------------------------------------------------------------------------------
 
-option(rohrkabel_examples       "Build examples"                             ON)
+option(rohrkabel_examples       "Build examples"                            OFF)
 option(rohrkabel_prefer_remote  "Prefer remote packages over local packages" ON)
 
 # --------------------------------------------------------------------------------------------------------
