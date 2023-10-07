@@ -41,7 +41,7 @@ _rohrkabel_ is a wrapper around the pipewire-api that embraces RAII and tries to
 
 ## 🧵 Thread-Safety
 
-The `pw_main_loop` is not thread-safe, but supplies a [special loop implementation](https://docs.pipewire.org/page_thread_loop.html) meant for threaded-usage. However said special loop is cumbersome to deal with, especially from a RAII perspective, thus _rohrkabel_ uses a different approach inspired by [pipewire-rs](https://pipewire.pages.freedesktop.org/pipewire-rs/pipewire/channel/index.html).
+The `pw_main_loop` is not thread-safe, but supplies a [special loop implementation](https://docs.pipewire.org/page_thread_loop.html) meant for threaded-usage. However said special loop is cumbersome to deal with, especially from a RAII perspective, thus _rohrkabel_ uses a different, [channel-based](https://github.com/Soundux/channel) approach inspired by [pipewire-rs](https://pipewire.pages.freedesktop.org/pipewire-rs/pipewire/channel/index.html).
 
 The channel based approach greatly simplifies working with _rohrkabel_ in multi-threaded environments.
 
