@@ -2,6 +2,7 @@
 #include "channel/channel.hpp"
 
 #include <future>
+#include <chrono>
 #include <cstdint>
 #include <pipewire/pipewire.h>
 
@@ -25,6 +26,13 @@ namespace pipewire
         }
 
         if (!m_impl->source.valid())
+        {
+            return;
+        }
+
+        auto status = m_impl->source.wait_for(std::chrono::seconds(0));
+
+        if (status != std::future_status::ready)
         {
             return;
         }
