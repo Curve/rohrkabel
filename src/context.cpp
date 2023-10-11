@@ -1,8 +1,8 @@
 #include "loop.hpp"
 #include "context.hpp"
 #include "core/core.hpp"
+#include "utils/assert.hpp"
 
-#include <cassert>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -53,7 +53,7 @@ namespace pipewire
         rtn->m_impl->context = pw_context_new(loop->loop(), nullptr, 0);
         rtn->m_impl->loop    = std::move(loop);
 
-        assert(rtn->m_impl->context && "Failed to create context");
+        check(rtn->m_impl->context, "Failed to create context");
 
         return rtn;
     }

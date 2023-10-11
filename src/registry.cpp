@@ -1,6 +1,6 @@
 #include "registry/registry.hpp"
+#include "utils/assert.hpp"
 
-#include <cassert>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -26,7 +26,7 @@ namespace pipewire
         m_impl->registry = pw_core_get_registry(core->get(), PW_VERSION_REGISTRY, 0);
         m_impl->core     = std::move(core);
 
-        assert(m_impl->registry && "Failed to get registry");
+        check(m_impl->registry, "Failed to get registry");
     }
 
     template <>

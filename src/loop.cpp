@@ -1,6 +1,6 @@
 #include "loop.hpp"
+#include "utils/assert.hpp"
 
-#include <cassert>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -18,7 +18,7 @@ namespace pipewire
     main_loop::main_loop() : m_impl(std::make_unique<impl>())
     {
         m_impl->main_loop = pw_main_loop_new(nullptr);
-        assert(m_impl->main_loop && "Failed to create main_loop");
+        check(m_impl->main_loop, "Failed to create main_loop");
     }
 
     void main_loop::quit() const

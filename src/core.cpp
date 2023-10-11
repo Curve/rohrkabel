@@ -1,11 +1,11 @@
 #include "core/core.hpp"
 #include "core/events.hpp"
+#include "utils/assert.hpp"
 #include "registry/registry.hpp"
 
 #include "proxy.hpp"
 #include "link/link.hpp"
 
-#include <cassert>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -27,7 +27,7 @@ namespace pipewire
         m_impl->core    = pw_context_connect(context->get(), nullptr, 0);
         m_impl->context = std::move(context);
 
-        assert(m_impl->core && "Failed to connect core");
+        check(m_impl->core, "Failed to connect core");
     }
 
     void *core::create(factory factory) const
