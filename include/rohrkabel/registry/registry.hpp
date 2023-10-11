@@ -26,7 +26,7 @@ namespace pipewire
         ~registry();
 
       protected:
-        registry(std::shared_ptr<core>);
+        registry();
 
       public:
         template <class Listener = registry_listener>
@@ -44,6 +44,9 @@ namespace pipewire
       public:
         [[nodiscard]] operator pw_registry *() const &;
         [[nodiscard]] operator pw_registry *() const && = delete;
+
+      private:
+        [[nodiscard]] static std::shared_ptr<registry> create(std::shared_ptr<pipewire::core>);
     };
 
     template <>

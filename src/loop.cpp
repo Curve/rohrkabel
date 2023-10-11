@@ -1,5 +1,8 @@
 #include "loop.hpp"
-#include "utils/assert.hpp"
+#include "utils/check.hpp"
+
+#include <mutex>
+#include <memory>
 
 #include <pipewire/pipewire.h>
 
@@ -15,11 +18,7 @@ namespace pipewire
         pw_main_loop_destroy(m_impl->main_loop);
     }
 
-    main_loop::main_loop() : m_impl(std::make_unique<impl>())
-    {
-        m_impl->main_loop = pw_main_loop_new(nullptr);
-        check(m_impl->main_loop, "Failed to create main_loop");
-    }
+    main_loop::main_loop() : m_impl(std::make_unique<impl>()) {}
 
     void main_loop::quit() const
     {
@@ -48,14 +47,21 @@ namespace pipewire
 
     std::shared_ptr<main_loop> main_loop::create()
     {
-        static auto once = false;
+        static std::once_flag flag;
+        std::call_once(flag, [] { pw_init(nullptr, nullptr); });
 
-        if (!once)
+        auto *loop = pw_main_loop_new(nullptr);
+        check(loop, "Failed to create main_loop");
+
+        if (!loop)
         {
-            pw_init(nullptr, nullptr);
-            once = true;
+            return nullptr;
         }
 
-        return std::unique_ptr<main_loop>(new main_loop);
+        auto rtn = std::unique_ptr<main_loop>(new main_loop);
+
+        rtn->m_impl->main_loop = loop;
+
+        return rtn;
     }
 } // namespace pipewire

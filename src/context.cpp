@@ -1,7 +1,7 @@
 #include "loop.hpp"
 #include "context.hpp"
 #include "core/core.hpp"
-#include "utils/assert.hpp"
+#include "utils/check.hpp"
 
 #include <pipewire/pipewire.h>
 
@@ -25,7 +25,7 @@ namespace pipewire
     {
         if (!m_impl->core)
         {
-            m_impl->core = std::shared_ptr<pipewire::core>(new pipewire::core{shared_from_this()});
+            m_impl->core = core::create(shared_from_this());
         }
 
         return m_impl->core;
@@ -48,12 +48,18 @@ namespace pipewire
 
     std::shared_ptr<context> context::create(std::shared_ptr<main_loop> loop)
     {
+        auto *ctx = pw_context_new(loop->loop(), nullptr, 0);
+        check(ctx, "Failed to create context");
+
+        if (!ctx)
+        {
+            return nullptr;
+        }
+
         auto rtn = std::unique_ptr<context>(new context);
 
-        rtn->m_impl->context = pw_context_new(loop->loop(), nullptr, 0);
+        rtn->m_impl->context = ctx;
         rtn->m_impl->loop    = std::move(loop);
-
-        check(rtn->m_impl->context, "Failed to create context");
 
         return rtn;
     }

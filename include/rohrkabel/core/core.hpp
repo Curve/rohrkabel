@@ -43,7 +43,7 @@ namespace pipewire
         ~core();
 
       private:
-        core(std::shared_ptr<pipewire::context>);
+        core();
 
       private:
         void *create(factory) const;
@@ -80,6 +80,9 @@ namespace pipewire
       public:
         [[nodiscard]] operator pw_core *() const &;
         [[nodiscard]] operator pw_core *() const && = delete;
+
+      private:
+        [[nodiscard]] static std::shared_ptr<core> create(std::shared_ptr<pipewire::context>);
     };
 
     template <>

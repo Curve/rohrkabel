@@ -1,5 +1,5 @@
 #include "registry/registry.hpp"
-#include "utils/assert.hpp"
+#include "utils/check.hpp"
 
 #include <pipewire/pipewire.h>
 
@@ -21,13 +21,7 @@ namespace pipewire
         pw_proxy_destroy(reinterpret_cast<pw_proxy *>(m_impl->registry));
     }
 
-    registry::registry(std::shared_ptr<pipewire::core> core) : m_impl(std::make_unique<impl>())
-    {
-        m_impl->registry = pw_core_get_registry(core->get(), PW_VERSION_REGISTRY, 0);
-        m_impl->core     = std::move(core);
-
-        check(m_impl->registry, "Failed to get registry");
-    }
+    registry::registry() : m_impl(std::make_unique<impl>()) {}
 
     template <>
     registry_listener registry::listen()
@@ -47,5 +41,23 @@ namespace pipewire
     registry::operator pw_registry *() const &
     {
         return get();
+    }
+
+    std::shared_ptr<registry> registry::create(std::shared_ptr<pipewire::core> core)
+    {
+        auto *registry = pw_core_get_registry(core->get(), PW_VERSION_REGISTRY, 0);
+        check(registry, "Failed to get registry");
+
+        if (!registry)
+        {
+            return nullptr;
+        }
+
+        auto rtn = std::unique_ptr<pipewire::registry>(new pipewire::registry);
+
+        rtn->m_impl->registry = registry;
+        rtn->m_impl->core     = std::move(core);
+
+        return rtn;
     }
 } // namespace pipewire

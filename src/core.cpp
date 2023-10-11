@@ -1,6 +1,6 @@
 #include "core/core.hpp"
 #include "core/events.hpp"
-#include "utils/assert.hpp"
+#include "utils/check.hpp"
 #include "registry/registry.hpp"
 
 #include "proxy.hpp"
@@ -22,13 +22,7 @@ namespace pipewire
         pw_core_disconnect(m_impl->core);
     }
 
-    core::core(std::shared_ptr<pipewire::context> context) : m_impl(std::make_unique<impl>())
-    {
-        m_impl->core    = pw_context_connect(context->get(), nullptr, 0);
-        m_impl->context = std::move(context);
-
-        check(m_impl->core, "Failed to connect core");
-    }
+    core::core() : m_impl(std::make_unique<impl>()) {}
 
     void *core::create(factory factory) const
     {
@@ -123,7 +117,7 @@ namespace pipewire
     {
         if (!m_impl->registry)
         {
-            m_impl->registry = std::shared_ptr<pipewire::registry>(new pipewire::registry{shared_from_this()});
+            m_impl->registry = pipewire::registry::create(shared_from_this());
         }
 
         return m_impl->registry;
@@ -142,5 +136,23 @@ namespace pipewire
     core::operator pw_core *() const &
     {
         return get();
+    }
+
+    std::shared_ptr<core> core::create(std::shared_ptr<pipewire::context> context)
+    {
+        auto *core = pw_context_connect(context->get(), nullptr, 0);
+        check(core, "Failed to connect core");
+
+        if (!core)
+        {
+            return nullptr;
+        }
+
+        auto rtn = std::unique_ptr<pipewire::core>(new pipewire::core);
+
+        rtn->m_impl->core    = core;
+        rtn->m_impl->context = std::move(context);
+
+        return rtn;
     }
 } // namespace pipewire
