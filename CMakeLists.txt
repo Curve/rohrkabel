@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(rohrkabel LANGUAGES CXX VERSION 2.1)
+project(rohrkabel LANGUAGES CXX VERSION 2.3)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -97,7 +97,7 @@ CPMFindPackage(
 
 CPMFindPackage(
   NAME           channel
-  VERSION        2.1
+  VERSION        2.2
   GIT_REPOSITORY "https://github.com/Soundux/channel"
 )
 
