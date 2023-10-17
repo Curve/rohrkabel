@@ -15,7 +15,7 @@ _rohrkabel_ is a wrapper around the pipewire-api that embraces RAII and tries to
 
 > [!NOTE]  
 > As of writing only a portion of the pipewire-api has been wrapped.  
-> In case we're missing something you need feel free to [open an issue](https://github.com/Soundux/rohrkabel/issues/new).  
+> In case we're missing something you need feel free to [open an issue](https://github.com/Curve/rohrkabel/issues/new).  
 > More portions of the api might be covered in the future depending on personal demand as well as demand from [Soundux](https://github.com/Soundux/Soundux). 
 
 ## 📦 Installation
@@ -25,7 +25,7 @@ _rohrkabel_ is a wrapper around the pipewire-api that embraces RAII and tries to
   CPMFindPackage(
     NAME           rohrkabel
     VERSION        2.0
-    GIT_REPOSITORY "https://github.com/Soundux/rohrkabel"
+    GIT_REPOSITORY "https://github.com/Curve/rohrkabel"
   )
   ```
 
@@ -33,7 +33,7 @@ _rohrkabel_ is a wrapper around the pipewire-api that embraces RAII and tries to
   ```cmake
   include(FetchContent)
 
-  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Soundux/rohrkabel" GIT_TAG v2.0)
+  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Curve/rohrkabel" GIT_TAG v2.0)
   FetchContent_MakeAvailable(rohrkabel)
 
   target_link_libraries(<target> rohrkabel)
@@ -41,11 +41,11 @@ _rohrkabel_ is a wrapper around the pipewire-api that embraces RAII and tries to
 
 ## 🧵 Thread-Safety
 
-The `pw_main_loop` is not thread-safe, but supplies a [special loop implementation](https://docs.pipewire.org/page_thread_loop.html) meant for threaded-usage. However said special loop is cumbersome to deal with, especially from a RAII perspective, thus _rohrkabel_ uses a different, [channel-based](https://github.com/Soundux/channel) approach inspired by [pipewire-rs](https://pipewire.pages.freedesktop.org/pipewire-rs/pipewire/channel/index.html).
+The `pw_main_loop` is not thread-safe, but supplies a [special loop implementation](https://docs.pipewire.org/page_thread_loop.html) meant for threaded-usage. However said special loop is cumbersome to deal with, especially from a RAII perspective, thus _rohrkabel_ uses a different, [channel-based](https://github.com/Curve/channel) approach inspired by [pipewire-rs](https://pipewire.pages.freedesktop.org/pipewire-rs/pipewire/channel/index.html).
 
 The channel based approach greatly simplifies working with _rohrkabel_ in multi-threaded environments.
 
-For more information check out [this example](examples/channels), or feel free to [open a discussion](https://github.com/Soundux/rohrkabel/discussions/new/choose).
+For more information check out [this example](examples/channels), or feel free to [open a discussion](https://github.com/Curve/rohrkabel/discussions/new/choose).
 
 ## 🌎 Who's using rohrkabel?
 

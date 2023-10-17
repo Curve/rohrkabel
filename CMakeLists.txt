@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(rohrkabel LANGUAGES CXX VERSION 2.3)
+project(rohrkabel LANGUAGES CXX VERSION 2.4)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -31,7 +31,7 @@ set(CPM_DOWNLOAD_ALL ${rohrkabel_prefer_remote})
 # --------------------------------------------------------------------------------------------------------
 
 add_library(${PROJECT_NAME})
-add_library(soundux::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(cr::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_EXTENSIONS OFF CXX_STANDARD_REQUIRED ON)
@@ -67,7 +67,7 @@ target_sources(${PROJECT_NAME} PRIVATE ${src})
 # Include "include" folder
 # --------------------------------------------------------------------------------------------------------
 
-target_include_directories(${PROJECT_NAME} PUBLIC "include")
+target_include_directories(${PROJECT_NAME} PUBLIC  "include")
 target_include_directories(${PROJECT_NAME} PRIVATE "include/rohrkabel")
 
 # --------------------------------------------------------------------------------------------------------
@@ -85,8 +85,8 @@ CPMFindPackage(
 
 CPMFindPackage(
   NAME           ereignis
-  VERSION        2.1
-  GIT_REPOSITORY "https://github.com/Soundux/ereignis"
+  VERSION        2.2
+  GIT_REPOSITORY "https://github.com/Curve/ereignis"
 )
 
 CPMFindPackage(
@@ -98,10 +98,10 @@ CPMFindPackage(
 CPMFindPackage(
   NAME           channel
   VERSION        2.2
-  GIT_REPOSITORY "https://github.com/Soundux/channel"
+  GIT_REPOSITORY "https://github.com/Curve/channel"
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC tl::expected soundux::ereignis Boost::callable_traits cr::channel)
+target_link_libraries(${PROJECT_NAME} PUBLIC tl::expected cr::ereignis Boost::callable_traits cr::channel)
 
 # --------------------------------------------------------------------------------------------------------
 # Custom Find-Package configurations

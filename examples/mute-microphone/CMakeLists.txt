@@ -22,7 +22,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     CPMFindPackage(
         NAME           rohrkabel
         GIT_TAG        master
-        GIT_REPOSITORY "https://github.com/Soundux/rohrkabel"
+        GIT_REPOSITORY "https://github.com/Curve/rohrkabel"
     )
 endif()
     
