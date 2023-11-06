@@ -71,11 +71,11 @@ namespace pipewire
         [[nodiscard]] lazy<expected<T>> create(Factory, update_strategy strategy = update_strategy::sync);
 
       public:
-        [[nodiscard]] std::shared_ptr<registry> registry();
+        [[nodiscard]] std::shared_ptr<pipewire::registry> registry();
 
       public:
         [[nodiscard]] pw_core *get() const;
-        [[nodiscard]] std::shared_ptr<context> context() const;
+        [[nodiscard]] std::shared_ptr<pipewire::context> context() const;
 
       public:
         [[nodiscard]] operator pw_core *() const &;

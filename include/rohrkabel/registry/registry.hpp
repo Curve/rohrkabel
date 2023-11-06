@@ -39,7 +39,7 @@ namespace pipewire
 
       public:
         [[nodiscard]] pw_registry *get() const;
-        [[nodiscard]] std::shared_ptr<core> core() const;
+        [[nodiscard]] std::shared_ptr<pipewire::core> core() const;
 
       public:
         [[nodiscard]] operator pw_registry *() const &;

@@ -23,7 +23,7 @@ namespace pipewire
         context();
 
       public:
-        [[nodiscard]] std::shared_ptr<core> core();
+        [[nodiscard]] std::shared_ptr<pipewire::core> core();
 
       public:
         [[nodiscard]] pw_context *get() const;

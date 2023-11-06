@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(rohrkabel LANGUAGES CXX VERSION 2.4)
+project(rohrkabel LANGUAGES CXX VERSION 2.5)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -41,7 +41,7 @@ if (PROJECT_IS_TOP_LEVEL)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  target_compile_options(${PROJECT_NAME} PUBLIC -Wno-attributes=rk:: -Wno-changes-meaning)
+  target_compile_options(${PROJECT_NAME} PUBLIC -Wno-attributes=rk::)
 else()
   target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unknown-attributes)
 endif()
