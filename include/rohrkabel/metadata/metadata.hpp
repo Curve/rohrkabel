@@ -30,6 +30,7 @@ namespace pipewire
         metadata &operator=(metadata &&) noexcept;
 
       public:
+        [[rk::needs_update]] void clear_property(std::uint32_t id, const std::string &key);
         [[rk::needs_update]] void set_property(std::uint32_t id, std::string key, std::string type, std::string value);
 
       public:
