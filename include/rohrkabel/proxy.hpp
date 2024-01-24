@@ -1,4 +1,5 @@
 #pragma once
+#include "spa/dict.hpp"
 #include "utils/lazy.hpp"
 
 #include <string>
@@ -20,13 +21,14 @@ namespace pipewire
         virtual ~proxy();
 
       public:
-        proxy(pw_proxy *);
         proxy(proxy &&) noexcept;
+        proxy(pw_proxy *, spa::dict);
 
       public:
         proxy &operator=(proxy &&) noexcept;
 
       public:
+        [[nodiscard]] spa::dict props() const;
         [[nodiscard]] std::string type() const;
         [[nodiscard]] std::uint32_t id() const;
         [[nodiscard]] std::uint32_t version() const;

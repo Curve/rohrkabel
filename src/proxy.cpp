@@ -15,22 +15,29 @@ namespace pipewire
 
     struct proxy::impl
     {
+        spa::dict props;
         std::unique_ptr<pw_proxy, deleter> proxy;
     };
 
     proxy::~proxy() = default;
 
-    proxy::proxy(pw_proxy *proxy) : m_impl(std::make_unique<impl>())
+    proxy::proxy(proxy &&other) noexcept : m_impl(std::move(other.m_impl)) {}
+
+    proxy::proxy(pw_proxy *proxy, spa::dict props) : m_impl(std::make_unique<impl>())
     {
         m_impl->proxy.reset(proxy);
+        m_impl->props = std::move(props);
     }
-
-    proxy::proxy(proxy &&other) noexcept : m_impl(std::move(other.m_impl)) {}
 
     proxy &proxy::operator=(proxy &&other) noexcept
     {
         m_impl = std::move(other.m_impl);
         return *this;
+    }
+
+    spa::dict proxy::props() const
+    {
+        return m_impl->props;
     }
 
     std::string proxy::type() const
@@ -67,22 +74,22 @@ namespace pipewire
         {
             listener hook;
             pw_proxy_events events;
-            std::promise<expected<void>> done;
+            std::promise<expected<spa::dict>> props;
         };
 
         auto m_state            = std::make_shared<state>();
         m_state->events.version = PW_VERSION_PROXY_EVENTS;
 
-        m_state->events.bound = [](void *data, uint32_t)
+        m_state->events.bound_props = [](void *data, uint32_t, const spa_dict *props)
         {
             auto &m_state = *reinterpret_cast<state *>(data);
-            m_state.done.set_value({});
+            m_state.props.set_value(props);
         };
 
         m_state->events.error = [](void *data, int seq, int res, const char *message)
         {
             auto &m_state = *reinterpret_cast<state *>(data);
-            m_state.done.set_value(tl::make_unexpected<error>({seq, res, message}));
+            m_state.props.set_value(tl::make_unexpected<error>({seq, res, message}));
         };
 
         pw_proxy_add_listener(raw, m_state->hook.get(), &m_state->events, m_state.get());
@@ -90,14 +97,14 @@ namespace pipewire
         return make_lazy<expected<proxy>>(
             [m_state, raw]() -> expected<proxy>
             {
-                auto res = m_state->done.get_future().get();
+                auto props = m_state->props.get_future().get();
 
-                if (!res.has_value())
+                if (!props.has_value())
                 {
-                    return tl::make_unexpected(res.error());
+                    return tl::make_unexpected(props.error());
                 }
 
-                return raw;
+                return proxy{raw, std::move(props.value())};
             });
     }
 } // namespace pipewire
