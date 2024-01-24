@@ -42,7 +42,7 @@ if(NOT COMMAND cpm_message)
   endfunction()
 endif()
 
-set(CURRENT_CPM_VERSION 0.38.5)
+set(CURRENT_CPM_VERSION 0.38.7)
 
 get_filename_component(CPM_CURRENT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}" REALPATH)
 if(CPM_DIRECTORY)
@@ -98,6 +98,12 @@ macro(cpm_set_policies)
   if(POLICY CMP0135)
     cmake_policy(SET CMP0135 NEW)
     set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
+  endif()
+
+  # treat relative git repository paths as being relative to the parent project's remote
+  if(POLICY CMP0150)
+    cmake_policy(SET CMP0150 NEW)
+    set(CMAKE_POLICY_DEFAULT_CMP0150 NEW)
   endif()
 endmacro()
 cpm_set_policies()
@@ -1095,12 +1101,15 @@ function(cpm_prettify_package_arguments OUT_VAR IS_IN_COMMENT)
       DOWNLOAD_ONLY
       GITHUB_REPOSITORY
       GITLAB_REPOSITORY
+      BITBUCKET_REPOSITORY
       GIT_REPOSITORY
       SOURCE_DIR
       FIND_PACKAGE_ARGUMENTS
       NO_CACHE
       SYSTEM
       GIT_SHALLOW
+      EXCLUDE_FROM_ALL
+      SOURCE_SUBDIR
   )
   set(multiValueArgs URL OPTIONS DOWNLOAD_COMMAND)
   cmake_parse_arguments(CPM_ARGS "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})

@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.16)
-project(rohrkabel LANGUAGES CXX VERSION 2.5)
+cmake_minimum_required(VERSION 3.21)
+project(rohrkabel LANGUAGES CXX VERSION 2.6)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
 # --------------------------------------------------------------------------------------------------------
 
-option(rohrkabel_examples       "Build examples"                            OFF)
-option(rohrkabel_prefer_remote  "Prefer remote packages over local packages" ON)
+option(rohrkabel_examples       "Build examples"                             OFF)
+option(rohrkabel_prefer_remote  "Prefer remote packages over local packages"  ON)
 
 # --------------------------------------------------------------------------------------------------------
 # Warning for non unix platforms
@@ -85,13 +85,13 @@ CPMFindPackage(
 
 CPMFindPackage(
   NAME           ereignis
-  VERSION        2.2
+  VERSION        2.3
   GIT_REPOSITORY "https://github.com/Curve/ereignis"
 )
 
 CPMFindPackage(
   NAME           boost_callable_traits
-  GIT_TAG        2a56a3a
+  GIT_TAG        boost-1.84.0
   GIT_REPOSITORY "https://github.com/boostorg/callable_traits"
 )
 
