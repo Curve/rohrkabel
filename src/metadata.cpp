@@ -29,6 +29,12 @@ namespace pipewire
         return *this;
     }
 
+    void metadata::set_property(std::uint32_t id, std::string key, std::string type, std::string value)
+    {
+        pw_metadata_set_property(m_impl->metadata, id, key.c_str(), type.c_str(), value.c_str());
+        m_impl->properties.emplace(std::move(key), metadata_property{std::move(type), std::move(value), id});
+    }
+
     pw_metadata *metadata::get() const
     {
         return m_impl->metadata;

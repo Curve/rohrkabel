@@ -3,6 +3,7 @@
 #include "../proxy.hpp"
 
 #include <map>
+#include <string>
 
 struct pw_metadata;
 
@@ -27,6 +28,9 @@ namespace pipewire
 
       public:
         metadata &operator=(metadata &&) noexcept;
+
+      public:
+        [[rk::needs_update]] void set_property(std::uint32_t id, std::string key, std::string type, std::string value);
 
       public:
         [[nodiscard]] pw_metadata *get() const;
