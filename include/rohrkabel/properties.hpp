@@ -29,7 +29,7 @@ namespace pipewire
         properties(std::initializer_list<std::pair<const std::string, std::string>>);
 
       public:
-        void set(const std::string &key, std::string value);
+        void set(std::string key, std::string value);
 
       public:
         [[nodiscard]] std::string get(const std::string &value) const;

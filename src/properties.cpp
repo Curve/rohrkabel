@@ -42,10 +42,10 @@ namespace pipewire
     {
     }
 
-    void properties::set(const std::string &key, std::string value)
+    void properties::set(std::string key, std::string value)
     {
         pw_properties_set(m_impl->properties.get(), key.c_str(), value.c_str());
-        m_impl->map.emplace(key, std::move(value));
+        m_impl->map.emplace(std::move(key), std::move(value));
     }
 
     std::string properties::get(const std::string &value) const
