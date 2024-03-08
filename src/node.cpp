@@ -128,18 +128,18 @@ namespace pipewire
         // NOLINTNEXTLINE(*-optional-access)
         pw_node_add_listener(raw, m_state->hook->get(), &m_state->events, m_state.get());
 
-        return std::async(std::launch::deferred,
-                          [m_state, proxy_fut = std::move(proxy)]() mutable -> expected<node>
-                          {
-                              auto proxy = proxy_fut.get();
+        return make_lazy<expected<node>>(
+            [m_state, proxy_fut = std::move(proxy)]() mutable -> expected<node>
+            {
+                auto proxy = proxy_fut.get();
 
-                              if (!proxy.has_value())
-                              {
-                                  return tl::make_unexpected(proxy.error());
-                              }
+                if (!proxy.has_value())
+                {
+                    return tl::make_unexpected(proxy.error());
+                }
 
-                              return node(std::move(proxy.value()), m_state->info.get_future().get());
-                          });
+                return node{std::move(proxy.value()), m_state->info.get_future().get()};
+            });
     }
 
     const char *node::type            = PW_TYPE_INTERFACE_Node;
