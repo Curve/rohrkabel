@@ -94,7 +94,7 @@ namespace pipewire
                     return tl::make_unexpected(proxy.error());
                 }
 
-                return link(std::move(proxy.value()), m_state->info.get_future().get());
+                return link{std::move(proxy.value()), m_state->info.get_future().get()};
             });
     }
 
