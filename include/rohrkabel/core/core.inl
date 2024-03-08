@@ -1,4 +1,5 @@
 #pragma once
+
 #include "core.hpp"
 
 #include <boost/callable_traits.hpp>

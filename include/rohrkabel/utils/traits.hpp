@@ -1,4 +1,5 @@
 #pragma once
+
 #include "lazy.hpp"
 #include "../proxy.hpp"
 

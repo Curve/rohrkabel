@@ -1,4 +1,5 @@
 #pragma once
+
 #include "property.hpp"
 #include "../proxy.hpp"
 

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "registry.hpp"
 
 namespace pipewire

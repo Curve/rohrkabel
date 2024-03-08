@@ -1,4 +1,5 @@
 #pragma once
+
 #include "loop.hpp"
 
 #include <memory>

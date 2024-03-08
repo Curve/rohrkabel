@@ -1,4 +1,5 @@
 #pragma once
+
 #include "channel.hpp"
 
 namespace pipewire
