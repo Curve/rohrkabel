@@ -23,6 +23,13 @@ int main()
         }
 
         auto node = reg->bind<pw::node>(global.id).get();
+
+        if (!node.has_value())
+        {
+            std::cout << std::format("failed to bind {}: {}", global.id, node.error().message) << std::endl;
+            return;
+        }
+
         auto info = node->info();
 
         std::cout << std::format("Node ({}): ", info.id) << std::endl;
