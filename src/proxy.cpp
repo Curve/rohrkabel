@@ -74,22 +74,31 @@ namespace pipewire
         {
             listener hook;
             pw_proxy_events events;
-            std::promise<expected<spa::dict>> props;
+
+          public:
+            spa::dict props;
+            std::promise<expected<void>> done;
         };
 
         auto m_state            = std::make_shared<state>();
         m_state->events.version = PW_VERSION_PROXY_EVENTS;
 
+        m_state->events.bound = [](void *data, uint32_t)
+        {
+            auto &m_state = *reinterpret_cast<state *>(data);
+            m_state.done.set_value({});
+        };
+
         m_state->events.bound_props = [](void *data, uint32_t, const spa_dict *props)
         {
             auto &m_state = *reinterpret_cast<state *>(data);
-            m_state.props.set_value(props);
+            m_state.props = props;
         };
 
         m_state->events.error = [](void *data, int seq, int res, const char *message)
         {
             auto &m_state = *reinterpret_cast<state *>(data);
-            m_state.props.set_value(tl::make_unexpected<error>({seq, res, message}));
+            m_state.done.set_value(tl::make_unexpected<error>({seq, res, message}));
         };
 
         pw_proxy_add_listener(raw, m_state->hook.get(), &m_state->events, m_state.get());
@@ -97,14 +106,14 @@ namespace pipewire
         return make_lazy<expected<proxy>>(
             [m_state, raw]() -> expected<proxy>
             {
-                auto props = m_state->props.get_future().get();
+                auto done = m_state->done.get_future().get();
 
-                if (!props.has_value())
+                if (!done.has_value())
                 {
-                    return tl::make_unexpected(props.error());
+                    return tl::make_unexpected(done.error());
                 }
 
-                return proxy{raw, std::move(props.value())};
+                return proxy{raw, std::move(m_state->props)};
             });
     }
 } // namespace pipewire
