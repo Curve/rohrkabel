@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(rohrkabel LANGUAGES CXX VERSION 3.1)
+project(rohrkabel LANGUAGES CXX VERSION 4.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -60,7 +60,13 @@ endif()
 # Add source files
 # --------------------------------------------------------------------------------------------------------
 
-file(GLOB src "src/*.cpp")
+file(GLOB src 
+  "src/*.cpp" 
+  "src/spa/*.cpp"
+  "src/info/*.cpp"
+  "src/events/*.cpp"
+)
+
 target_sources(${PROJECT_NAME} PRIVATE ${src})
 
 # --------------------------------------------------------------------------------------------------------
