@@ -1,6 +1,5 @@
 #pragma once
 
-#include "events.hpp"
 #include "../context.hpp"
 #include "../properties.hpp"
 #include "../utils/traits.hpp"
@@ -29,6 +28,7 @@ namespace pipewire
     };
 
     class registry;
+    class core_listener;
 
     class core : public std::enable_shared_from_this<core>
     {

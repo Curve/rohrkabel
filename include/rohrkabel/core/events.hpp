@@ -1,6 +1,8 @@
 #pragma once
 
+#include "core.hpp"
 #include "info.hpp"
+
 #include "../error.hpp"
 #include "../listener.hpp"
 
@@ -15,8 +17,6 @@ namespace pipewire
         done,
         error,
     };
-
-    class core;
 
     class core_listener : listener
     {
@@ -37,7 +37,7 @@ namespace pipewire
         ~core_listener();
 
       public:
-        core_listener(const core &);
+        core_listener(pw_core *);
         core_listener(core_listener &&) noexcept;
 
       public:

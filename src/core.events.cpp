@@ -1,5 +1,6 @@
 #include "core/core.hpp"
 #include "core/events.hpp"
+
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -11,7 +12,7 @@ namespace pipewire
 
     core_listener::~core_listener() = default;
 
-    core_listener::core_listener(const core &core) : m_impl(std::make_unique<impl>())
+    core_listener::core_listener(pw_core *core) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_CORE_EVENTS;
 
@@ -42,7 +43,7 @@ namespace pipewire
             thiz.m_events.at<core_event::error>().fire(id, error{seq, res, message});
         };
 
-        pw_core_add_listener(core.get(), listener::get(), &m_impl->events, this);
+        pw_core_add_listener(core, listener::get(), &m_impl->events, this);
     }
 
     core_listener::core_listener(core_listener &&core_listener) noexcept

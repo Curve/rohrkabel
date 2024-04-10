@@ -1,10 +1,11 @@
 #include "core/core.hpp"
 #include "core/events.hpp"
+
 #include "utils/check.hpp"
 #include "registry/registry.hpp"
 
-#include "proxy.hpp"
 #include "link/link.hpp"
+#include "proxy/proxy.hpp"
 
 #include <pipewire/pipewire.h>
 
@@ -47,17 +48,15 @@ namespace pipewire
         auto listener = listen<core_listener>();
         auto loop     = m_impl->context->loop();
 
-        listener.on<core_event::done>(
-            [&](auto id, auto seq)
+        listener.on<core_event::done>([&](auto id, auto seq) {
+            if (id != PW_ID_CORE || seq != pending)
             {
-                if (id != PW_ID_CORE || seq != pending)
-                {
-                    return;
-                }
+                return;
+            }
 
-                done = true;
-                loop->quit();
-            });
+            done = true;
+            loop->quit();
+        });
 
         while (!done)
         {
@@ -84,7 +83,7 @@ namespace pipewire
     template <>
     core_listener core::listen()
     {
-        return {*this};
+        return {get()};
     }
 
     template <>
@@ -92,8 +91,9 @@ namespace pipewire
     {
         if (!factory.version.has_value() || !factory.type.has_value())
         {
-            return make_lazy<expected<proxy>>([]() -> expected<proxy>
-                                              { return tl::make_unexpected(error{.message = "Bad Factory"}); });
+            return make_lazy<expected<proxy>>([]() -> expected<proxy> {
+                return tl::make_unexpected(error{.message = "Bad Factory"});
+            });
         }
 
         auto *proxy = create(std::move(factory));
