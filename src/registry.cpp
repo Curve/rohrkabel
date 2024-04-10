@@ -1,4 +1,6 @@
+#include "registry/events.hpp"
 #include "registry/registry.hpp"
+
 #include "utils/check.hpp"
 
 #include <pipewire/pipewire.h>
@@ -26,8 +28,9 @@ namespace pipewire
     template <>
     registry_listener registry::listen()
     {
-        return {*this};
+        return {get()};
     }
+
     pw_registry *registry::get() const
     {
         return m_impl->registry;

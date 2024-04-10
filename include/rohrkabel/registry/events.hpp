@@ -1,5 +1,7 @@
 #pragma once
 
+#include "registry.hpp"
+
 #include "../global.hpp"
 #include "../listener.hpp"
 
@@ -14,8 +16,6 @@ namespace pipewire
         global,
         global_removed
     };
-
-    class registry;
 
     class registry_listener : listener
     {
@@ -35,7 +35,7 @@ namespace pipewire
         ~registry_listener();
 
       public:
-        registry_listener(const registry &);
+        registry_listener(pw_registry *);
         registry_listener(registry_listener &&) noexcept;
 
       public:
@@ -52,5 +52,4 @@ namespace pipewire
     template <>
     std::uint64_t
     registry_listener::on<registry_event::global_removed>(events::type_t<registry_event::global_removed> &&);
-
 } // namespace pipewire

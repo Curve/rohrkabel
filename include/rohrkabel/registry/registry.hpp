@@ -1,6 +1,5 @@
 #pragma once
 
-#include "events.hpp"
 #include "../core/core.hpp"
 
 #include <memory>
@@ -10,6 +9,8 @@ struct pw_registry;
 
 namespace pipewire
 {
+    class registry_listener;
+
     class registry
     {
         friend class core;
