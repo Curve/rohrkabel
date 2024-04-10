@@ -29,7 +29,12 @@ int main()
         auto device = reg->bind<pipewire::device>(global.id).get();
         auto info   = device->info();
 
-        if (!info.props.contains("alsa.card_name"))
+        if (info.props["media.class"] != "Audio/Device")
+        {
+            return;
+        }
+
+        if (!info.props.contains("device.description"))
         {
             return;
         }
@@ -43,7 +48,7 @@ int main()
     for (auto i = 0u; devices.size() > i; i++)
     {
         auto &device = devices.at(i);
-        auto name    = device.info().props.at("alsa.card_name");
+        auto name    = device.info().props.at("device.description");
 
         std::cout << std::format("{}. {}", i, name) << std::endl;
     }
@@ -57,7 +62,7 @@ int main()
     auto &device = devices.at(selection);
 
     std::cout << std::endl;
-    std::cout << "Muting: " << device.info().props.at("alsa.card_name") << std::endl;
+    std::cout << "Muting: " << device.info().props.at("device.description") << std::endl;
 
     auto params = device.params();
     core->update();
