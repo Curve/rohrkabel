@@ -2,6 +2,8 @@
 #include <iostream>
 
 #include <rohrkabel/node/node.hpp>
+
+#include <rohrkabel/registry/events.hpp>
 #include <rohrkabel/registry/registry.hpp>
 
 namespace pw = pipewire;
@@ -15,8 +17,7 @@ int main()
 
     auto listener = reg->listen();
 
-    auto on_global = [&](const pw::global &global)
-    {
+    auto on_global = [&](const pw::global &global) {
         if (global.type != pw::node::type)
         {
             return;

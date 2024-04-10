@@ -2,8 +2,10 @@
 #include <iostream>
 
 #include <rohrkabel/device/device.hpp>
-#include <rohrkabel/registry/registry.hpp>
 #include <rohrkabel/spa/pod/object/body.hpp>
+
+#include <rohrkabel/registry/events.hpp>
+#include <rohrkabel/registry/registry.hpp>
 
 namespace pw = pipewire;
 
@@ -18,8 +20,7 @@ int main()
 
     auto listener = reg->listen();
 
-    auto on_global = [&](const pipewire::global &global)
-    {
+    auto on_global = [&](const pipewire::global &global) {
         if (global.type != pipewire::device::type)
         {
             return;
@@ -61,12 +62,10 @@ int main()
     auto params = device.params();
     core->update();
 
-    auto get_mute = [](const pw::spa::pod &pod)
-    {
+    auto get_mute = [](const pw::spa::pod &pod) {
         // NOLINTNEXTLINE
         auto impl = [](const pw::spa::pod_prop *parent, const pw::spa::pod &pod,
-                       auto &self) -> std::optional<pw::spa::pod_prop>
-        {
+                       auto &self) -> std::optional<pw::spa::pod_prop> {
             if (pod.type() == pw::spa::pod_type::object)
             {
                 for (const auto &item : pod.body<pw::spa::pod_object_body>())
