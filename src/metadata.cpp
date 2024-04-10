@@ -72,11 +72,13 @@ namespace pipewire
             properties_t properties;
         };
 
-        auto proxy   = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
-        auto m_state = std::make_shared<state>(raw);
+        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
 
-        m_state->listener.on<metadata_event::property>([m_state](auto key, auto property) {
-            m_state->properties.emplace(key, std::move(property));
+        auto m_state    = std::make_shared<state>(raw);
+        auto weak_state = std::weak_ptr{m_state};
+
+        m_state->listener.on<metadata_event::property>([weak_state](auto key, auto property) {
+            weak_state.lock()->properties.emplace(key, std::move(property));
             return 0;
         });
 

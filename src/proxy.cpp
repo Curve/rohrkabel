@@ -85,18 +85,19 @@ namespace pipewire
             std::promise<expected<void>> done;
         };
 
-        auto m_state = std::make_shared<state>(raw);
+        auto m_state    = std::make_shared<state>(raw);
+        auto weak_state = std::weak_ptr{m_state};
 
-        m_state->listener.on<proxy_event::bound>([m_state](std::uint32_t) {
-            m_state->done.set_value({});
+        m_state->listener.once<proxy_event::bound>([weak_state](std::uint32_t) {
+            weak_state.lock()->done.set_value({});
         });
 
-        m_state->listener.on<proxy_event::bound_props>([m_state](std::uint32_t, spa::dict props) {
-            m_state->props = std::move(props);
+        m_state->listener.once<proxy_event::bound_props>([weak_state](std::uint32_t, spa::dict props) {
+            weak_state.lock()->props = std::move(props);
         });
 
-        m_state->listener.on<proxy_event::error>([m_state](int seq, int res, const char *message) {
-            m_state->done.set_value(tl::make_unexpected<error>({seq, res, message}));
+        m_state->listener.once<proxy_event::error>([weak_state](int seq, int res, const char *message) {
+            weak_state.lock()->done.set_value(tl::make_unexpected<error>({seq, res, message}));
         });
 
         return make_lazy<expected<proxy>>([m_state, raw]() -> expected<proxy> {
