@@ -19,13 +19,13 @@ namespace pipewire
 
         m_impl->events.property = [](void *data, std::uint32_t subject, const char *key, const char *type,
                                      const char *value) {
-            auto &thiz    = *reinterpret_cast<metadata_listener *>(data);
+            auto &events  = *reinterpret_cast<listener::events *>(data);
             auto property = metadata_property{type, value, subject};
 
-            return thiz.m_events.at<metadata_event::property>().during(0, key, std::move(property)).value_or(0);
+            return events.at<metadata_event::property>().during(0, key, std::move(property)).value_or(0);
         };
 
-        pw_metadata_add_listener(metadata, listener::get(), &m_impl->events, this);
+        pw_metadata_add_listener(metadata, listener::get(), &m_impl->events, m_events.get());
     }
 
     metadata_listener::metadata_listener(metadata_listener &&metadata_listener) noexcept

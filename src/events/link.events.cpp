@@ -17,11 +17,11 @@ namespace pipewire
         m_impl->events.version = PW_VERSION_LINK_EVENTS;
 
         m_impl->events.info = [](void *data, const pw_link_info *info) {
-            auto &thiz = *reinterpret_cast<link_listener *>(data);
-            thiz.m_events.at<link_event::info>().fire(link_info::from(info));
+            auto &events = *reinterpret_cast<listener::events *>(data);
+            events.at<link_event::info>().fire(link_info::from(info));
         };
 
-        pw_link_add_listener(link, listener::get(), &m_impl->events, this);
+        pw_link_add_listener(link, listener::get(), &m_impl->events, m_events.get());
     }
 
     link_listener::link_listener(link_listener &&link_listener) noexcept
