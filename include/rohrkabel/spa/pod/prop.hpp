@@ -43,6 +43,10 @@ namespace pipewire::spa
         [[nodiscard]] const spa_type_info *type_info() const;
 
       public:
+        [[nodiscard]] operator spa_pod_prop *() const &;
+        [[nodiscard]] operator spa_pod_prop *() const && = delete;
+
+      public:
         [[nodiscard]] static pod_prop view(spa_pod_prop *, const spa_type_info *);
     };
 } // namespace pipewire::spa

@@ -69,6 +69,11 @@ namespace pipewire::spa
         return m_impl->type;
     }
 
+    pod_prop::operator spa_pod_prop *() const &
+    {
+        return get();
+    }
+
     pod_prop pod_prop::view(spa_pod_prop *prop, const spa_type_info *type)
     {
         pod_prop rtn;

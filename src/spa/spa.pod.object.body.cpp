@@ -46,7 +46,9 @@ namespace pipewire::spa
 
     bool pod_object_body::has(std::uint32_t key) const
     {
-        return std::ranges::any_of(*this, [&](const auto &item) { return item.key() == key; });
+        return std::ranges::any_of(*this, [&](const auto &item) {
+            return item.key() == key;
+        });
     }
 
     pod_prop pod_object_body::at(std::uint32_t key) const
@@ -98,6 +100,11 @@ namespace pipewire::spa
     const spa_type_info *pod_object_body::type_info() const
     {
         return spa_debug_type_find(nullptr, m_impl->body->type);
+    }
+
+    pod_object_body::operator spa_pod_object_body *() const &
+    {
+        return get();
     }
 
     pod_object_body pod_object_body::view(spa_pod_object_body *body, std::size_t size)

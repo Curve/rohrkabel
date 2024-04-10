@@ -55,6 +55,10 @@ namespace pipewire::spa
         [[nodiscard]] const spa_type_info *type_info() const;
 
       public:
+        [[nodiscard]] operator spa_pod_object_body *() const &;
+        [[nodiscard]] operator spa_pod_object_body *() const && = delete;
+
+      public:
         [[nodiscard]] static pod_object_body view(spa_pod_object_body *body, std::size_t size);
     };
 } // namespace pipewire::spa
