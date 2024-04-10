@@ -1,7 +1,6 @@
-#include "listener.hpp"
 #include "device/device.hpp"
+#include "device/events.hpp"
 
-#include <optional>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -38,28 +37,27 @@ namespace pipewire
     {
         struct state
         {
-            listener hook;
+            device_listener listener;
+
+          public:
             underlying params;
-            pw_device_events events;
         };
 
-        auto m_state            = std::make_shared<state>();
-        m_state->events.version = PW_VERSION_DEVICE_EVENTS;
+        auto m_state    = std::make_shared<state>(get());
+        auto weak_state = std::weak_ptr{m_state};
+
+        m_state->listener.on<device_event::param>([weak_state](int, uint32_t id, uint32_t, uint32_t, spa::pod param) {
+            weak_state.lock()->params.emplace(id, std::move(param));
+        });
 
         for (const auto &param : m_impl->info.params)
         {
             pw_device_enum_params(m_impl->device, 0, param.id, 0, 1, nullptr);
         }
 
-        m_state->events.param = [](void *data, int, uint32_t id, uint32_t, uint32_t, const struct spa_pod *param)
-        {
-            auto &m_state = *reinterpret_cast<state *>(data);
-            m_state.params.emplace(id, spa::pod::copy(param));
-        };
-
-        pw_device_add_listener(m_impl->device, m_state->hook.get(), &m_state->events, m_state.get());
-
-        return make_lazy<underlying>([m_state]() { return std::move(m_state->params); });
+        return make_lazy<underlying>([m_state]() -> underlying {
+            return m_state->params;
+        });
     }
 
     pw_device *device::get() const
@@ -81,53 +79,31 @@ namespace pipewire
     {
         struct state
         {
-            pw_device_events events;
-            std::optional<listener> hook;
+            device_listener listener;
+
+          public:
             std::promise<device_info> info;
         };
 
-        auto proxy   = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
-        auto m_state = std::make_shared<state>();
+        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
 
-        m_state->hook.emplace();
-        m_state->events.version = PW_VERSION_DEVICE_EVENTS;
+        auto m_state    = std::make_shared<state>(raw);
+        auto weak_state = std::weak_ptr{m_state};
 
-        m_state->events.info = [](void *data, const pw_device_info *info)
-        {
-            auto &m_state = *reinterpret_cast<state *>(data);
+        m_state->listener.once<device_event::info>([weak_state](device_info info) {
+            weak_state.lock()->info.set_value(std::move(info));
+        });
 
-            device_info m_info = {
-                info->props,
-                info->id,
-                info->change_mask,
-                std::vector<param_info>(info->n_params),
-            };
+        return make_lazy<expected<device>>([m_state, fut = std::move(proxy)]() mutable -> expected<device> {
+            auto proxy = fut.get();
 
-            for (auto i = 0u; info->params && i < info->n_params; i++)
+            if (!proxy.has_value())
             {
-                auto param = info->params[i];
-                m_info.params.emplace_back(param_info{param.id, static_cast<param_flags>(param.flags)});
+                return tl::make_unexpected(proxy.error());
             }
 
-            m_state.info.set_value(m_info);
-            m_state.hook.reset();
-        };
-
-        // NOLINTNEXTLINE(*-optional-access)
-        pw_device_add_listener(raw, m_state->hook->get(), &m_state->events, m_state.get());
-
-        return make_lazy<expected<device>>(
-            [m_state, fut = std::move(proxy)]() mutable -> expected<device>
-            {
-                auto proxy = fut.get();
-
-                if (!proxy.has_value())
-                {
-                    return tl::make_unexpected(proxy.error());
-                }
-
-                return device{std::move(proxy.value()), m_state->info.get_future().get()};
-            });
+            return device{std::move(proxy.value()), m_state->info.get_future().get()};
+        });
     }
 
     const char *device::type            = PW_TYPE_INTERFACE_Device;

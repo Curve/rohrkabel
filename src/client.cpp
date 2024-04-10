@@ -1,7 +1,6 @@
-#include "listener.hpp"
 #include "client/client.hpp"
+#include "client/events.hpp"
 
-#include <optional>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -48,40 +47,31 @@ namespace pipewire
     {
         struct state
         {
-            pw_client_events events;
-            std::optional<listener> hook;
+            client_listener events;
+
+          public:
             std::promise<client_info> info;
         };
 
-        auto proxy   = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
-        auto m_state = std::make_shared<state>();
+        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
 
-        m_state->hook.emplace();
-        m_state->events.version = PW_VERSION_CLIENT_EVENTS;
+        auto m_state    = std::make_shared<state>(raw);
+        auto weak_state = std::weak_ptr{m_state};
 
-        m_state->events.info = [](void *data, const pw_client_info *info)
-        {
-            auto &m_state = *reinterpret_cast<state *>(data);
+        m_state->events.once<client_event::info>([weak_state](client_info info) {
+            weak_state.lock()->info.set_value(std::move(info));
+        });
 
-            m_state.info.set_value({info->props, info->id, info->change_mask});
-            m_state.hook.reset();
-        };
+        return make_lazy<expected<client>>([m_state, fut = std::move(proxy)]() mutable -> expected<client> {
+            auto proxy = fut.get();
 
-        // NOLINTNEXTLINE(*-optional-access)
-        pw_client_add_listener(raw, m_state->hook->get(), &m_state->events, m_state.get());
-
-        return make_lazy<expected<client>>(
-            [m_state, fut = std::move(proxy)]() mutable -> expected<client>
+            if (!proxy.has_value())
             {
-                auto proxy = fut.get();
+                return tl::make_unexpected(proxy.error());
+            }
 
-                if (!proxy.has_value())
-                {
-                    return tl::make_unexpected(proxy.error());
-                }
-
-                return client{std::move(proxy.value()), m_state->info.get_future().get()};
-            });
+            return client{std::move(proxy.value()), m_state->info.get_future().get()};
+        });
     }
 
     const char *client::type            = PW_TYPE_INTERFACE_Client;

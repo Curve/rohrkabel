@@ -1,7 +1,6 @@
-#include "listener.hpp"
 #include "link/link.hpp"
+#include "link/events.hpp"
 
-#include <optional>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -48,54 +47,31 @@ namespace pipewire
     {
         struct state
         {
-            pw_link_events events;
-            std::optional<listener> hook;
+            link_listener listener;
+
+          public:
             std::promise<link_info> info;
         };
 
-        auto proxy   = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
-        auto m_state = std::make_shared<state>();
+        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
 
-        m_state->hook.emplace();
-        m_state->events.version = PW_VERSION_LINK_EVENTS;
+        auto m_state    = std::make_shared<state>(raw);
+        auto weak_state = std::weak_ptr{m_state};
 
-        m_state->events.info = [](void *data, const pw_link_info *info)
-        {
-            auto &m_state = *reinterpret_cast<state *>(data);
+        m_state->listener.once<link_event::info>([weak_state](link_info info) {
+            weak_state.lock()->info.set_value(std::move(info));
+        });
 
-            m_state.info.set_value({
-                info->props,
-                static_cast<link_state>(info->state),
-                info->id,
-                info->change_mask,
-                {
-                    .port = info->input_port_id,
-                    .node = info->input_node_id,
-                },
-                {
-                    .port = info->output_port_id,
-                    .node = info->output_node_id,
-                },
-            });
+        return make_lazy<expected<link>>([m_state, fut = std::move(proxy)]() mutable -> expected<link> {
+            auto proxy = fut.get();
 
-            m_state.hook.reset();
-        };
-
-        // NOLINTNEXTLINE(*-optional-access)
-        pw_link_add_listener(raw, m_state->hook->get(), &m_state->events, m_state.get());
-
-        return make_lazy<expected<link>>(
-            [m_state, fut = std::move(proxy)]() mutable -> expected<link>
+            if (!proxy.has_value())
             {
-                auto proxy = fut.get();
+                return tl::make_unexpected(proxy.error());
+            }
 
-                if (!proxy.has_value())
-                {
-                    return tl::make_unexpected(proxy.error());
-                }
-
-                return link{std::move(proxy.value()), m_state->info.get_future().get()};
-            });
+            return link{std::move(proxy.value()), m_state->info.get_future().get()};
+        });
     }
 
     const char *link::type            = PW_TYPE_INTERFACE_Link;
