@@ -1,7 +1,7 @@
 #pragma once
 
 #include "property.hpp"
-#include "../proxy.hpp"
+#include "../proxy/proxy.hpp"
 
 #include <map>
 #include <string>
@@ -10,6 +10,8 @@ struct pw_metadata;
 
 namespace pipewire
 {
+    class metadata_listener;
+
     class metadata final : public proxy
     {
         struct impl;
@@ -39,6 +41,10 @@ namespace pipewire
         [[nodiscard]] properties_t properties() const;
 
       public:
+        template <class Listener = metadata_listener>
+        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+
+      public:
         [[nodiscard]] operator pw_metadata *() const &;
         [[nodiscard]] operator pw_metadata *() const && = delete;
 
@@ -49,4 +55,7 @@ namespace pipewire
         static const char *type;
         static const std::uint32_t version;
     };
+
+    template <>
+    metadata_listener metadata::listen();
 } // namespace pipewire

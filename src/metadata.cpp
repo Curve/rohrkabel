@@ -1,4 +1,4 @@
-#include "listener.hpp"
+#include "metadata/events.hpp"
 #include "metadata/metadata.hpp"
 
 #include <pipewire/pipewire.h>
@@ -41,6 +41,12 @@ namespace pipewire
         m_impl->properties.emplace(std::move(key), metadata_property{std::move(type), std::move(value), id});
     }
 
+    template <>
+    metadata_listener metadata::listen()
+    {
+        return {get()};
+    }
+
     pw_metadata *metadata::get() const
     {
         return m_impl->metadata;
@@ -60,39 +66,30 @@ namespace pipewire
     {
         struct state
         {
-            listener hook;
+            metadata_listener listener;
+
+          public:
             properties_t properties;
-            pw_metadata_events events;
         };
 
         auto proxy   = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
-        auto m_state = std::make_shared<state>();
+        auto m_state = std::make_shared<state>(raw);
 
-        m_state->events.version = PW_VERSION_METADATA_EVENTS;
-
-        m_state->events.property =
-            [](void *data, std::uint32_t subject, const char *key, const char *type, const char *value)
-        {
-            auto &m_state = *reinterpret_cast<state *>(data);
-            m_state.properties.emplace(key, metadata_property{type, value, subject});
-
+        m_state->listener.on<metadata_event::property>([m_state](auto key, auto property) {
+            m_state->properties.emplace(key, std::move(property));
             return 0;
-        };
+        });
 
-        pw_metadata_add_listener(raw, m_state->hook.get(), &m_state->events, m_state.get());
+        return make_lazy<expected<metadata>>([m_state, fut = std::move(proxy)]() mutable -> expected<metadata> {
+            auto proxy = fut.get();
 
-        return make_lazy<expected<metadata>>(
-            [m_state, fut = std::move(proxy)]() mutable -> expected<metadata>
+            if (!proxy.has_value())
             {
-                auto proxy = fut.get();
+                return tl::make_unexpected(proxy.error());
+            }
 
-                if (!proxy.has_value())
-                {
-                    return tl::make_unexpected(proxy.error());
-                }
-
-                return metadata{std::move(proxy.value()), m_state->properties};
-            });
+            return metadata{std::move(proxy.value()), m_state->properties};
+        });
     }
 
     const char *metadata::type            = PW_TYPE_INTERFACE_Metadata;
