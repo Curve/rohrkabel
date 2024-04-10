@@ -4,6 +4,8 @@
 
 #include <cstdint>
 
+struct pw_link_info;
+
 namespace pipewire
 {
     enum class link_state : std::int8_t
@@ -36,5 +38,8 @@ namespace pipewire
             std::uint32_t port;
             std::uint32_t node;
         } output;
+
+      public:
+        static link_info from(const pw_link_info *);
     };
 } // namespace pipewire

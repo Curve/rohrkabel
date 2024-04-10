@@ -5,6 +5,8 @@
 #include <string>
 #include <cstdint>
 
+struct pw_core_info;
+
 namespace pipewire
 {
     struct core_info
@@ -18,5 +20,8 @@ namespace pipewire
         std::string version;
         std::string user_name;
         std::string host_name;
+
+      public:
+        static core_info from(const pw_core_info *);
     };
 } // namespace pipewire

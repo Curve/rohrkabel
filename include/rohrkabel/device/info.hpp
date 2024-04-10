@@ -6,6 +6,8 @@
 #include <vector>
 #include <cstdint>
 
+struct pw_device_info;
+
 namespace pipewire
 {
     struct device_info
@@ -13,6 +15,9 @@ namespace pipewire
         spa::dict props;
         std::uint32_t id;
         std::uint64_t change_mask;
-        std::vector<param_info> params;
+        std::vector<spa::param_info> params;
+
+      public:
+        static device_info from(const pw_device_info *);
     };
 } // namespace pipewire

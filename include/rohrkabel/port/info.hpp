@@ -6,6 +6,8 @@
 #include <vector>
 #include <cstdint>
 
+struct pw_port_info;
+
 namespace pipewire
 {
     enum class port_direction : std::uint8_t
@@ -21,6 +23,9 @@ namespace pipewire
         std::uint64_t change_mask;
 
         spa::dict props;
-        std::vector<param_info> params;
+        std::vector<spa::param_info> params;
+
+      public:
+        static port_info from(const pw_port_info *);
     };
 } // namespace pipewire

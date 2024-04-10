@@ -7,6 +7,8 @@
 #include <vector>
 #include <cstdint>
 
+struct pw_node_info;
+
 namespace pipewire
 {
     enum class node_state : std::int8_t
@@ -39,6 +41,9 @@ namespace pipewire
         std::string error;
         std::uint64_t change_mask;
 
-        std::vector<param_info> params;
+        std::vector<spa::param_info> params;
+
+      public:
+        static node_info from(const pw_node_info *);
     };
 } // namespace pipewire
