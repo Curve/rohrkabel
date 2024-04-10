@@ -35,27 +35,4 @@ namespace pipewire
         : listener(std::move(registry_listener)), m_impl(std::move(registry_listener.m_impl))
     {
     }
-
-    void registry_listener::clear(registry_event event)
-    {
-        m_events.clear(event);
-    }
-
-    void registry_listener::remove(registry_event event, std::uint64_t id)
-    {
-        m_events.remove(event, id);
-    }
-
-    template <>
-    std::uint64_t registry_listener::on<registry_event::global>(events::type_t<registry_event::global> &&callback)
-    {
-        return m_events.at<registry_event::global>().add(std::move(callback));
-    }
-
-    template <>
-    std::uint64_t
-    registry_listener::on<registry_event::global_removed>(events::type_t<registry_event::global_removed> &&callback)
-    {
-        return m_events.at<registry_event::global_removed>().add(std::move(callback));
-    }
 } // namespace pipewire

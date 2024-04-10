@@ -1,8 +1,8 @@
-#include "listener.hpp"
+#include "spa/hook.hpp"
 
 #include <pipewire/pipewire.h>
 
-namespace pipewire
+namespace pipewire::spa
 {
     struct deleter
     {
@@ -13,34 +13,34 @@ namespace pipewire
         }
     };
 
-    struct listener::impl
+    struct hook::impl
     {
         std::unique_ptr<spa_hook, deleter> hook;
     };
 
-    listener::~listener() = default;
+    hook::~hook() = default;
 
-    listener::listener() : m_impl(std::make_unique<impl>())
+    hook::hook() : m_impl(std::make_unique<impl>())
     {
         m_impl->hook = std::unique_ptr<spa_hook, deleter>(new spa_hook);
         spa_zero(*m_impl->hook);
     }
 
-    listener::listener(listener &&other) noexcept : m_impl(std::move(other.m_impl)) {}
+    hook::hook(hook &&other) noexcept : m_impl(std::move(other.m_impl)) {}
 
-    listener &listener::operator=(listener &&other) noexcept
+    hook &hook::operator=(hook &&other) noexcept
     {
         m_impl = std::move(other.m_impl);
         return *this;
     }
 
-    spa_hook *listener::get() const
+    spa_hook *hook::get() const
     {
         return m_impl->hook.get();
     }
 
-    listener::operator spa_hook *() const &
+    hook::operator spa_hook *() const &
     {
         return get();
     }
-} // namespace pipewire
+} // namespace pipewire::spa

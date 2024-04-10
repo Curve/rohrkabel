@@ -32,20 +32,4 @@ namespace pipewire
         : listener(std::move(metadata_listener)), m_impl(std::move(metadata_listener.m_impl))
     {
     }
-
-    void metadata_listener::clear(metadata_event event)
-    {
-        m_events.clear(event);
-    }
-
-    void metadata_listener::remove(metadata_event event, std::uint64_t id)
-    {
-        m_events.remove(event, id);
-    }
-
-    template <>
-    std::uint64_t metadata_listener::on<metadata_event::property>(events::type_t<metadata_event::property> &&callback)
-    {
-        return m_events.at<metadata_event::property>().add(std::move(callback));
-    }
 } // namespace pipewire

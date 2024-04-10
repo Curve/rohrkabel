@@ -38,32 +38,4 @@ namespace pipewire
         : listener(std::move(proxy_listener)), m_impl(std::move(proxy_listener.m_impl))
     {
     }
-
-    void proxy_listener::clear(proxy_event event)
-    {
-        m_events.clear(event);
-    }
-
-    void proxy_listener::remove(proxy_event event, std::uint64_t id)
-    {
-        m_events.remove(event, id);
-    }
-
-    template <>
-    std::uint64_t proxy_listener::on<proxy_event::error>(events::type_t<proxy_event::error> &&callback)
-    {
-        return m_events.at<proxy_event::error>().add(std::move(callback));
-    }
-
-    template <>
-    std::uint64_t proxy_listener::on<proxy_event::bound>(events::type_t<proxy_event::bound> &&callback)
-    {
-        return m_events.at<proxy_event::bound>().add(std::move(callback));
-    }
-
-    template <>
-    std::uint64_t proxy_listener::on<proxy_event::bound_props>(events::type_t<proxy_event::bound_props> &&callback)
-    {
-        return m_events.at<proxy_event::bound_props>().add(std::move(callback));
-    }
 } // namespace pipewire

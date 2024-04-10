@@ -4,9 +4,9 @@
 
 struct spa_hook;
 
-namespace pipewire
+namespace pipewire::spa
 {
-    class listener
+    class hook
     {
         struct impl;
 
@@ -14,14 +14,14 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~listener();
+        ~hook();
 
       public:
-        listener();
-        listener(listener &&) noexcept;
+        hook();
+        hook(hook &&) noexcept;
 
       public:
-        listener &operator=(listener &&) noexcept;
+        hook &operator=(hook &&) noexcept;
 
       public:
         [[nodiscard]] spa_hook *get() const;
@@ -30,4 +30,4 @@ namespace pipewire
         [[nodiscard]] operator spa_hook *() const &;
         [[nodiscard]] operator spa_hook *() const && = delete;
     };
-} // namespace pipewire
+} // namespace pipewire::spa
