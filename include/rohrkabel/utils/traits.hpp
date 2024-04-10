@@ -17,17 +17,9 @@ namespace pipewire
         requires std::derived_from<T, proxy>;
         requires std::is_nothrow_move_assignable_v<T>;
         requires std::is_nothrow_move_constructible_v<T>;
-        {
-            obj.get()
-        } -> is_pointer;
-        {
-            obj.bind(nullptr)
-        } -> std::same_as<lazy<expected<T>>>;
-        {
-            obj.type
-        } -> std::same_as<const char *&>;
-        {
-            obj.version
-        } -> std::same_as<const std::uint32_t &>;
+        { obj.get() } -> is_pointer;
+        { obj.bind(nullptr) } -> std::same_as<lazy<expected<T>>>;
+        { obj.type } -> std::same_as<const char *&>;
+        { obj.version } -> std::same_as<const std::uint32_t &>;
     };
 } // namespace pipewire
