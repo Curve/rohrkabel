@@ -12,6 +12,8 @@ struct pw_node;
 
 namespace pipewire
 {
+    class node_listener;
+
     class node final : public proxy
     {
         struct impl;
@@ -43,6 +45,10 @@ namespace pipewire
         [[nodiscard]] node_info info() const;
 
       public:
+        template <class Listener = node_listener>
+        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+
+      public:
         [[nodiscard]] operator pw_node *() const &;
         [[nodiscard]] operator pw_node *() const && = delete;
 
@@ -53,4 +59,7 @@ namespace pipewire
         static const char *type;
         static const std::uint32_t version;
     };
+
+    template <>
+    node_listener node::listen();
 } // namespace pipewire

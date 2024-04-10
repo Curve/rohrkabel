@@ -65,6 +65,12 @@ namespace pipewire
         return m_impl->info;
     }
 
+    template <>
+    port_listener port::listen()
+    {
+        return {get()};
+    }
+
     port::operator pw_port *() const &
     {
         return get();

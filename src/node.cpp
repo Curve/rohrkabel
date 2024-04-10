@@ -72,6 +72,12 @@ namespace pipewire
         return m_impl->info;
     }
 
+    template <>
+    node_listener node::listen()
+    {
+        return {get()};
+    }
+
     node::operator pw_node *() const &
     {
         return get();

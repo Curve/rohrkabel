@@ -70,6 +70,12 @@ namespace pipewire
         return m_impl->info;
     }
 
+    template <>
+    device_listener device::listen()
+    {
+        return {get()};
+    }
+
     device::operator pw_device *() const &
     {
         return get();

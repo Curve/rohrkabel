@@ -12,6 +12,8 @@ struct pw_device;
 
 namespace pipewire
 {
+    class device_listener;
+
     class device final : public proxy
     {
         struct impl;
@@ -39,6 +41,10 @@ namespace pipewire
         [[nodiscard]] [[rk::needs_update]] lazy<underlying> params() const;
 
       public:
+        template <class Listener = device_listener>
+        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+
+      public:
         [[nodiscard]] pw_device *get() const;
         [[nodiscard]] device_info info() const;
 
@@ -53,4 +59,7 @@ namespace pipewire
         static const char *type;
         static const std::uint32_t version;
     };
+
+    template <>
+    device_listener device::listen();
 } // namespace pipewire

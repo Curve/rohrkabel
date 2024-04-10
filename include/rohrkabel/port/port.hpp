@@ -12,6 +12,8 @@ struct pw_port;
 
 namespace pipewire
 {
+    class port_listener;
+
     class port final : public proxy
     {
         struct impl;
@@ -40,6 +42,10 @@ namespace pipewire
         [[nodiscard]] port_info info() const;
 
       public:
+        template <class Listener = port_listener>
+        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+
+      public:
         [[nodiscard]] operator pw_port *() const &;
         [[nodiscard]] operator pw_port *() const && = delete;
 
@@ -50,4 +56,7 @@ namespace pipewire
         static const char *type;
         static const std::uint32_t version;
     };
+
+    template <>
+    port_listener port::listen();
 } // namespace pipewire

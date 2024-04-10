@@ -7,6 +7,8 @@ struct pw_link;
 
 namespace pipewire
 {
+    class link_listener;
+
     struct link_factory
     {
         std::uint32_t input;
@@ -35,6 +37,10 @@ namespace pipewire
         [[nodiscard]] link_info info() const;
 
       public:
+        template <class Listener = link_listener>
+        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+
+      public:
         [[nodiscard]] operator pw_link *() const &;
         [[nodiscard]] operator pw_link *() const && = delete;
 
@@ -45,4 +51,7 @@ namespace pipewire
         static const char *type;
         static const std::uint32_t version;
     };
+
+    template <>
+    link_listener link::listen();
 } // namespace pipewire

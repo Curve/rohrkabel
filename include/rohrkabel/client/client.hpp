@@ -7,6 +7,8 @@ struct pw_client;
 
 namespace pipewire
 {
+    class client_listener;
+
     class client final : public proxy
     {
         struct impl;
@@ -29,6 +31,10 @@ namespace pipewire
         [[nodiscard]] client_info info() const;
 
       public:
+        template <class Listener = client_listener>
+        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+
+      public:
         [[nodiscard]] operator pw_client *() const &;
         [[nodiscard]] operator pw_client *() const && = delete;
 
@@ -39,4 +45,7 @@ namespace pipewire
         static const char *type;
         static const std::uint32_t version;
     };
+
+    template <>
+    client_listener client::listen();
 } // namespace pipewire

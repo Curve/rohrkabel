@@ -38,6 +38,12 @@ namespace pipewire
         return m_impl->info;
     }
 
+    template <>
+    client_listener client::listen()
+    {
+        return {get()};
+    }
+
     client::operator pw_client *() const &
     {
         return get();
