@@ -1,7 +1,7 @@
 #pragma once
 
 #include "info.hpp"
-#include "../proxy.hpp"
+#include "../proxy/proxy.hpp"
 
 struct pw_link;
 

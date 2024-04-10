@@ -1,7 +1,7 @@
 #pragma once
 
-#include "spa/dict.hpp"
-#include "utils/lazy.hpp"
+#include "../spa/dict.hpp"
+#include "../utils/lazy.hpp"
 
 #include <string>
 #include <memory>
@@ -11,6 +11,8 @@ struct pw_proxy;
 
 namespace pipewire
 {
+    class proxy_listener;
+
     class proxy
     {
         struct impl;
@@ -38,10 +40,17 @@ namespace pipewire
         [[nodiscard]] pw_proxy *get() const;
 
       public:
+        template <class Listener = proxy_listener>
+        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+
+      public:
         [[nodiscard]] operator pw_proxy *() const &;
         [[nodiscard]] operator pw_proxy *() const && = delete;
 
       public:
         [[rk::needs_update]] static lazy<expected<proxy>> bind(pw_proxy *);
     };
+
+    template <>
+    proxy_listener proxy::listen();
 } // namespace pipewire

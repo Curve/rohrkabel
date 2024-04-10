@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lazy.hpp"
-#include "../proxy.hpp"
+#include "../proxy/proxy.hpp"
 
 #include <cstdint>
 #include <concepts>

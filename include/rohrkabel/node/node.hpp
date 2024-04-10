@@ -1,7 +1,7 @@
 #pragma once
 
 #include "info.hpp"
-#include "../proxy.hpp"
+#include "../proxy/proxy.hpp"
 #include "../spa/pod/pod.hpp"
 
 #include <map>
