@@ -2,6 +2,8 @@
 
 #include "registry.hpp"
 
+#include <boost/callable_traits.hpp>
+
 namespace pipewire
 {
     template <typename T>
