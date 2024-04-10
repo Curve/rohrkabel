@@ -91,7 +91,7 @@ CPMFindPackage(
 
 CPMFindPackage(
   NAME           ereignis
-  VERSION        2.3
+  VERSION        3.1
   GIT_REPOSITORY "https://github.com/Curve/ereignis"
 )
 
