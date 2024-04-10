@@ -14,6 +14,8 @@ namespace pipewire
     struct core::impl
     {
         pw_core *core;
+
+      public:
         std::shared_ptr<pipewire::context> context;
         std::shared_ptr<pipewire::registry> registry;
     };
@@ -27,11 +29,11 @@ namespace pipewire
 
     void *core::create(factory factory) const
     {
-        auto *dict = &factory.props.get()->dict;
+        auto &&[name, props, type, version] = factory;
+        auto *dict                          = &props.get()->dict;
 
         // NOLINTNEXTLINE(*-optional-access)
-        return pw_core_create_object(get(), factory.name.c_str(), factory.type->c_str(), factory.version.value(), dict,
-                                     0);
+        return pw_core_create_object(get(), name.c_str(), type->c_str(), version.value(), dict, 0);
     }
 
     template <>
