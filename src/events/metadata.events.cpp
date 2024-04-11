@@ -20,7 +20,7 @@ namespace pipewire
         m_impl->events.property = [](void *data, std::uint32_t subject, const char *key, const char *type,
                                      const char *value) {
             auto &events  = *reinterpret_cast<listener::events *>(data);
-            auto property = metadata_property{type, value, subject};
+            auto property = metadata_property{type ? type : "", value ? value : "", subject};
 
             return events.at<metadata_event::property>().during(0, key, std::move(property)).value_or(0);
         };

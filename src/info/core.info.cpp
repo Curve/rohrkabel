@@ -10,10 +10,10 @@ namespace pipewire
             .props     = info->props,
             .id        = info->id,
             .cookie    = info->cookie,
-            .name      = info->name,
-            .version   = info->version,
-            .user_name = info->user_name,
-            .host_name = info->host_name,
+            .name      = info->name ? info->name : "",
+            .version   = info->version ? info->version : "",
+            .user_name = info->user_name ? info->user_name : "",
+            .host_name = info->host_name ? info->host_name : "",
         };
     }
 } // namespace pipewire

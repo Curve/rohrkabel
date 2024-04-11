@@ -19,7 +19,7 @@ namespace pipewire
         m_impl->events.global = [](void *data, std::uint32_t id, std::uint32_t permissions, const char *type,
                                    std::uint32_t version, const spa_dict *props) {
             auto &events = *reinterpret_cast<listener::events *>(data);
-            events.at<registry_event::global>().fire(global{id, version, permissions, props, type});
+            events.at<registry_event::global>().fire(global{id, version, permissions, props, type ? type : ""});
         };
 
         m_impl->events.global_remove = [](void *data, std::uint32_t id) {
