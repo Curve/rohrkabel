@@ -8,7 +8,7 @@ namespace pipewire
 {
     struct metadata::impl
     {
-        pw_metadata *metadata;
+        raw_type *metadata;
         properties_t properties;
     };
 
@@ -18,7 +18,7 @@ namespace pipewire
 
     metadata::metadata(proxy &&base, properties_t properties) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
-        m_impl->metadata   = reinterpret_cast<pw_metadata *>(proxy::get());
+        m_impl->metadata   = reinterpret_cast<raw_type *>(proxy::get());
         m_impl->properties = std::move(properties);
     }
 
@@ -41,13 +41,16 @@ namespace pipewire
         m_impl->properties.emplace(std::move(key), metadata_property{std::move(type), std::move(value), id});
     }
 
-    template <>
-    metadata_listener metadata::listen()
+    template metadata_listener metadata::listen<metadata_listener>();
+
+    template <class Listener>
+        requires valid_listener<Listener, metadata::raw_type>
+    Listener metadata::listen()
     {
         return {get()};
     }
 
-    pw_metadata *metadata::get() const
+    metadata::raw_type *metadata::get() const
     {
         return m_impl->metadata;
     }
@@ -57,12 +60,12 @@ namespace pipewire
         return m_impl->properties;
     }
 
-    metadata::operator pw_metadata *() const &
+    metadata::operator raw_type *() const &
     {
         return get();
     }
 
-    lazy<expected<metadata>> metadata::bind(pw_metadata *raw)
+    lazy<expected<metadata>> metadata::bind(raw_type *raw)
     {
         struct state
         {
@@ -72,7 +75,7 @@ namespace pipewire
             properties_t properties;
         };
 
-        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
+        auto proxy = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
 
         auto m_state    = std::make_shared<state>(raw);
         auto weak_state = std::weak_ptr{m_state};

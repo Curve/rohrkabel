@@ -31,7 +31,7 @@ namespace pipewire
         ~node_listener();
 
       public:
-        node_listener(pw_node *);
+        node_listener(node::raw_type *);
         node_listener(node_listener &&) noexcept;
     };
 } // namespace pipewire

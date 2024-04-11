@@ -9,7 +9,7 @@ namespace pipewire
 {
     struct context::impl
     {
-        pw_context *context;
+        raw_type *context;
         std::shared_ptr<main_loop> loop;
         std::shared_ptr<pipewire::core> core;
     };
@@ -31,7 +31,7 @@ namespace pipewire
         return m_impl->core;
     }
 
-    pw_context *context::get() const
+    context::raw_type *context::get() const
     {
         return m_impl->context;
     }
@@ -41,7 +41,7 @@ namespace pipewire
         return m_impl->loop;
     }
 
-    context::operator pw_context *() const &
+    context::operator raw_type *() const &
     {
         return get();
     }

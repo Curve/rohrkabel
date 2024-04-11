@@ -6,23 +6,25 @@ namespace pipewire
 {
     struct deleter
     {
-        void operator()(pw_properties *props)
+        void operator()(properties::raw_type *props)
         {
             pw_properties_free(props);
         }
     };
 
+    using unique_ptr = std::unique_ptr<properties::raw_type, deleter>;
+
     struct properties::impl
     {
         underlying map;
-        std::unique_ptr<pw_properties, deleter> properties;
+        unique_ptr properties;
     };
 
     properties::~properties() = default;
 
     properties::properties() : m_impl(std::make_unique<impl>())
     {
-        m_impl->properties = std::unique_ptr<pw_properties, deleter>(pw_properties_new(nullptr, nullptr));
+        m_impl->properties = unique_ptr(pw_properties_new(nullptr, nullptr));
     }
 
     properties::properties(properties &&properties) noexcept : m_impl(std::move(properties.m_impl)) {}
@@ -63,12 +65,12 @@ namespace pipewire
         return m_impl->map.begin();
     }
 
-    pw_properties *properties::get() const
+    properties::raw_type *properties::get() const
     {
         return m_impl->properties.get();
     }
 
-    properties::operator pw_properties *() const &
+    properties::operator raw_type *() const &
     {
         return get();
     }

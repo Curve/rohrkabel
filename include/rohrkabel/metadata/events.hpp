@@ -29,7 +29,7 @@ namespace pipewire
         ~metadata_listener();
 
       public:
-        metadata_listener(pw_metadata *);
+        metadata_listener(metadata::raw_type *);
         metadata_listener(metadata_listener &&) noexcept;
     };
 } // namespace pipewire

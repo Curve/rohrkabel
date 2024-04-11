@@ -29,7 +29,7 @@ namespace pipewire
         ~registry_listener();
 
       public:
-        registry_listener(pw_registry *);
+        registry_listener(registry::raw_type *);
         registry_listener(registry_listener &&) noexcept;
     };
 } // namespace pipewire

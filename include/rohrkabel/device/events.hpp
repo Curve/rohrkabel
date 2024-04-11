@@ -32,7 +32,7 @@ namespace pipewire
         ~device_listener();
 
       public:
-        device_listener(pw_device *);
+        device_listener(device::raw_type *);
         device_listener(device_listener &&) noexcept;
     };
 } // namespace pipewire

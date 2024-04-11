@@ -15,6 +15,9 @@ namespace pipewire
     {
         friend class core;
 
+      public:
+        using raw_type = pw_registry;
+
       private:
         struct impl;
 
@@ -32,7 +35,8 @@ namespace pipewire
 
       public:
         template <class Listener = registry_listener>
-        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+            requires valid_listener<Listener, raw_type>
+        [[rk::needs_update]] [[nodiscard]] Listener listen();
 
       public:
         template <class T>
@@ -40,19 +44,16 @@ namespace pipewire
         [[nodiscard]] lazy<expected<T>> bind(std::uint32_t id, update_strategy strategy = update_strategy::sync);
 
       public:
-        [[nodiscard]] pw_registry *get() const;
+        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] std::shared_ptr<pipewire::core> core() const;
 
       public:
-        [[nodiscard]] operator pw_registry *() const &;
-        [[nodiscard]] operator pw_registry *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
 
       private:
         [[nodiscard]] static std::shared_ptr<registry> create(std::shared_ptr<pipewire::core>);
     };
-
-    template <>
-    registry_listener registry::listen();
 } // namespace pipewire
 
 #include "registry.inl"

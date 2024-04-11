@@ -9,7 +9,7 @@ namespace pipewire
 {
     struct node::impl
     {
-        pw_node *node;
+        raw_type *node;
         node_info info;
     };
 
@@ -19,7 +19,7 @@ namespace pipewire
 
     node::node(proxy &&base, node_info info) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
-        m_impl->node = reinterpret_cast<pw_node *>(proxy::get());
+        m_impl->node = reinterpret_cast<raw_type *>(proxy::get());
         m_impl->info = std::move(info);
     }
 
@@ -62,7 +62,7 @@ namespace pipewire
         });
     }
 
-    pw_node *node::get() const
+    node::raw_type *node::get() const
     {
         return m_impl->node;
     }
@@ -72,18 +72,21 @@ namespace pipewire
         return m_impl->info;
     }
 
-    template <>
-    node_listener node::listen()
+    template node_listener node::listen<node_listener>();
+
+    template <class Listener>
+        requires valid_listener<Listener, node::raw_type>
+    Listener node::listen()
     {
         return {get()};
     }
 
-    node::operator pw_node *() const &
+    node::operator raw_type *() const &
     {
         return get();
     }
 
-    lazy<expected<node>> node::bind(pw_node *raw)
+    lazy<expected<node>> node::bind(raw_type *raw)
     {
         struct state
         {
@@ -93,7 +96,7 @@ namespace pipewire
             std::promise<node_info> info;
         };
 
-        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
+        auto proxy = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
 
         auto m_state    = std::make_shared<state>(raw);
         auto weak_state = std::weak_ptr{m_state};

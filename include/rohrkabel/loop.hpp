@@ -11,6 +11,9 @@ namespace pipewire
     {
         struct impl;
 
+      public:
+        using raw_type = pw_main_loop;
+
       private:
         std::unique_ptr<impl> m_impl;
 
@@ -25,12 +28,12 @@ namespace pipewire
         [[rk::blocking]] void run() const;
 
       public:
+        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] pw_loop *loop() const;
-        [[nodiscard]] pw_main_loop *get() const;
 
       public:
-        [[nodiscard]] operator pw_main_loop *() const &;
-        [[nodiscard]] operator pw_main_loop *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
         [[nodiscard]] static std::shared_ptr<main_loop> create();

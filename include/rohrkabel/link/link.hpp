@@ -19,6 +19,9 @@ namespace pipewire
     {
         struct impl;
 
+      public:
+        using raw_type = pw_link;
+
       private:
         std::unique_ptr<impl> m_impl;
 
@@ -33,25 +36,23 @@ namespace pipewire
         link &operator=(link &&) noexcept;
 
       public:
-        [[nodiscard]] pw_link *get() const;
+        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] link_info info() const;
 
       public:
         template <class Listener = link_listener>
-        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+            requires valid_listener<Listener, raw_type>
+        [[rk::needs_update]] [[nodiscard]] Listener listen();
 
       public:
-        [[nodiscard]] operator pw_link *() const &;
-        [[nodiscard]] operator pw_link *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<link>> bind(pw_link *);
+        [[rk::needs_update]] static lazy<expected<link>> bind(raw_type *);
 
       public:
         static const char *type;
         static const std::uint32_t version;
     };
-
-    template <>
-    link_listener link::listen();
 } // namespace pipewire

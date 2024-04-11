@@ -33,7 +33,7 @@ namespace pipewire
         ~client_listener();
 
       public:
-        client_listener(pw_client *);
+        client_listener(client::raw_type *);
         client_listener(client_listener &&) noexcept;
     };
 } // namespace pipewire

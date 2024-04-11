@@ -12,7 +12,7 @@ namespace pipewire
 
     registry_listener::~registry_listener() = default;
 
-    registry_listener::registry_listener(pw_registry *registry) : m_impl(std::make_unique<impl>())
+    registry_listener::registry_listener(registry::raw_type *registry) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_REGISTRY_EVENTS;
 

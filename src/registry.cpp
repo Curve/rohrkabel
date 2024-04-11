@@ -1,6 +1,7 @@
 #include "registry/events.hpp"
 #include "registry/registry.hpp"
 
+#include "proxy/proxy.hpp"
 #include "utils/check.hpp"
 
 #include <pipewire/pipewire.h>
@@ -9,7 +10,7 @@ namespace pipewire
 {
     struct registry::impl
     {
-        pw_registry *registry;
+        raw_type *registry;
         std::shared_ptr<pipewire::core> core;
     };
 
@@ -20,18 +21,21 @@ namespace pipewire
 
     registry::~registry()
     {
-        pw_proxy_destroy(reinterpret_cast<pw_proxy *>(m_impl->registry));
+        pw_proxy_destroy(reinterpret_cast<proxy::raw_type *>(m_impl->registry));
     }
 
     registry::registry() : m_impl(std::make_unique<impl>()) {}
 
-    template <>
-    registry_listener registry::listen()
+    template registry_listener registry::listen<registry_listener>();
+
+    template <class Listener>
+        requires valid_listener<Listener, registry::raw_type>
+    Listener registry::listen()
     {
         return {get()};
     }
 
-    pw_registry *registry::get() const
+    registry::raw_type *registry::get() const
     {
         return m_impl->registry;
     }
@@ -41,7 +45,7 @@ namespace pipewire
         return m_impl->core;
     }
 
-    registry::operator pw_registry *() const &
+    registry::operator raw_type *() const &
     {
         return get();
     }

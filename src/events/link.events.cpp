@@ -12,7 +12,7 @@ namespace pipewire
 
     link_listener::~link_listener() = default;
 
-    link_listener::link_listener(pw_link *link) : m_impl(std::make_unique<impl>())
+    link_listener::link_listener(link::raw_type *link) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_LINK_EVENTS;
 

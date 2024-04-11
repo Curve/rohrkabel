@@ -6,23 +6,25 @@ namespace pipewire::spa
 {
     struct deleter
     {
-        void operator()(spa_hook *hook)
+        void operator()(hook::raw_type *hook)
         {
             spa_hook_remove(hook);
             delete hook;
         }
     };
 
+    using unique_ptr = std::unique_ptr<hook::raw_type, deleter>;
+
     struct hook::impl
     {
-        std::unique_ptr<spa_hook, deleter> hook;
+        unique_ptr hook;
     };
 
     hook::~hook() = default;
 
     hook::hook() : m_impl(std::make_unique<impl>())
     {
-        m_impl->hook = std::unique_ptr<spa_hook, deleter>(new spa_hook);
+        m_impl->hook = unique_ptr(new raw_type);
         spa_zero(*m_impl->hook);
     }
 
@@ -34,12 +36,12 @@ namespace pipewire::spa
         return *this;
     }
 
-    spa_hook *hook::get() const
+    hook::raw_type *hook::get() const
     {
         return m_impl->hook.get();
     }
 
-    hook::operator spa_hook *() const &
+    hook::operator raw_type *() const &
     {
         return get();
     }

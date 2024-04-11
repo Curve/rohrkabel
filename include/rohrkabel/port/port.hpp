@@ -18,6 +18,9 @@ namespace pipewire
     {
         struct impl;
 
+      public:
+        using raw_type = pw_port;
+
       private:
         using params_t = std::map<std::uint32_t, spa::pod>;
 
@@ -38,25 +41,23 @@ namespace pipewire
         [[nodiscard]] [[rk::needs_update]] lazy<params_t> params() const;
 
       public:
-        [[nodiscard]] pw_port *get() const;
+        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] port_info info() const;
 
       public:
         template <class Listener = port_listener>
-        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+            requires valid_listener<Listener, raw_type>
+        [[rk::needs_update]] [[nodiscard]] Listener listen();
 
       public:
-        [[nodiscard]] operator pw_port *() const &;
-        [[nodiscard]] operator pw_port *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<port>> bind(pw_port *);
+        [[rk::needs_update]] static lazy<expected<port>> bind(raw_type *);
 
       public:
         static const char *type;
         static const std::uint32_t version;
     };
-
-    template <>
-    port_listener port::listen();
 } // namespace pipewire

@@ -12,7 +12,7 @@ namespace pipewire
 
     port_listener::~port_listener() = default;
 
-    port_listener::port_listener(pw_port *port) : m_impl(std::make_unique<impl>())
+    port_listener::port_listener(port::raw_type *port) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_PORT_EVENTS;
 

@@ -12,7 +12,7 @@ namespace pipewire
 
     device_listener::~device_listener() = default;
 
-    device_listener::device_listener(pw_device *device) : m_impl(std::make_unique<impl>())
+    device_listener::device_listener(device::raw_type *device) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_DEVICE_EVENTS;
 

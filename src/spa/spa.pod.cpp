@@ -10,12 +10,12 @@ namespace pipewire::spa
     struct pod::impl
     {
         const spa_type_info *type;
-        std::shared_ptr<spa_pod> pod;
+        std::shared_ptr<raw_type> pod;
     };
 
     pod::~pod() = default;
 
-    pod::pod(std::shared_ptr<spa_pod> pod) : m_impl(std::make_unique<impl>())
+    pod::pod(std::shared_ptr<raw_type> pod) : m_impl(std::make_unique<impl>())
     {
         m_impl->type = spa_debug_type_find(nullptr, pod->type);
         m_impl->pod  = std::move(pod);
@@ -101,7 +101,7 @@ namespace pipewire::spa
         reinterpret_cast<spa_pod_float *>(m_impl->pod.get())->value = value;
     }
 
-    spa_pod *pod::get() const
+    pod::raw_type *pod::get() const
     {
         return m_impl->pod.get();
     }
@@ -111,23 +111,25 @@ namespace pipewire::spa
         return m_impl->type;
     }
 
-    pod::operator spa_pod *() const &
+    pod::operator raw_type *() const &
     {
         return get();
     }
 
-    pod pod::view(spa_pod *pod)
+    pod pod::view(raw_type *pod)
     {
-        return {std::shared_ptr<spa_pod>(pod, [](auto *) {})};
+        auto deleter = [](raw_type *) {
+        };
+
+        return {std::shared_ptr<raw_type>(pod, deleter)};
     }
 
-    pod pod::copy(const spa_pod *pod)
+    pod pod::copy(const raw_type *pod)
     {
-        auto deleter = [](spa_pod *pod)
-        {
+        auto deleter = [](raw_type *pod) {
             free(pod); // NOLINT(*-malloc)
         };
 
-        return {std::shared_ptr<spa_pod>(spa_pod_copy(pod), deleter)};
+        return {std::shared_ptr<raw_type>(spa_pod_copy(pod), deleter)};
     }
 } // namespace pipewire::spa

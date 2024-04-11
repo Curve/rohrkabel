@@ -6,6 +6,9 @@
 
 namespace pipewire
 {
+    template <typename Listener, typename Raw>
+    concept valid_listener = requires() { requires std::constructible_from<Listener, Raw *>; };
+
     template <typename T, ereignis::ereignis_event... Events>
     class listener : public spa::hook
     {

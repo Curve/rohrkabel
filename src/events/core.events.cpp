@@ -12,7 +12,7 @@ namespace pipewire
 
     core_listener::~core_listener() = default;
 
-    core_listener::core_listener(pw_core *core) : m_impl(std::make_unique<impl>())
+    core_listener::core_listener(core::raw_type *core) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_CORE_EVENTS;
 

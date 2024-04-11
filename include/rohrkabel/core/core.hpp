@@ -37,6 +37,9 @@ namespace pipewire
       private:
         struct impl;
 
+      public:
+        using raw_type = pw_core;
+
       private:
         std::unique_ptr<impl> m_impl;
 
@@ -61,7 +64,8 @@ namespace pipewire
 
       public:
         template <class Listener = core_listener>
-        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+            requires valid_listener<Listener, raw_type>
+        [[rk::needs_update]] [[nodiscard]] Listener listen();
 
       public:
         template <typename T>
@@ -75,19 +79,16 @@ namespace pipewire
         [[nodiscard]] std::shared_ptr<pipewire::registry> registry();
 
       public:
-        [[nodiscard]] pw_core *get() const;
+        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] std::shared_ptr<pipewire::context> context() const;
 
       public:
-        [[nodiscard]] operator pw_core *() const &;
-        [[nodiscard]] operator pw_core *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
 
       private:
         [[nodiscard]] static std::shared_ptr<core> create(std::shared_ptr<pipewire::context>);
     };
-
-    template <>
-    core_listener core::listen();
 } // namespace pipewire
 
 #include "core.inl"

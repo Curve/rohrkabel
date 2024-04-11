@@ -7,7 +7,7 @@ namespace pipewire
 {
     struct port::impl
     {
-        pw_port *port;
+        raw_type *port;
         port_info info;
     };
 
@@ -17,7 +17,7 @@ namespace pipewire
 
     port::port(proxy &&base, port_info info) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
-        m_impl->port = reinterpret_cast<pw_port *>(proxy::get());
+        m_impl->port = reinterpret_cast<raw_type *>(proxy::get());
         m_impl->info = std::move(info);
     }
 
@@ -55,7 +55,7 @@ namespace pipewire
         });
     }
 
-    pw_port *port::get() const
+    port::raw_type *port::get() const
     {
         return m_impl->port;
     }
@@ -65,18 +65,21 @@ namespace pipewire
         return m_impl->info;
     }
 
-    template <>
-    port_listener port::listen()
+    template port_listener port::listen<port_listener>();
+
+    template <class Listener>
+        requires valid_listener<Listener, port::raw_type>
+    Listener port::listen()
     {
         return {get()};
     }
 
-    port::operator pw_port *() const &
+    port::operator raw_type *() const &
     {
         return get();
     }
 
-    lazy<expected<port>> port::bind(pw_port *raw)
+    lazy<expected<port>> port::bind(raw_type *raw)
     {
         struct state
         {
@@ -86,7 +89,7 @@ namespace pipewire
             std::promise<port_info> info;
         };
 
-        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
+        auto proxy = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
 
         auto m_state    = std::make_shared<state>(raw);
         auto weak_state = std::weak_ptr{m_state};

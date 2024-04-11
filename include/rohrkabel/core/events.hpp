@@ -32,7 +32,7 @@ namespace pipewire
         ~core_listener();
 
       public:
-        core_listener(pw_core *);
+        core_listener(core::raw_type *);
         core_listener(core_listener &&) noexcept;
 
       public:

@@ -27,7 +27,7 @@ namespace pipewire
         ~link_listener();
 
       public:
-        link_listener(pw_link *);
+        link_listener(link::raw_type *);
         link_listener(link_listener &&) noexcept;
     };
 } // namespace pipewire

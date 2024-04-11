@@ -31,7 +31,7 @@ namespace pipewire
         ~port_listener();
 
       public:
-        port_listener(pw_port *);
+        port_listener(port::raw_type *);
         port_listener(port_listener &&) noexcept;
     };
 } // namespace pipewire

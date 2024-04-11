@@ -7,7 +7,7 @@ namespace pipewire
 {
     struct client::impl
     {
-        pw_client *client;
+        raw_type *client;
         client_info info;
     };
 
@@ -17,7 +17,7 @@ namespace pipewire
 
     client::client(proxy &&base, client_info info) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
-        m_impl->client = reinterpret_cast<pw_client *>(proxy::get());
+        m_impl->client = reinterpret_cast<raw_type *>(proxy::get());
         m_impl->info   = std::move(info);
     }
 
@@ -28,7 +28,7 @@ namespace pipewire
         return *this;
     }
 
-    pw_client *client::get() const
+    client::raw_type *client::get() const
     {
         return m_impl->client;
     }
@@ -38,18 +38,21 @@ namespace pipewire
         return m_impl->info;
     }
 
-    template <>
-    client_listener client::listen()
+    template client_listener client::listen<client_listener>();
+
+    template <class Listener>
+        requires valid_listener<Listener, client::raw_type>
+    Listener client::listen()
     {
         return {get()};
     }
 
-    client::operator pw_client *() const &
+    client::operator raw_type *() const &
     {
         return get();
     }
 
-    lazy<expected<client>> client::bind(pw_client *raw)
+    lazy<expected<client>> client::bind(raw_type *raw)
     {
         struct state
         {
@@ -59,7 +62,7 @@ namespace pipewire
             std::promise<client_info> info;
         };
 
-        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
+        auto proxy = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
 
         auto m_state    = std::make_shared<state>(raw);
         auto weak_state = std::weak_ptr{m_state};

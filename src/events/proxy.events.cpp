@@ -12,7 +12,7 @@ namespace pipewire
 
     proxy_listener::~proxy_listener() = default;
 
-    proxy_listener::proxy_listener(pw_proxy *proxy) : m_impl(std::make_unique<impl>())
+    proxy_listener::proxy_listener(proxy::raw_type *proxy) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_PROXY_EVENTS;
 

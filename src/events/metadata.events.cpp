@@ -13,7 +13,7 @@ namespace pipewire
 
     metadata_listener::~metadata_listener() = default;
 
-    metadata_listener::metadata_listener(pw_metadata *metadata) : m_impl(std::make_unique<impl>())
+    metadata_listener::metadata_listener(metadata::raw_type *metadata) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_METADATA_EVENTS;
 

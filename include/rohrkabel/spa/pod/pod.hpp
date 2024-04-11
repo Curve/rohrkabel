@@ -23,6 +23,9 @@ namespace pipewire::spa
     {
         struct impl;
 
+      public:
+        using raw_type = spa_pod;
+
       private:
         std::unique_ptr<impl> m_impl;
 
@@ -30,7 +33,7 @@ namespace pipewire::spa
         ~pod();
 
       private:
-        pod(std::shared_ptr<spa_pod>);
+        pod(std::shared_ptr<raw_type>);
 
       public:
         pod(pod &&) noexcept;
@@ -58,16 +61,16 @@ namespace pipewire::spa
         void write(T) = delete;
 
       public:
-        [[nodiscard]] spa_pod *get() const;
+        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] const spa_type_info *type_info() const;
 
       public:
-        [[nodiscard]] operator spa_pod *() const &;
-        [[nodiscard]] operator spa_pod *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[nodiscard]] static pod view(spa_pod *);
-        [[nodiscard]] static pod copy(const spa_pod *);
+        [[nodiscard]] static pod view(raw_type *);
+        [[nodiscard]] static pod copy(const raw_type *);
     };
 
     template <>

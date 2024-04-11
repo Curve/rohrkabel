@@ -31,7 +31,7 @@ namespace pipewire
         ~proxy_listener();
 
       public:
-        proxy_listener(pw_proxy *);
+        proxy_listener(proxy::raw_type *);
         proxy_listener(proxy_listener &&) noexcept;
     };
 } // namespace pipewire

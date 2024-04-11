@@ -12,7 +12,7 @@ namespace pipewire
 
     node_listener::~node_listener() = default;
 
-    node_listener::node_listener(pw_node *node) : m_impl(std::make_unique<impl>())
+    node_listener::node_listener(node::raw_type *node) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_NODE_EVENTS;
 

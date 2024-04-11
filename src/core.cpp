@@ -13,7 +13,9 @@ namespace pipewire
 {
     struct core::impl
     {
-        pw_core *core;
+        raw_type *core;
+
+      public:
         std::shared_ptr<pipewire::context> context;
         std::shared_ptr<pipewire::registry> registry;
     };
@@ -27,17 +29,19 @@ namespace pipewire
 
     void *core::create(factory factory) const
     {
-        auto *dict = &factory.props.get()->dict;
+        const auto &[name, props, type, version] = factory;
+        const auto *dict                         = &props.get()->dict;
 
         // NOLINTNEXTLINE(*-optional-access)
-        return pw_core_create_object(get(), factory.name.c_str(), factory.type->c_str(), factory.version.value(), dict,
-                                     0);
+        return pw_core_create_object(get(), name.c_str(), type->c_str(), version.value(), dict, 0);
     }
 
     template <>
     void core::update<update_strategy::none>()
     {
     }
+
+    template core_listener core::listen<core_listener>();
 
     template <>
     void core::update<update_strategy::sync>()
@@ -80,8 +84,9 @@ namespace pipewire
         return pw_core_sync(m_impl->core, PW_ID_CORE, seq);
     }
 
-    template <>
-    core_listener core::listen()
+    template <class Listener>
+        requires valid_listener<Listener, core::raw_type>
+    Listener core::listen()
     {
         return {get()};
     }
@@ -97,7 +102,7 @@ namespace pipewire
         }
 
         auto *proxy = create(std::move(factory));
-        auto rtn    = proxy::bind(reinterpret_cast<pw_proxy *>(proxy));
+        auto rtn    = proxy::bind(reinterpret_cast<proxy::raw_type *>(proxy));
 
         update(strategy);
 
@@ -123,7 +128,7 @@ namespace pipewire
         return m_impl->registry;
     }
 
-    pw_core *core::get() const
+    core::raw_type *core::get() const
     {
         return m_impl->core;
     }
@@ -133,7 +138,7 @@ namespace pipewire
         return m_impl->context;
     }
 
-    core::operator pw_core *() const &
+    core::operator raw_type *() const &
     {
         return get();
     }

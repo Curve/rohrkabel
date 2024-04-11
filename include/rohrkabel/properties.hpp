@@ -12,6 +12,9 @@ namespace pipewire
     {
         struct impl;
 
+      public:
+        using raw_type = pw_properties;
+
       private:
         using underlying = std::map<std::string, std::string>;
 
@@ -40,10 +43,10 @@ namespace pipewire
         [[nodiscard]] underlying::const_iterator begin() const;
 
       public:
-        [[nodiscard]] pw_properties *get() const;
+        [[nodiscard]] raw_type *get() const;
 
       public:
-        [[nodiscard]] operator pw_properties *() const &;
-        [[nodiscard]] operator pw_properties *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
     };
 } // namespace pipewire

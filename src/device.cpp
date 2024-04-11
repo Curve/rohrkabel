@@ -7,8 +7,8 @@ namespace pipewire
 {
     struct device::impl
     {
+        raw_type *device;
         device_info info;
-        pw_device *device;
     };
 
     device::~device() = default;
@@ -17,7 +17,7 @@ namespace pipewire
 
     device::device(proxy &&base, device_info info) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
-        m_impl->device = reinterpret_cast<pw_device *>(proxy::get());
+        m_impl->device = reinterpret_cast<raw_type *>(proxy::get());
         m_impl->info   = std::move(info);
     }
 
@@ -33,14 +33,14 @@ namespace pipewire
         pw_device_set_param(m_impl->device, id, flags, pod.get());
     }
 
-    lazy<device::underlying> device::params() const
+    lazy<device::params_t> device::params() const
     {
         struct state
         {
             device_listener listener;
 
           public:
-            underlying params;
+            params_t params;
         };
 
         auto m_state    = std::make_shared<state>(get());
@@ -55,12 +55,12 @@ namespace pipewire
             pw_device_enum_params(m_impl->device, 0, param.id, 0, 1, nullptr);
         }
 
-        return make_lazy<underlying>([m_state]() -> underlying {
+        return make_lazy<params_t>([m_state]() {
             return m_state->params;
         });
     }
 
-    pw_device *device::get() const
+    device::raw_type *device::get() const
     {
         return m_impl->device;
     }
@@ -70,18 +70,21 @@ namespace pipewire
         return m_impl->info;
     }
 
-    template <>
-    device_listener device::listen()
+    template device_listener device::listen<device_listener>();
+
+    template <class Listener>
+        requires valid_listener<Listener, device::raw_type>
+    Listener device::listen()
     {
         return {get()};
     }
 
-    device::operator pw_device *() const &
+    device::operator raw_type *() const &
     {
         return get();
     }
 
-    lazy<expected<device>> device::bind(pw_device *raw)
+    lazy<expected<device>> device::bind(raw_type *raw)
     {
         struct state
         {
@@ -91,7 +94,7 @@ namespace pipewire
             std::promise<device_info> info;
         };
 
-        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
+        auto proxy = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
 
         auto m_state    = std::make_shared<state>(raw);
         auto weak_state = std::weak_ptr{m_state};

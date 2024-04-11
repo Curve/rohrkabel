@@ -7,23 +7,25 @@ namespace pipewire
 {
     struct deleter
     {
-        void operator()(pw_proxy *proxy)
+        void operator()(proxy::raw_type *proxy)
         {
             pw_proxy_destroy(proxy);
         }
     };
 
+    using unique_ptr = std::unique_ptr<proxy::raw_type, deleter>;
+
     struct proxy::impl
     {
         spa::dict props;
-        std::unique_ptr<pw_proxy, deleter> proxy;
+        unique_ptr proxy;
     };
 
     proxy::~proxy() = default;
 
     proxy::proxy(proxy &&other) noexcept : m_impl(std::move(other.m_impl)) {}
 
-    proxy::proxy(pw_proxy *proxy, spa::dict props) : m_impl(std::make_unique<impl>())
+    proxy::proxy(raw_type *proxy, spa::dict props) : m_impl(std::make_unique<impl>())
     {
         m_impl->proxy.reset(proxy);
         m_impl->props = std::move(props);
@@ -58,23 +60,26 @@ namespace pipewire
         return version;
     }
 
-    pw_proxy *proxy::get() const
+    proxy::raw_type *proxy::get() const
     {
         return m_impl->proxy.get();
     }
 
-    template <>
-    proxy_listener proxy::listen()
+    template proxy_listener proxy::listen<proxy_listener>();
+
+    template <class Listener>
+        requires valid_listener<Listener, proxy::raw_type>
+    Listener proxy::listen()
     {
         return {get()};
     }
 
-    proxy::operator pw_proxy *() const &
+    proxy::operator raw_type *() const &
     {
         return get();
     }
 
-    lazy<expected<proxy>> proxy::bind(pw_proxy *raw)
+    lazy<expected<proxy>> proxy::bind(raw_type *raw)
     {
         struct state
         {

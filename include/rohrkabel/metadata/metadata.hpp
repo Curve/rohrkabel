@@ -16,6 +16,9 @@ namespace pipewire
     {
         struct impl;
 
+      public:
+        using raw_type = pw_metadata;
+
       private:
         using properties_t = std::map<std::string, metadata_property>;
 
@@ -37,25 +40,23 @@ namespace pipewire
         [[rk::needs_update]] void set_property(std::uint32_t id, std::string key, std::string type, std::string value);
 
       public:
-        [[nodiscard]] pw_metadata *get() const;
+        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] properties_t properties() const;
 
       public:
         template <class Listener = metadata_listener>
-        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+            requires valid_listener<Listener, raw_type>
+        [[rk::needs_update]] [[nodiscard]] Listener listen();
 
       public:
-        [[nodiscard]] operator pw_metadata *() const &;
-        [[nodiscard]] operator pw_metadata *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<metadata>> bind(pw_metadata *);
+        [[rk::needs_update]] static lazy<expected<metadata>> bind(raw_type *);
 
       public:
         static const char *type;
         static const std::uint32_t version;
     };
-
-    template <>
-    metadata_listener metadata::listen();
 } // namespace pipewire

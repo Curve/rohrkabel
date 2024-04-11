@@ -18,8 +18,11 @@ namespace pipewire
     {
         struct impl;
 
+      public:
+        using raw_type = pw_device;
+
       private:
-        using underlying = std::map<std::uint32_t, spa::pod>;
+        using params_t = std::map<std::uint32_t, spa::pod>;
 
       private:
         std::unique_ptr<impl> m_impl;
@@ -38,28 +41,26 @@ namespace pipewire
         [[rk::needs_update]] void set_param(std::uint32_t id, std::uint32_t flags, const spa::pod &pod);
 
       public:
-        [[nodiscard]] [[rk::needs_update]] lazy<underlying> params() const;
+        [[nodiscard]] [[rk::needs_update]] lazy<params_t> params() const;
 
       public:
         template <class Listener = device_listener>
-        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+            requires valid_listener<Listener, raw_type>
+        [[rk::needs_update]] [[nodiscard]] Listener listen();
 
       public:
-        [[nodiscard]] pw_device *get() const;
+        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] device_info info() const;
 
       public:
-        [[nodiscard]] operator pw_device *() const &;
-        [[nodiscard]] operator pw_device *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<device>> bind(pw_device *);
+        [[rk::needs_update]] static lazy<expected<device>> bind(raw_type *);
 
       public:
         static const char *type;
         static const std::uint32_t version;
     };
-
-    template <>
-    device_listener device::listen();
 } // namespace pipewire

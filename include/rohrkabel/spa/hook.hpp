@@ -10,6 +10,9 @@ namespace pipewire::spa
     {
         struct impl;
 
+      public:
+        using raw_type = spa_hook;
+
       private:
         std::unique_ptr<impl> m_impl;
 
@@ -24,10 +27,10 @@ namespace pipewire::spa
         hook &operator=(hook &&) noexcept;
 
       public:
-        [[nodiscard]] spa_hook *get() const;
+        [[nodiscard]] raw_type *get() const;
 
       public:
-        [[nodiscard]] operator spa_hook *() const &;
-        [[nodiscard]] operator spa_hook *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
     };
 } // namespace pipewire::spa

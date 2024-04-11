@@ -1,7 +1,9 @@
 #pragma once
 
 #include "../spa/dict.hpp"
+
 #include "../utils/lazy.hpp"
+#include "../utils/listener.hpp"
 
 #include <string>
 #include <memory>
@@ -17,6 +19,9 @@ namespace pipewire
     {
         struct impl;
 
+      public:
+        using raw_type = pw_proxy;
+
       private:
         std::unique_ptr<impl> m_impl;
 
@@ -25,7 +30,7 @@ namespace pipewire
 
       public:
         proxy(proxy &&) noexcept;
-        proxy(pw_proxy *, spa::dict);
+        proxy(raw_type *, spa::dict);
 
       public:
         proxy &operator=(proxy &&) noexcept;
@@ -37,20 +42,18 @@ namespace pipewire
         [[nodiscard]] std::uint32_t version() const;
 
       public:
-        [[nodiscard]] pw_proxy *get() const;
+        [[nodiscard]] raw_type *get() const;
 
       public:
         template <class Listener = proxy_listener>
-        [[rk::needs_update]] [[nodiscard]] Listener listen() = delete;
+            requires valid_listener<Listener, raw_type>
+        [[rk::needs_update]] [[nodiscard]] Listener listen();
 
       public:
-        [[nodiscard]] operator pw_proxy *() const &;
-        [[nodiscard]] operator pw_proxy *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<proxy>> bind(pw_proxy *);
+        [[rk::needs_update]] static lazy<expected<proxy>> bind(raw_type *);
     };
-
-    template <>
-    proxy_listener proxy::listen();
 } // namespace pipewire

@@ -12,7 +12,7 @@ namespace pipewire
 
     client_listener::~client_listener() = default;
 
-    client_listener::client_listener(pw_client *client) : m_impl(std::make_unique<impl>())
+    client_listener::client_listener(client::raw_type *client) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = PW_VERSION_CLIENT_EVENTS;
 

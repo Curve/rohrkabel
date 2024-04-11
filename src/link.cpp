@@ -7,7 +7,7 @@ namespace pipewire
 {
     struct link::impl
     {
-        pw_link *link;
+        raw_type *link;
         link_info info;
     };
 
@@ -17,7 +17,7 @@ namespace pipewire
 
     link::link(proxy &&base, link_info info) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
-        m_impl->link = reinterpret_cast<pw_link *>(proxy::get());
+        m_impl->link = reinterpret_cast<raw_type *>(proxy::get());
         m_impl->info = std::move(info);
     }
 
@@ -28,7 +28,7 @@ namespace pipewire
         return *this;
     }
 
-    pw_link *link::get() const
+    link::raw_type *link::get() const
     {
         return m_impl->link;
     }
@@ -38,18 +38,19 @@ namespace pipewire
         return m_impl->info;
     }
 
-    template <>
-    link_listener link::listen()
+    template <class Listener>
+        requires valid_listener<Listener, link::raw_type>
+    Listener link::listen()
     {
         return {get()};
     }
 
-    link::operator pw_link *() const &
+    link::operator raw_type *() const &
     {
         return get();
     }
 
-    lazy<expected<link>> link::bind(pw_link *raw)
+    lazy<expected<link>> link::bind(raw_type *raw)
     {
         struct state
         {
@@ -59,7 +60,7 @@ namespace pipewire
             std::promise<link_info> info;
         };
 
-        auto proxy = proxy::bind(reinterpret_cast<pw_proxy *>(raw));
+        auto proxy = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
 
         auto m_state    = std::make_shared<state>(raw);
         auto weak_state = std::weak_ptr{m_state};
