@@ -64,4 +64,8 @@ For more information check out [this example](examples/channels), or feel free t
 
 [Vencord](https://github.com/Vencord/linux-virtmic)
 
+<img src="https://raw.githubusercontent.com/PolisanTheEasyNick/Crescendo/main/icon.svg" width=30/>
+
+[Crescendo](https://github.com/PolisanTheEasyNick/Crescendo)
+
 </div>
