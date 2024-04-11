@@ -91,14 +91,9 @@ int main()
 
     auto old_port_size = ports.size();
 
-    auto virtual_mic = core->create<pw::node>({
-                                                  .name = "adapter",
-                                                  .props =
-                                                      {
-                                                          {"node.name", "Virtual Mic"},
-                                                          {"media.class", "Audio/Source/Virtual"},
-                                                          {"factory.name", "support.null-audio-sink"},
-                                                      },
+    auto virtual_mic = core->create<pw::node>(pw::null_sink_factory{
+                                                  .name      = "Virtual Mic",
+                                                  .positions = {"FL", "FR"},
                                               })
                            .get();
 

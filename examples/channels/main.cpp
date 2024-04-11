@@ -39,14 +39,9 @@ int main()
         receiver.attach(loop, [&]<typename T>(const T &msg) {
             if constexpr (std::same_as<T, create_virtual_mic>)
             {
-                auto node = core->create<pw::node>(pw::factory{
-                    .name = "adapter",
-                    .props =
-                        {
-                            {"node.name", msg.name},
-                            {"media.class", "Audio/Source/Virtual"},
-                            {"factory.name", "support.null-audio-sink"},
-                        },
+                auto node = core->create<pw::node>(pw::null_sink_factory{
+                    .name      = msg.name,
+                    .positions = {"FL", "FR"},
                 });
 
                 created.emplace_back(std::move(node.get()));

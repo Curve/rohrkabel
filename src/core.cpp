@@ -5,8 +5,10 @@
 #include "registry/registry.hpp"
 
 #include "link/link.hpp"
+#include "node/node.hpp"
 #include "proxy/proxy.hpp"
 
+#include <format>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -116,6 +118,27 @@ namespace pipewire
                                 {"link.output.port", std::to_string(factory.output)}};
 
         return create<link>({.name = "link-factory", .props = std::move(props)}, strategy);
+    }
+
+    template <>
+    lazy<expected<node>> core::create(null_sink_factory factory, update_strategy strategy)
+    {
+        std::string positions;
+
+        for (const auto &position : factory.positions)
+        {
+            positions += std::format("{},", position);
+        }
+
+        positions.pop_back();
+
+        auto props = properties{{"node.name", factory.name},
+                                {"media.class", "Audio/Source/Virtual"},
+                                {"factory.name", "support.null-audio-sink"},
+                                {"audio.channels", std::to_string(factory.positions.size())},
+                                {"audio.position", positions}};
+
+        return create<node>({.name = "adapter", .props = std::move(props)}, strategy);
     }
 
     std::shared_ptr<pipewire::registry> core::registry()

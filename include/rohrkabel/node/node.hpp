@@ -5,6 +5,8 @@
 #include "../spa/pod/pod.hpp"
 
 #include <map>
+#include <set>
+
 #include <memory>
 #include <cstdint>
 
@@ -13,6 +15,12 @@ struct pw_node;
 namespace pipewire
 {
     class node_listener;
+
+    struct null_sink_factory
+    {
+        std::string name;
+        std::set<std::string> positions;
+    };
 
     class node final : public proxy
     {
