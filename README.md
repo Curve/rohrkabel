@@ -24,7 +24,7 @@ _rohrkabel_ is a wrapper around the pipewire-api that embraces RAII and tries to
   ```cmake
   CPMFindPackage(
     NAME           rohrkabel
-    VERSION        2.0
+    VERSION        4.0
     GIT_REPOSITORY "https://github.com/Curve/rohrkabel"
   )
   ```
@@ -33,10 +33,10 @@ _rohrkabel_ is a wrapper around the pipewire-api that embraces RAII and tries to
   ```cmake
   include(FetchContent)
 
-  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Curve/rohrkabel" GIT_TAG v2.0)
+  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Curve/rohrkabel" GIT_TAG v4.0)
   FetchContent_MakeAvailable(rohrkabel)
 
-  target_link_libraries(<target> rohrkabel)
+  target_link_libraries(<target> cr::rohrkabel)
   ```
 
 ## 🧵 Thread-Safety

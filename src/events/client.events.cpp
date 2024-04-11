@@ -17,17 +17,17 @@ namespace pipewire
         m_impl->events.version = PW_VERSION_CLIENT_EVENTS;
 
         m_impl->events.info = [](void *data, const pw_client_info *info) {
-            auto &thiz = *reinterpret_cast<client_listener *>(data);
-            thiz.m_events.at<client_event::info>().fire(client_info::from(info));
+            auto &events = *reinterpret_cast<listener::events *>(data);
+            events.at<client_event::info>().fire(client_info::from(info));
         };
 
         m_impl->events.permissions = [](void *data, std::uint32_t index, std::uint32_t count,
                                         const pw_permission *permission) {
-            auto &thiz = *reinterpret_cast<client_listener *>(data);
-            thiz.m_events.at<client_event::permission>().fire(index, count, permission);
+            auto &events = *reinterpret_cast<listener::events *>(data);
+            events.at<client_event::permission>().fire(index, count, permission);
         };
 
-        pw_client_add_listener(client, listener::get(), &m_impl->events, this);
+        pw_client_add_listener(client, listener::get(), &m_impl->events, m_events.get());
     }
 
     client_listener::client_listener(client_listener &&client_listener) noexcept

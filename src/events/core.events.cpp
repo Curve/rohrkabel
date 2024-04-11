@@ -17,21 +17,21 @@ namespace pipewire
         m_impl->events.version = PW_VERSION_CORE_EVENTS;
 
         m_impl->events.info = [](void *data, const pw_core_info *info) {
-            auto &thiz = *reinterpret_cast<core_listener *>(data);
-            thiz.m_events.at<core_event::info>().fire(core_info::from(info));
+            auto &events = *reinterpret_cast<listener::events *>(data);
+            events.at<core_event::info>().fire(core_info::from(info));
         };
 
         m_impl->events.done = [](void *data, std::uint32_t id, int seq) {
-            auto &thiz = *reinterpret_cast<core_listener *>(data);
-            thiz.m_events.at<core_event::done>().fire(id, seq);
+            auto &events = *reinterpret_cast<listener::events *>(data);
+            events.at<core_event::done>().fire(id, seq);
         };
 
         m_impl->events.error = [](void *data, std::uint32_t id, int seq, int res, const char *message) {
-            auto &thiz = *reinterpret_cast<core_listener *>(data);
-            thiz.m_events.at<core_event::error>().fire(id, error{seq, res, message});
+            auto &events = *reinterpret_cast<listener::events *>(data);
+            events.at<core_event::error>().fire(id, error{seq, res, message});
         };
 
-        pw_core_add_listener(core, listener::get(), &m_impl->events, this);
+        pw_core_add_listener(core, listener::get(), &m_impl->events, m_events.get());
     }
 
     core_listener::core_listener(core_listener &&core_listener) noexcept

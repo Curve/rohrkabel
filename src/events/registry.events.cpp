@@ -18,17 +18,17 @@ namespace pipewire
 
         m_impl->events.global = [](void *data, std::uint32_t id, std::uint32_t permissions, const char *type,
                                    std::uint32_t version, const spa_dict *props) {
-            auto &thiz = *reinterpret_cast<registry_listener *>(data);
-            thiz.m_events.at<registry_event::global>().fire(global{id, version, permissions, props, type});
+            auto &events = *reinterpret_cast<listener::events *>(data);
+            events.at<registry_event::global>().fire(global{id, version, permissions, props, type});
         };
 
         m_impl->events.global_remove = [](void *data, std::uint32_t id) {
-            auto &thiz = *reinterpret_cast<registry_listener *>(data);
-            thiz.m_events.at<registry_event::global_removed>().fire(id);
+            auto &events = *reinterpret_cast<listener::events *>(data);
+            events.at<registry_event::global_removed>().fire(id);
         };
 
         // NOLINTNEXTLINE(*-optional-access)
-        pw_registry_add_listener(registry, listener::get(), &m_impl->events, this);
+        pw_registry_add_listener(registry, listener::get(), &m_impl->events, m_events.get());
     }
 
     registry_listener::registry_listener(registry_listener &&registry_listener) noexcept
