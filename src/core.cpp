@@ -9,6 +9,7 @@
 #include "proxy/proxy.hpp"
 
 #include <format>
+#include <optional>
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -16,6 +17,7 @@ namespace pipewire
     struct core::impl
     {
         raw_type *core;
+        bool abort{false};
 
       public:
         std::shared_ptr<pipewire::context> context;
@@ -39,36 +41,53 @@ namespace pipewire
     }
 
     template <>
-    void core::update<update_strategy::none>()
+    bool core::update<update_strategy::none>()
     {
+        return true;
     }
 
     template <>
-    void core::update<update_strategy::sync>()
+    bool core::update<update_strategy::sync>()
     {
-        auto done    = false;
-        auto pending = sync(0);
+        std::optional<bool> result;
+        int pending = -1;
 
         auto listener = listen<core_listener>();
         auto loop     = m_impl->context->loop();
 
         listener.on<core_event::done>([&](auto id, auto seq) {
-            if (id != PW_ID_CORE || seq != pending)
+            if (id != core_id || seq != pending)
             {
                 return;
             }
 
-            done = true;
+            result.emplace(true);
             loop->quit();
         });
 
-        while (!done)
+        listener.on<core_event::error>([&](auto id, const auto &err) {
+            if (id != core_id)
+            {
+                return;
+            }
+
+            check(false, err.message);
+
+            result.emplace(false);
+            loop->quit();
+        });
+
+        pending = sync(0);
+
+        while (!m_impl->abort && !result.has_value())
         {
             loop->run();
         }
+
+        return result.value_or(false);
     }
 
-    void core::update(update_strategy strategy)
+    bool core::update(update_strategy strategy)
     {
         switch (strategy)
         {
@@ -79,16 +98,15 @@ namespace pipewire
         }
     }
 
-    int core::sync(int seq)
+    void core::abort()
     {
-        return pw_core_sync(m_impl->core, PW_ID_CORE, seq);
+        m_impl->abort = true;
+        m_impl->context->loop()->quit();
     }
 
-    template <class Listener>
-        requires valid_listener<Listener, core::raw_type>
-    Listener core::listen()
+    int core::sync(int seq)
     {
-        return {get()};
+        return pw_core_sync(m_impl->core, core_id, seq);
     }
 
     template <>

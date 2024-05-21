@@ -54,10 +54,13 @@ namespace pipewire
 
       public:
         template <update_strategy>
-        void update();
+        bool update();
 
       public:
-        void update(update_strategy strategy = update_strategy::sync);
+        bool update(update_strategy strategy = update_strategy::sync);
+
+      public:
+        void abort();
 
       public:
         [[nodiscard]] int sync(int seq);
