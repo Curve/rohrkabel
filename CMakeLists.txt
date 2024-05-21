@@ -97,7 +97,7 @@ CPMFindPackage(
 
 CPMFindPackage(
   NAME           boost_callable_traits
-  GIT_TAG        boost-1.84.0
+  GIT_TAG        boost-1.85.0
   GIT_REPOSITORY "https://github.com/boostorg/callable_traits"
 )
 
