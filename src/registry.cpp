@@ -1,4 +1,3 @@
-#include "registry/events.hpp"
 #include "registry/registry.hpp"
 
 #include "proxy/proxy.hpp"
@@ -43,7 +42,7 @@ namespace pipewire
 
     std::shared_ptr<registry> registry::create(std::shared_ptr<pipewire::core> core)
     {
-        auto *registry = pw_core_get_registry(core->get(), PW_VERSION_REGISTRY, 0);
+        auto *registry = pw_core_get_registry(core->get(), version, 0);
         check(registry, "Failed to get registry");
 
         if (!registry)
@@ -58,4 +57,7 @@ namespace pipewire
 
         return rtn;
     }
+
+    const char *registry::type            = PW_TYPE_INTERFACE_Registry;
+    const std::uint32_t registry::version = PW_VERSION_REGISTRY;
 } // namespace pipewire

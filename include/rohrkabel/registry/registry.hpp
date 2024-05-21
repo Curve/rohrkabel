@@ -53,6 +53,10 @@ namespace pipewire
 
       private:
         [[nodiscard]] static std::shared_ptr<registry> create(std::shared_ptr<pipewire::core>);
+
+      public:
+        static const char *type;
+        static const std::uint32_t version;
     };
 } // namespace pipewire
 
