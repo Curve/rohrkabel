@@ -72,15 +72,6 @@ namespace pipewire
         return m_impl->info;
     }
 
-    template node_listener node::listen<node_listener>();
-
-    template <class Listener>
-        requires valid_listener<Listener, node::raw_type>
-    Listener node::listen()
-    {
-        return {get()};
-    }
-
     node::operator raw_type *() const &
     {
         return get();

@@ -65,15 +65,6 @@ namespace pipewire
         return m_impl->info;
     }
 
-    template port_listener port::listen<port_listener>();
-
-    template <class Listener>
-        requires valid_listener<Listener, port::raw_type>
-    Listener port::listen()
-    {
-        return {get()};
-    }
-
     port::operator raw_type *() const &
     {
         return get();

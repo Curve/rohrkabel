@@ -6,6 +6,13 @@
 
 namespace pipewire
 {
+    template <class Listener>
+        requires valid_listener<Listener, core::raw_type>
+    Listener core::listen()
+    {
+        return {get()};
+    }
+
     template <typename T>
         requires valid_proxy<T>
     lazy<expected<T>> core::create(factory factory, update_strategy strategy)

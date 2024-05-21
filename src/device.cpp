@@ -70,15 +70,6 @@ namespace pipewire
         return m_impl->info;
     }
 
-    template device_listener device::listen<device_listener>();
-
-    template <class Listener>
-        requires valid_listener<Listener, device::raw_type>
-    Listener device::listen()
-    {
-        return {get()};
-    }
-
     device::operator raw_type *() const &
     {
         return get();

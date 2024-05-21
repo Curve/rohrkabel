@@ -26,15 +26,6 @@ namespace pipewire
 
     registry::registry() : m_impl(std::make_unique<impl>()) {}
 
-    template registry_listener registry::listen<registry_listener>();
-
-    template <class Listener>
-        requires valid_listener<Listener, registry::raw_type>
-    Listener registry::listen()
-    {
-        return {get()};
-    }
-
     registry::raw_type *registry::get() const
     {
         return m_impl->registry;

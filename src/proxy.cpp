@@ -65,15 +65,6 @@ namespace pipewire
         return m_impl->proxy.get();
     }
 
-    template proxy_listener proxy::listen<proxy_listener>();
-
-    template <class Listener>
-        requires valid_listener<Listener, proxy::raw_type>
-    Listener proxy::listen()
-    {
-        return {get()};
-    }
-
     proxy::operator raw_type *() const &
     {
         return get();

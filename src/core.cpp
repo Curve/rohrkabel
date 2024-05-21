@@ -43,8 +43,6 @@ namespace pipewire
     {
     }
 
-    template core_listener core::listen<core_listener>();
-
     template <>
     void core::update<update_strategy::sync>()
     {

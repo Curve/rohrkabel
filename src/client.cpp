@@ -38,15 +38,6 @@ namespace pipewire
         return m_impl->info;
     }
 
-    template client_listener client::listen<client_listener>();
-
-    template <class Listener>
-        requires valid_listener<Listener, client::raw_type>
-    Listener client::listen()
-    {
-        return {get()};
-    }
-
     client::operator raw_type *() const &
     {
         return get();

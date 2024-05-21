@@ -41,15 +41,6 @@ namespace pipewire
         m_impl->properties.emplace(std::move(key), metadata_property{std::move(type), std::move(value), id});
     }
 
-    template metadata_listener metadata::listen<metadata_listener>();
-
-    template <class Listener>
-        requires valid_listener<Listener, metadata::raw_type>
-    Listener metadata::listen()
-    {
-        return {get()};
-    }
-
     metadata::raw_type *metadata::get() const
     {
         return m_impl->metadata;

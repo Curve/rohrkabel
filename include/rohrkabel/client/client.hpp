@@ -50,3 +50,5 @@ namespace pipewire
         static const std::uint32_t version;
     };
 } // namespace pipewire
+
+#include "client.inl"

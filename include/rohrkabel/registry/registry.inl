@@ -6,6 +6,13 @@
 
 namespace pipewire
 {
+    template <class Listener>
+        requires valid_listener<Listener, registry::raw_type>
+    Listener registry::listen()
+    {
+        return {get()};
+    }
+
     template <typename T>
         requires valid_proxy<T>
     lazy<expected<T>> registry::bind(std::uint32_t id, update_strategy strategy)

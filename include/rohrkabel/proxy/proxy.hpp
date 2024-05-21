@@ -57,3 +57,5 @@ namespace pipewire
         [[rk::needs_update]] static lazy<expected<proxy>> bind(raw_type *);
     };
 } // namespace pipewire
+
+#include "proxy.inl"
