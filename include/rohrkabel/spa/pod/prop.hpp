@@ -15,6 +15,10 @@ namespace pipewire::spa
     {
         struct impl;
 
+      public:
+        using raw_type = spa_pod_prop;
+        using raw_info = spa_type_info;
+
       private:
         std::unique_ptr<impl> m_impl;
 
@@ -39,14 +43,14 @@ namespace pipewire::spa
         [[nodiscard]] std::uint32_t flags() const;
 
       public:
-        [[nodiscard]] spa_pod_prop *get() const;
-        [[nodiscard]] const spa_type_info *type_info() const;
+        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] const raw_info *type_info() const;
 
       public:
-        [[nodiscard]] operator spa_pod_prop *() const &;
-        [[nodiscard]] operator spa_pod_prop *() const && = delete;
+        [[nodiscard]] operator raw_type *() const &;
+        [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[nodiscard]] static pod_prop view(spa_pod_prop *, const spa_type_info *);
+        [[nodiscard]] static pod_prop view(raw_type *, const raw_info *);
     };
 } // namespace pipewire::spa

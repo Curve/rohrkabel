@@ -8,8 +8,8 @@ namespace pipewire::spa
 {
     struct pod_prop::impl
     {
-        spa_pod_prop *prop;
-        const spa_type_info *type;
+        raw_type *prop;
+        const raw_info *type;
     };
 
     pod_prop::~pod_prop() = default;
@@ -59,22 +59,22 @@ namespace pipewire::spa
         return m_impl->prop->flags;
     }
 
-    spa_pod_prop *pod_prop::get() const
+    pod_prop::raw_type *pod_prop::get() const
     {
         return m_impl->prop;
     }
 
-    const spa_type_info *pod_prop::type_info() const
+    const pod_prop::raw_info *pod_prop::type_info() const
     {
         return m_impl->type;
     }
 
-    pod_prop::operator spa_pod_prop *() const &
+    pod_prop::operator raw_type *() const &
     {
         return get();
     }
 
-    pod_prop pod_prop::view(spa_pod_prop *prop, const spa_type_info *type)
+    pod_prop pod_prop::view(raw_type *prop, const raw_info *type)
     {
         pod_prop rtn;
 

@@ -13,8 +13,8 @@ namespace pipewire::spa
 {
     struct pod_object_body::impl
     {
+        raw_body *body;
         std::size_t size;
-        spa_pod_object_body *body;
     };
 
     pod_object_body::~pod_object_body() = default;
@@ -92,27 +92,27 @@ namespace pipewire::spa
         return m_impl->body->id;
     }
 
-    spa_pod_object_body *pod_object_body::get() const
+    pod_object_body::raw_body *pod_object_body::get() const
     {
         return m_impl->body;
     }
 
-    const spa_type_info *pod_object_body::type_info() const
+    const pod_object_body::raw_info *pod_object_body::type_info() const
     {
         return spa_debug_type_find(nullptr, m_impl->body->type);
     }
 
-    pod_object_body::operator spa_pod_object_body *() const &
+    pod_object_body::operator raw_body *() const &
     {
         return get();
     }
 
-    pod_object_body pod_object_body::view(spa_pod_object_body *body, std::size_t size)
+    pod_object_body pod_object_body::view(raw_body *body, std::size_t size)
     {
         pod_object_body rtn;
 
-        rtn.m_impl->size = size;
         rtn.m_impl->body = body;
+        rtn.m_impl->size = size;
 
         return rtn;
     }
