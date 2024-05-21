@@ -17,7 +17,9 @@ namespace pipewire
     struct core::impl
     {
         raw_type *core;
-        bool abort{false};
+
+      public:
+        std::optional<bool> sync_result;
 
       public:
         std::shared_ptr<pipewire::context> context;
@@ -49,7 +51,8 @@ namespace pipewire
     template <>
     bool core::update<update_strategy::sync>()
     {
-        std::optional<bool> result;
+        m_impl->sync_result.reset();
+
         int pending = -1;
 
         auto listener = listen<core_listener>();
@@ -61,7 +64,7 @@ namespace pipewire
                 return;
             }
 
-            result.emplace(true);
+            m_impl->sync_result.emplace(true);
             loop->quit();
         });
 
@@ -73,18 +76,18 @@ namespace pipewire
 
             check(false, err.message);
 
-            result.emplace(false);
+            m_impl->sync_result.emplace(false);
             loop->quit();
         });
 
         pending = sync(0);
 
-        while (!m_impl->abort && !result.has_value())
+        while (!m_impl->sync_result.has_value())
         {
             loop->run();
         }
 
-        return result.value_or(false);
+        return m_impl->sync_result.value_or(false);
     }
 
     bool core::update(update_strategy strategy)
@@ -102,7 +105,7 @@ namespace pipewire
 
     void core::abort()
     {
-        m_impl->abort = true;
+        m_impl->sync_result = false;
         m_impl->context->loop()->quit();
     }
 
