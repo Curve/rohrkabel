@@ -87,7 +87,7 @@ namespace pipewire
             loop->run();
         }
 
-        return m_impl->sync_result.value_or(false);
+        return m_impl->sync_result.value();
     }
 
     bool core::update(update_strategy strategy)
