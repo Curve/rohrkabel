@@ -96,6 +96,8 @@ namespace pipewire
         case update_strategy::sync:
             return update<update_strategy::sync>();
         }
+
+        return false;
     }
 
     void core::abort()
