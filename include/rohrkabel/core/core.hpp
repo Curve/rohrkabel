@@ -88,6 +88,11 @@ namespace pipewire
 
       private:
         [[nodiscard]] static std::shared_ptr<core> create(std::shared_ptr<pipewire::context>);
+
+      public:
+        static const char *type;
+        static const std::uint32_t version;
+        static const std::uint32_t core_id;
     };
 } // namespace pipewire
 

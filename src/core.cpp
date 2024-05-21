@@ -181,4 +181,8 @@ namespace pipewire
 
         return rtn;
     }
+
+    const char *core::type            = PW_TYPE_INTERFACE_Core;
+    const std::uint32_t core::version = PW_VERSION_CORE;
+    const std::uint32_t core::core_id = PW_ID_CORE;
 } // namespace pipewire
