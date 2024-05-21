@@ -29,10 +29,38 @@ namespace pipewire
         }
     };
 
+    template <typename T>
+    class cancellable_lazy : public lazy<T>
+    {
+        std::stop_source stop;
+
+      public:
+        template <typename... Args>
+        cancellable_lazy(std::stop_source stop, Args &&...args)
+            : lazy<T>(std::forward<Args>(args)...), stop(std::move(stop))
+        {
+        }
+
+        [[nodiscard]] std::stop_source stop_source() const
+        {
+            return stop;
+        }
+    };
+
     template <typename T, typename Function>
         requires std::same_as<std::invoke_result_t<Function>, T>
     lazy<T> make_lazy(Function &&func)
     {
         return std::async(std::launch::deferred, std::forward<Function>(func));
+    }
+
+    template <typename T, typename Function>
+        requires std::same_as<std::invoke_result_t<Function, std::stop_token>, T>
+    cancellable_lazy<T> make_cancellable_lazy(Function &&func)
+    {
+        auto source = std::stop_source{};
+        auto fut    = std::async(std::launch::deferred, std::forward<Function>(func), source.get_token());
+
+        return {source, std::move(fut)};
     }
 } // namespace pipewire
