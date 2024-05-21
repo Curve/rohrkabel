@@ -48,6 +48,7 @@ namespace pipewire
     std::shared_ptr<main_loop> main_loop::create()
     {
         static std::once_flag flag;
+
         std::call_once(flag, [] {
             pw_init(nullptr, nullptr);
         });
