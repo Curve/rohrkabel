@@ -10,6 +10,7 @@
 
 #include <format>
 #include <optional>
+
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -17,9 +18,6 @@ namespace pipewire
     struct core::impl
     {
         raw_type *core;
-
-      public:
-        std::optional<bool> sync_result;
 
       public:
         std::shared_ptr<pipewire::context> context;
@@ -43,70 +41,81 @@ namespace pipewire
     }
 
     template <>
-    bool core::update<update_strategy::none>()
+    cancellable_lazy<expected<bool>> core::update<update_strategy::none>()
     {
-        return true;
+        return make_cancellable_lazy<expected<bool>>([](auto...) -> expected<bool> {
+            return true;
+        });
     }
 
     template <>
-    bool core::update<update_strategy::sync>()
+    cancellable_lazy<expected<bool>> core::update<update_strategy::sync>()
     {
-        m_impl->sync_result.reset();
+        struct state
+        {
+            core_listener listener;
 
-        int pending = -1;
+          public:
+            int pending;
 
-        auto listener = listen<core_listener>();
-        auto loop     = m_impl->context->loop();
+          public:
+            std::optional<std::variant<bool, error>> result;
+        };
 
-        listener.on<core_event::done>([&](auto id, auto seq) {
-            if (id != core_id || seq != pending)
+        auto m_state    = std::make_shared<state>(m_impl->core);
+        auto weak_state = std::weak_ptr{m_state};
+
+        auto loop = m_impl->context->loop();
+
+        m_state->listener.on<core_event::done>([loop, weak_state](auto id, auto seq) {
+            if (id != core_id || seq != weak_state.lock()->pending)
             {
                 return;
             }
 
-            m_impl->sync_result.emplace(true);
+            weak_state.lock()->result.emplace(true);
             loop->quit();
         });
 
-        listener.on<core_event::error>([&](auto id, const auto &err) {
+        m_state->listener.on<core_event::error>([loop, weak_state](auto id, const auto &error) {
             if (id != core_id)
             {
                 return;
             }
 
-            check(false, err.message);
+            check(false, error.message);
 
-            m_impl->sync_result.emplace(false);
+            weak_state.lock()->result.emplace(error);
             loop->quit();
         });
 
-        pending = sync(0);
+        m_state->pending = sync(0);
 
-        while (!m_impl->sync_result.has_value())
-        {
-            loop->run();
-        }
+        return make_cancellable_lazy<expected<bool>>([loop, m_state](auto token) -> expected<bool> {
+            while (!token.stop_requested() && !m_state->result.has_value())
+            {
+                loop->run();
+            }
 
-        return m_impl->sync_result.value();
+            auto result = m_state->result.value_or(false);
+
+            if (std::holds_alternative<error>(result))
+            {
+                return tl::make_unexpected(std::get<error>(result));
+            }
+
+            return std::get<bool>(result);
+        });
     }
 
-    bool core::update(update_strategy strategy)
+    cancellable_lazy<expected<bool>> core::update(update_strategy strategy)
     {
-        switch (strategy)
+        if (strategy == update_strategy::sync)
         {
-        case update_strategy::none:
-            return update<update_strategy::none>();
-        case update_strategy::sync:
             return update<update_strategy::sync>();
         }
 
-        return false;
-    }
-
-    void core::abort()
-    {
-        m_impl->sync_result = false;
-        m_impl->context->loop()->quit();
+        return update<update_strategy::none>();
     }
 
     int core::sync(int seq)

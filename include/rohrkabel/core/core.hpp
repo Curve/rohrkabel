@@ -54,13 +54,10 @@ namespace pipewire
 
       public:
         template <update_strategy>
-        bool update();
+        cancellable_lazy<expected<bool>> update();
 
       public:
-        bool update(update_strategy strategy = update_strategy::sync);
-
-      public:
-        void abort();
+        cancellable_lazy<expected<bool>> update(update_strategy strategy = update_strategy::sync);
 
       public:
         [[nodiscard]] int sync(int seq);
