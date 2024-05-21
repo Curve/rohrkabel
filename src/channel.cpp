@@ -1,8 +1,9 @@
-#include "loop.hpp"
 #include "channel/channel.hpp"
+#include "loop.hpp"
 
 #include <future>
 #include <chrono>
+
 #include <cstdint>
 #include <pipewire/pipewire.h>
 
@@ -60,8 +61,7 @@ namespace pipewire
 
     void channel_state::attach(std::shared_ptr<main_loop> loop, std::function<void()> callback)
     {
-        auto receive = [](void *data, std::uint64_t)
-        {
+        auto receive = [](void *data, std::uint64_t) {
             reinterpret_cast<impl *>(data)->callback();
         };
 
