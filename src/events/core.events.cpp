@@ -14,7 +14,7 @@ namespace pipewire
 
     core_listener::core_listener(core::raw_type *core) : m_impl(std::make_unique<impl>())
     {
-        m_impl->events.version = PW_VERSION_CORE_EVENTS;
+        m_impl->events.version = version;
 
         m_impl->events.info = [](void *data, const pw_core_info *info) {
             auto &events = *reinterpret_cast<listener::events *>(data);
@@ -38,4 +38,6 @@ namespace pipewire
         : listener(std::move(core_listener)), m_impl(std::move(core_listener.m_impl))
     {
     }
+
+    const std::uint32_t core_listener::version = PW_VERSION_CORE_EVENTS;
 } // namespace pipewire

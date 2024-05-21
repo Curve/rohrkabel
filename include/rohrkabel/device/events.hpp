@@ -34,5 +34,8 @@ namespace pipewire
       public:
         device_listener(device::raw_type *);
         device_listener(device_listener &&) noexcept;
+
+      public:
+        static const std::uint32_t version;
     };
 } // namespace pipewire

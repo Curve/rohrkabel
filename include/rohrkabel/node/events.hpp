@@ -33,5 +33,8 @@ namespace pipewire
       public:
         node_listener(node::raw_type *);
         node_listener(node_listener &&) noexcept;
+
+      public:
+        static const std::uint32_t version;
     };
 } // namespace pipewire

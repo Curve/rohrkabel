@@ -33,5 +33,8 @@ namespace pipewire
       public:
         proxy_listener(proxy::raw_type *);
         proxy_listener(proxy_listener &&) noexcept;
+
+      public:
+        static const std::uint32_t version;
     };
 } // namespace pipewire

@@ -14,7 +14,7 @@ namespace pipewire
 
     registry_listener::registry_listener(registry::raw_type *registry) : m_impl(std::make_unique<impl>())
     {
-        m_impl->events.version = PW_VERSION_REGISTRY_EVENTS;
+        m_impl->events.version = version;
 
         m_impl->events.global = [](void *data, std::uint32_t id, std::uint32_t permissions, const char *type,
                                    std::uint32_t version, const spa_dict *props) {
@@ -35,4 +35,6 @@ namespace pipewire
         : listener(std::move(registry_listener)), m_impl(std::move(registry_listener.m_impl))
     {
     }
+
+    const std::uint32_t registry_listener::version = PW_VERSION_REGISTRY_EVENTS;
 } // namespace pipewire

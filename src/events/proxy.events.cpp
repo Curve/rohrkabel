@@ -14,7 +14,7 @@ namespace pipewire
 
     proxy_listener::proxy_listener(proxy::raw_type *proxy) : m_impl(std::make_unique<impl>())
     {
-        m_impl->events.version = PW_VERSION_PROXY_EVENTS;
+        m_impl->events.version = version;
 
         m_impl->events.error = [](void *data, int seq, int res, const char *message) {
             auto &events = *reinterpret_cast<listener::events *>(data);
@@ -38,4 +38,6 @@ namespace pipewire
         : listener(std::move(proxy_listener)), m_impl(std::move(proxy_listener.m_impl))
     {
     }
+
+    const std::uint32_t proxy_listener::version = PW_VERSION_PROXY_EVENTS;
 } // namespace pipewire

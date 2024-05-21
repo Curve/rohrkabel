@@ -15,7 +15,7 @@ namespace pipewire
 
     metadata_listener::metadata_listener(metadata::raw_type *metadata) : m_impl(std::make_unique<impl>())
     {
-        m_impl->events.version = PW_VERSION_METADATA_EVENTS;
+        m_impl->events.version = version;
 
         m_impl->events.property = [](void *data, std::uint32_t subject, const char *key, const char *type,
                                      const char *value) {
@@ -32,4 +32,6 @@ namespace pipewire
         : listener(std::move(metadata_listener)), m_impl(std::move(metadata_listener.m_impl))
     {
     }
+
+    const std::uint32_t metadata_listener::version = PW_VERSION_METADATA_EVENTS;
 } // namespace pipewire

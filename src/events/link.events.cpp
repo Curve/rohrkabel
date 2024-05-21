@@ -14,7 +14,7 @@ namespace pipewire
 
     link_listener::link_listener(link::raw_type *link) : m_impl(std::make_unique<impl>())
     {
-        m_impl->events.version = PW_VERSION_LINK_EVENTS;
+        m_impl->events.version = version;
 
         m_impl->events.info = [](void *data, const pw_link_info *info) {
             auto &events = *reinterpret_cast<listener::events *>(data);
@@ -28,4 +28,6 @@ namespace pipewire
         : listener(std::move(link_listener)), m_impl(std::move(link_listener.m_impl))
     {
     }
+
+    const std::uint32_t link_listener::version = PW_VERSION_LINK_EVENTS;
 } // namespace pipewire

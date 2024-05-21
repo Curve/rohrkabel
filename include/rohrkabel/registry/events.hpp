@@ -31,5 +31,8 @@ namespace pipewire
       public:
         registry_listener(registry::raw_type *);
         registry_listener(registry_listener &&) noexcept;
+
+      public:
+        static const std::uint32_t version;
     };
 } // namespace pipewire

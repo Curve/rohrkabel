@@ -29,5 +29,8 @@ namespace pipewire
       public:
         link_listener(link::raw_type *);
         link_listener(link_listener &&) noexcept;
+
+      public:
+        static const std::uint32_t version;
     };
 } // namespace pipewire

@@ -14,7 +14,7 @@ namespace pipewire
 
     node_listener::node_listener(node::raw_type *node) : m_impl(std::make_unique<impl>())
     {
-        m_impl->events.version = PW_VERSION_NODE_EVENTS;
+        m_impl->events.version = version;
 
         m_impl->events.info = [](void *data, const pw_node_info *info) {
             auto &events = *reinterpret_cast<listener::events *>(data);
@@ -34,4 +34,6 @@ namespace pipewire
         : listener(std::move(node_listener)), m_impl(std::move(node_listener.m_impl))
     {
     }
+
+    const std::uint32_t node_listener::version = PW_VERSION_NODE_EVENTS;
 } // namespace pipewire

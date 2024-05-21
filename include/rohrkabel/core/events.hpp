@@ -36,7 +36,6 @@ namespace pipewire
         core_listener(core_listener &&) noexcept;
 
       public:
-        void clear(core_event event);
-        void remove(core_event event, std::uint64_t id);
+        static const std::uint32_t version;
     };
 } // namespace pipewire
