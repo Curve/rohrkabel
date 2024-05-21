@@ -11,7 +11,23 @@ namespace pipewire
     using expected = tl::expected<T, error>;
 
     template <typename T>
-    using lazy = std::future<T>;
+    struct lazy : std::future<T>
+    {
+        template <typename... Args>
+        lazy(Args &&...args) : std::future<T>(std::forward<Args>(args)...)
+        {
+        }
+
+        virtual ~lazy()
+        {
+            if (!this->valid())
+            {
+                return;
+            }
+
+            this->wait();
+        }
+    };
 
     template <typename T, typename Function>
         requires std::same_as<std::invoke_result_t<Function>, T>
