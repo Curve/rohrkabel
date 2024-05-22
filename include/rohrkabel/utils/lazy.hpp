@@ -32,18 +32,18 @@ namespace pipewire
     template <typename T>
     class cancellable_lazy : public lazy<T>
     {
-        std::stop_source stop;
+        std::stop_source m_stop;
 
       public:
         template <typename... Args>
         cancellable_lazy(std::stop_source stop, Args &&...args)
-            : lazy<T>(std::forward<Args>(args)...), stop(std::move(stop))
+            : lazy<T>(std::forward<Args>(args)...), m_stop(std::move(stop))
         {
         }
 
         [[nodiscard]] std::stop_source stop_source() const
         {
-            return stop;
+            return m_stop;
         }
     };
 
