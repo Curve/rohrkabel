@@ -35,11 +35,23 @@ jobs:
 
       - name: 🧰 Install Dependencies
         if: ${{ matrix.container == 'archlinux' }}
-        run: "pacman --noconfirm -Syu base-devel cmake gcc git make pipewire pipewire-pulse tmate openssh"
+        run: pacman --noconfirm -Syu base-devel cmake gcc git make pipewire pipewire-pulse tmate openssh dbus xorg-server-xvfb
 
       - name: 🧰 Install Dependencies
         if: ${{ matrix.container == 'fedora:40' }}
-        run: "dnf install -y pipewire-devel make automake git gcc gcc-c++ kernel-devel cmake libasan tmate"
+        run: dnf install -y pipewire-devel make automake git gcc gcc-c++ kernel-devel cmake libasan tmate dbus xorg-x11-server-Xvfb
+
+      - name: 🎧 Setup PipeWire
+        run: |
+          export XDG_RUNTIME_DIR=/tmp
+          export PIPEWIRE_RUNTIME_DIR=/tmp
+          export PULSE_RUNTIME_DIR=/tmp
+          export DISPLAY=:0.0
+
+          dbus-daemon --system --fork
+          Xvfb -screen $DISPLAY 1920x1080x24 &
+
+          pipewire &
 
       - name: 🐛 Debug Workflow
         if: ${{ github.event.inputs.debug == 'true' }}
