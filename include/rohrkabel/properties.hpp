@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils/deleter.hpp"
+
 #include <map>
 #include <string>
 #include <memory>
@@ -14,9 +16,7 @@ namespace pipewire
 
       public:
         using raw_type = pw_properties;
-
-      private:
-        using underlying = std::map<std::string, std::string>;
+        using mapped   = std::map<std::string, std::string>;
 
       private:
         std::unique_ptr<impl> m_impl;
@@ -24,26 +24,32 @@ namespace pipewire
       public:
         ~properties();
 
+      private:
+        properties(deleter<raw_type>, raw_type *);
+
       public:
-        properties();
         properties(properties &&) noexcept;
 
       public:
-        properties(underlying);
-        properties(std::initializer_list<std::pair<const std::string, std::string>>);
+        properties &operator=(properties &&) noexcept;
 
       public:
-        void set(std::string key, std::string value);
+        void set(const std::string &key, const std::string &value);
 
       public:
-        [[nodiscard]] std::string get(const std::string &value) const;
-
-      public:
-        [[nodiscard]] underlying::const_iterator end() const;
-        [[nodiscard]] underlying::const_iterator begin() const;
+        [[nodiscard]] mapped map() const;
+        [[nodiscard]] std::string get(const std::string &key) const;
 
       public:
         [[nodiscard]] raw_type *get() const;
+
+      public:
+        [[nodiscard]] static properties create();
+        [[nodiscard]] static properties create(const mapped &);
+
+      public:
+        [[nodiscard]] static properties from(raw_type *);
+        [[nodiscard]] static properties view(raw_type *);
 
       public:
         [[nodiscard]] operator raw_type *() const &;

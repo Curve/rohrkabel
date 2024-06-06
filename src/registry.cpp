@@ -9,7 +9,7 @@ namespace pipewire
 {
     struct registry::impl
     {
-        raw_type *registry;
+        pw_unique_ptr<raw_type> registry;
         std::shared_ptr<pipewire::core> core;
     };
 
@@ -18,16 +18,24 @@ namespace pipewire
         return pw_registry_bind(get(), id, type, version, 0);
     }
 
-    registry::~registry()
+    registry::~registry() = default;
+
+    registry::registry(deleter<raw_type> deleter, raw_type *raw, std::shared_ptr<pipewire::core> core)
+        : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}, std::move(core)))
     {
-        pw_proxy_destroy(reinterpret_cast<proxy::raw_type *>(m_impl->registry));
     }
 
-    registry::registry() : m_impl(std::make_unique<impl>()) {}
+    registry::registry(registry &&other) noexcept : m_impl(std::move(other.m_impl)) {}
+
+    registry &registry::operator=(registry &&other) noexcept
+    {
+        m_impl = std::move(other.m_impl);
+        return *this;
+    }
 
     registry::raw_type *registry::get() const
     {
-        return m_impl->registry;
+        return m_impl->registry.get();
     }
 
     std::shared_ptr<core> registry::core() const
@@ -40,22 +48,31 @@ namespace pipewire
         return get();
     }
 
-    std::shared_ptr<registry> registry::create(std::shared_ptr<pipewire::core> core)
+    std::optional<registry> registry::create(std::shared_ptr<pipewire::core> core)
     {
         auto *registry = pw_core_get_registry(core->get(), version, 0);
         check(registry, "Failed to get registry");
 
         if (!registry)
         {
-            return nullptr;
+            return std::nullopt;
         }
 
-        auto rtn = std::unique_ptr<pipewire::registry>(new pipewire::registry);
+        return from(registry, std::move(core));
+    }
 
-        rtn->m_impl->registry = registry;
-        rtn->m_impl->core     = std::move(core);
+    registry registry::from(raw_type *registry, std::shared_ptr<pipewire::core> core)
+    {
+        static constexpr auto deleter = [](auto *registry) {
+            pw_proxy_destroy(reinterpret_cast<proxy::raw_type *>(registry));
+        };
 
-        return rtn;
+        return {deleter, registry, std::move(core)};
+    }
+
+    registry registry::view(raw_type *registry, std::shared_ptr<pipewire::core> core)
+    {
+        return {view_deleter<raw_type>, registry, std::move(core)};
     }
 
     const char *registry::type            = PW_TYPE_INTERFACE_Registry;

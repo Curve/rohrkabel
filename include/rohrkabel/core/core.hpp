@@ -3,6 +3,7 @@
 #include "../context.hpp"
 #include "../properties.hpp"
 #include "../utils/traits.hpp"
+#include "../utils/deleter.hpp"
 
 #include <memory>
 #include <optional>
@@ -27,14 +28,10 @@ namespace pipewire
         std::optional<std::uint32_t> version;
     };
 
-    class registry;
     class core_listener;
 
-    class core : public std::enable_shared_from_this<core>
+    class core
     {
-        friend class context;
-
-      private:
         struct impl;
 
       public:
@@ -47,10 +44,10 @@ namespace pipewire
         ~core();
 
       private:
-        core();
+        core(deleter<raw_type>, raw_type *, std::shared_ptr<pipewire::context>);
 
       private:
-        void *create(factory) const;
+        [[nodiscard]] void *create(factory) const;
 
       public:
         template <update_strategy>
@@ -76,9 +73,6 @@ namespace pipewire
         [[nodiscard]] lazy<expected<T>> create(Factory, update_strategy strategy = update_strategy::sync);
 
       public:
-        [[nodiscard]] std::shared_ptr<pipewire::registry> registry();
-
-      public:
         [[nodiscard]] raw_type *get() const;
         [[nodiscard]] std::shared_ptr<pipewire::context> context() const;
 
@@ -86,8 +80,12 @@ namespace pipewire
         [[nodiscard]] operator raw_type *() const &;
         [[nodiscard]] operator raw_type *() const && = delete;
 
-      private:
+      public:
         [[nodiscard]] static std::shared_ptr<core> create(std::shared_ptr<pipewire::context>);
+
+      public:
+        [[nodiscard]] static std::shared_ptr<core> from(raw_type *, std::shared_ptr<pipewire::context>);
+        [[nodiscard]] static std::shared_ptr<core> view(raw_type *, std::shared_ptr<pipewire::context>);
 
       public:
         static const char *type;

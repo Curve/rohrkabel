@@ -1,6 +1,5 @@
 #include "loop.hpp"
 #include "context.hpp"
-#include "core/core.hpp"
 #include "utils/check.hpp"
 
 #include <pipewire/pipewire.h>
@@ -9,31 +8,20 @@ namespace pipewire
 {
     struct context::impl
     {
-        raw_type *context;
+        pw_unique_ptr<raw_type> context;
         std::shared_ptr<main_loop> loop;
-        std::shared_ptr<pipewire::core> core;
     };
 
-    context::~context()
+    context::~context() = default;
+
+    context::context(deleter<raw_type> deleter, raw_type *raw, std::shared_ptr<main_loop> loop)
+        : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}, std::move(loop)))
     {
-        pw_context_destroy(m_impl->context);
-    }
-
-    context::context() : m_impl(std::make_unique<impl>()) {}
-
-    std::shared_ptr<core> context::core()
-    {
-        if (!m_impl->core)
-        {
-            m_impl->core = core::create(shared_from_this());
-        }
-
-        return m_impl->core;
     }
 
     context::raw_type *context::get() const
     {
-        return m_impl->context;
+        return m_impl->context.get();
     }
 
     std::shared_ptr<main_loop> context::loop() const
@@ -56,11 +44,20 @@ namespace pipewire
             return nullptr;
         }
 
-        auto rtn = std::unique_ptr<context>(new context);
+        return from(ctx, std::move(loop));
+    }
 
-        rtn->m_impl->context = ctx;
-        rtn->m_impl->loop    = std::move(loop);
+    std::shared_ptr<context> context::from(raw_type *raw, std::shared_ptr<main_loop> loop)
+    {
+        static constexpr auto deleter = [](auto *context) {
+            pw_context_destroy(context);
+        };
 
-        return rtn;
+        return std::shared_ptr<context>(new context{deleter, raw, std::move(loop)});
+    }
+
+    std::shared_ptr<context> context::view(raw_type *raw, std::shared_ptr<main_loop> loop)
+    {
+        return std::shared_ptr<context>(new context{view_deleter<raw_type>, raw, std::move(loop)});
     }
 } // namespace pipewire

@@ -2,7 +2,6 @@
 #include "core/events.hpp"
 
 #include "utils/check.hpp"
-#include "registry/registry.hpp"
 
 #include "link/link.hpp"
 #include "node/node.hpp"
@@ -17,19 +16,16 @@ namespace pipewire
 {
     struct core::impl
     {
-        raw_type *core;
-
-      public:
+        pw_unique_ptr<raw_type> core;
         std::shared_ptr<pipewire::context> context;
-        std::shared_ptr<pipewire::registry> registry;
     };
 
-    core::~core()
-    {
-        pw_core_disconnect(m_impl->core);
-    }
+    core::~core() = default;
 
-    core::core() : m_impl(std::make_unique<impl>()) {}
+    core::core(deleter<raw_type> deleter, raw_type *raw, std::shared_ptr<pipewire::context> context)
+        : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}, std::move(context)))
+    {
+    }
 
     void *core::create(factory factory) const
     {
@@ -62,7 +58,7 @@ namespace pipewire
             std::optional<std::variant<bool, error>> result;
         };
 
-        auto m_state    = std::make_shared<state>(m_impl->core);
+        auto m_state    = std::make_shared<state>(m_impl->core.get());
         auto weak_state = std::weak_ptr{m_state};
 
         auto loop = m_impl->context->loop();
@@ -120,7 +116,7 @@ namespace pipewire
 
     int core::sync(int seq)
     {
-        return pw_core_sync(m_impl->core, core_id, seq);
+        return pw_core_sync(m_impl->core.get(), core_id, seq);
     }
 
     template <>
@@ -144,8 +140,10 @@ namespace pipewire
     template <>
     lazy<expected<link>> core::create(link_factory factory, update_strategy strategy)
     {
-        auto props = properties{{"link.input.port", std::to_string(factory.input)},
-                                {"link.output.port", std::to_string(factory.output)}};
+        auto props = properties::create({
+            {"link.input.port", std::to_string(factory.input)},
+            {"link.output.port", std::to_string(factory.output)},
+        });
 
         return create<link>({.name = "link-factory", .props = std::move(props)}, strategy);
     }
@@ -162,28 +160,20 @@ namespace pipewire
 
         positions.pop_back();
 
-        auto props = properties{{"node.name", factory.name},
-                                {"media.class", "Audio/Source/Virtual"},
-                                {"factory.name", "support.null-audio-sink"},
-                                {"audio.channels", std::to_string(factory.positions.size())},
-                                {"audio.position", positions}};
+        auto props = properties::create({
+            {"node.name", factory.name},
+            {"media.class", "Audio/Source/Virtual"},
+            {"factory.name", "support.null-audio-sink"},
+            {"audio.channels", std::to_string(factory.positions.size())},
+            {"audio.position", positions},
+        });
 
         return create<node>({.name = "adapter", .props = std::move(props)}, strategy);
     }
 
-    std::shared_ptr<pipewire::registry> core::registry()
-    {
-        if (!m_impl->registry)
-        {
-            m_impl->registry = pipewire::registry::create(shared_from_this());
-        }
-
-        return m_impl->registry;
-    }
-
     core::raw_type *core::get() const
     {
-        return m_impl->core;
+        return m_impl->core.get();
     }
 
     std::shared_ptr<pipewire::context> core::context() const
@@ -206,12 +196,21 @@ namespace pipewire
             return nullptr;
         }
 
-        auto rtn = std::unique_ptr<pipewire::core>(new pipewire::core);
+        return from(core, std::move(context));
+    }
 
-        rtn->m_impl->core    = core;
-        rtn->m_impl->context = std::move(context);
+    std::shared_ptr<core> core::from(raw_type *core, std::shared_ptr<pipewire::context> context)
+    {
+        static constexpr auto deleter = [](auto *core) {
+            pw_core_disconnect(core);
+        };
 
-        return rtn;
+        return std::shared_ptr<pipewire::core>(new pipewire::core{deleter, core, std::move(context)});
+    }
+
+    std::shared_ptr<core> core::view(raw_type *core, std::shared_ptr<pipewire::context> context)
+    {
+        return std::shared_ptr<pipewire::core>(new pipewire::core{view_deleter<raw_type>, core, std::move(context)});
     }
 
     const char *core::type            = PW_TYPE_INTERFACE_Core;

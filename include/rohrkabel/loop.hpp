@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils/deleter.hpp"
+
 #include <memory>
 
 struct pw_loop;
@@ -21,7 +23,7 @@ namespace pipewire
         ~main_loop();
 
       private:
-        main_loop();
+        main_loop(deleter<raw_type>, raw_type *);
 
       public:
         void quit() const;
@@ -37,5 +39,9 @@ namespace pipewire
 
       public:
         [[nodiscard]] static std::shared_ptr<main_loop> create();
+
+      public:
+        [[nodiscard]] static std::shared_ptr<main_loop> from(raw_type *);
+        [[nodiscard]] static std::shared_ptr<main_loop> view(raw_type *);
     };
 } // namespace pipewire

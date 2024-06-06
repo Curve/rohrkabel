@@ -1,35 +1,25 @@
 #include "proxy/proxy.hpp"
 #include "proxy/events.hpp"
+#include "utils/deleter.hpp"
 
 #include <pipewire/pipewire.h>
 
 namespace pipewire
 {
-    struct deleter
-    {
-        void operator()(proxy::raw_type *proxy)
-        {
-            pw_proxy_destroy(proxy);
-        }
-    };
-
-    using unique_ptr = std::unique_ptr<proxy::raw_type, deleter>;
-
     struct proxy::impl
     {
         spa::dict props;
-        unique_ptr proxy;
+        pw_unique_ptr<raw_type> proxy;
     };
 
     proxy::~proxy() = default;
 
-    proxy::proxy(proxy &&other) noexcept : m_impl(std::move(other.m_impl)) {}
-
-    proxy::proxy(raw_type *proxy, spa::dict props) : m_impl(std::make_unique<impl>())
+    proxy::proxy(deleter<raw_type> deleter, raw_type *raw, spa::dict dict)
+        : m_impl(std::make_unique<impl>(std::move(dict), pw_unique_ptr<raw_type>{raw, deleter}))
     {
-        m_impl->proxy.reset(proxy);
-        m_impl->props = std::move(props);
     }
+
+    proxy::proxy(proxy &&other) noexcept : m_impl(std::move(other.m_impl)) {}
 
     proxy &proxy::operator=(proxy &&other) noexcept
     {
@@ -104,7 +94,21 @@ namespace pipewire
                 return tl::make_unexpected(done.error());
             }
 
-            return proxy{raw, std::move(m_state->props)};
+            return from(raw, std::move(m_state->props));
         });
+    }
+
+    proxy proxy::from(raw_type *raw, spa::dict props)
+    {
+        static constexpr auto deleter = [](auto *proxy) {
+            pw_proxy_destroy(proxy);
+        };
+
+        return {deleter, raw, std::move(props)};
+    }
+
+    proxy proxy::view(raw_type *raw, spa::dict props)
+    {
+        return {view_deleter<raw_type>, raw, std::move(props)};
     }
 } // namespace pipewire

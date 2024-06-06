@@ -21,7 +21,7 @@ namespace pipewire
         ~listener() = default;
 
       public:
-        listener() : m_events(std::make_unique<events>()) {}
+        listener() : spa::hook(spa::hook::create()), m_events(std::make_unique<events>()) {}
         listener(listener &&other) noexcept : spa::hook(std::move(other)), m_events(std::move(other.m_events)) {}
 
       public:

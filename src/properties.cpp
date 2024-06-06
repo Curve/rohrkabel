@@ -4,70 +4,84 @@
 
 namespace pipewire
 {
-    struct deleter
-    {
-        void operator()(properties::raw_type *props)
-        {
-            pw_properties_free(props);
-        }
-    };
-
-    using unique_ptr = std::unique_ptr<properties::raw_type, deleter>;
-
     struct properties::impl
     {
-        underlying map;
-        unique_ptr properties;
+        pw_unique_ptr<raw_type> properties;
     };
 
     properties::~properties() = default;
 
-    properties::properties() : m_impl(std::make_unique<impl>())
+    properties::properties(deleter<raw_type> deleter, raw_type *raw)
+        : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}))
     {
-        m_impl->properties = unique_ptr(pw_properties_new(nullptr, nullptr));
     }
 
     properties::properties(properties &&properties) noexcept : m_impl(std::move(properties.m_impl)) {}
 
-    properties::properties(underlying map) : properties()
+    properties &properties::operator=(properties &&other) noexcept
     {
-        for (const auto &[key, value] : map)
-        {
-            pw_properties_set(m_impl->properties.get(), key.c_str(), value.c_str());
-        }
-
-        m_impl->map = std::move(map);
+        m_impl = std::move(other.m_impl);
+        return *this;
     }
 
-    properties::properties(std::initializer_list<std::pair<const std::string, std::string>> init)
-        : properties(underlying{init})
-    {
-    }
-
-    void properties::set(std::string key, std::string value)
+    void properties::set(const std::string &key, const std::string &value)
     {
         pw_properties_set(m_impl->properties.get(), key.c_str(), value.c_str());
-        m_impl->map.emplace(std::move(key), std::move(value));
     }
 
-    std::string properties::get(const std::string &value) const
+    properties::mapped properties::map() const
     {
-        return m_impl->map.at(value);
+        mapped rtn;
+
+        void *state = nullptr;
+
+        while (const auto *key = pw_properties_iterate(m_impl->properties.get(), &state))
+        {
+            rtn.emplace(key, get(key));
+        }
+
+        return rtn;
     }
 
-    properties::underlying::const_iterator properties::end() const
+    std::string properties::get(const std::string &key) const
     {
-        return m_impl->map.end();
-    }
-
-    properties::underlying::const_iterator properties::begin() const
-    {
-        return m_impl->map.begin();
+        return pw_properties_get(m_impl->properties.get(), key.c_str());
     }
 
     properties::raw_type *properties::get() const
     {
         return m_impl->properties.get();
+    }
+
+    properties properties::create()
+    {
+        return from(pw_properties_new(nullptr, nullptr));
+    }
+
+    properties properties::create(const mapped &map)
+    {
+        auto rtn = create();
+
+        for (const auto &[key, value] : map)
+        {
+            rtn.set(key, value);
+        }
+
+        return rtn;
+    }
+
+    properties properties::from(raw_type *properties)
+    {
+        static const auto deleter = [](auto *properties) {
+            pw_properties_free(properties);
+        };
+
+        return {deleter, properties};
+    }
+
+    properties properties::view(raw_type *properties)
+    {
+        return {view_deleter<raw_type>, properties};
     }
 
     properties::operator raw_type *() const &

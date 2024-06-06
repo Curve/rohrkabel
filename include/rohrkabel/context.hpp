@@ -1,6 +1,7 @@
 #pragma once
 
 #include "loop.hpp"
+#include "utils/deleter.hpp"
 
 #include <memory>
 
@@ -8,9 +9,7 @@ struct pw_context;
 
 namespace pipewire
 {
-    class core;
-
-    class context : public std::enable_shared_from_this<context>
+    class context
     {
         struct impl;
 
@@ -24,10 +23,7 @@ namespace pipewire
         ~context();
 
       private:
-        context();
-
-      public:
-        [[nodiscard]] std::shared_ptr<pipewire::core> core();
+        context(deleter<raw_type>, raw_type *, std::shared_ptr<main_loop>);
 
       public:
         [[nodiscard]] raw_type *get() const;
@@ -39,5 +35,9 @@ namespace pipewire
 
       public:
         [[nodiscard]] static std::shared_ptr<context> create(std::shared_ptr<main_loop>);
+
+      public:
+        [[nodiscard]] static std::shared_ptr<context> from(raw_type *, std::shared_ptr<main_loop>);
+        [[nodiscard]] static std::shared_ptr<context> view(raw_type *, std::shared_ptr<main_loop>);
     };
 } // namespace pipewire

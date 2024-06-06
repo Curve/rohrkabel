@@ -1,9 +1,11 @@
 #pragma once
 
 #include "../core/core.hpp"
+#include "../utils/deleter.hpp"
 
 #include <memory>
 #include <cstdint>
+#include <optional>
 
 struct pw_registry;
 
@@ -13,13 +15,10 @@ namespace pipewire
 
     class registry
     {
-        friend class core;
+        struct impl;
 
       public:
         using raw_type = pw_registry;
-
-      private:
-        struct impl;
 
       private:
         std::unique_ptr<impl> m_impl;
@@ -30,8 +29,14 @@ namespace pipewire
       public:
         ~registry();
 
-      protected:
-        registry();
+      private:
+        registry(deleter<raw_type>, raw_type *, std::shared_ptr<pipewire::core>);
+
+      public:
+        registry(registry &&) noexcept;
+
+      public:
+        registry &operator=(registry &&) noexcept;
 
       public:
         template <class Listener = registry_listener>
@@ -39,9 +44,13 @@ namespace pipewire
         [[rk::needs_update]] [[nodiscard]] Listener listen();
 
       public:
+        template <class T, update_strategy Strategy = update_strategy::sync>
+            requires valid_proxy<T>
+        [[nodiscard]] lazy<expected<T>> bind(std::uint32_t id);
+
         template <class T>
             requires valid_proxy<T>
-        [[nodiscard]] lazy<expected<T>> bind(std::uint32_t id, update_strategy strategy = update_strategy::sync);
+        [[nodiscard]] lazy<expected<T>> bind(std::uint32_t id, update_strategy strategy);
 
       public:
         [[nodiscard]] raw_type *get() const;
@@ -51,8 +60,12 @@ namespace pipewire
         [[nodiscard]] operator raw_type *() const &;
         [[nodiscard]] operator raw_type *() const && = delete;
 
-      private:
-        [[nodiscard]] static std::shared_ptr<registry> create(std::shared_ptr<pipewire::core>);
+      public:
+        [[nodiscard]] static std::optional<registry> create(std::shared_ptr<pipewire::core>);
+
+      public:
+        [[nodiscard]] static registry from(raw_type *, std::shared_ptr<pipewire::core>);
+        [[nodiscard]] static registry view(raw_type *, std::shared_ptr<pipewire::core>);
 
       public:
         static const char *type;

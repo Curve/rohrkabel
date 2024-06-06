@@ -3,6 +3,7 @@
 #include "../spa/dict.hpp"
 
 #include "../utils/lazy.hpp"
+#include "../utils/deleter.hpp"
 #include "../utils/listener.hpp"
 
 #include <string>
@@ -28,9 +29,11 @@ namespace pipewire
       public:
         virtual ~proxy();
 
+      private:
+        proxy(deleter<raw_type>, raw_type *, spa::dict);
+
       public:
         proxy(proxy &&) noexcept;
-        proxy(raw_type *, spa::dict);
 
       public:
         proxy &operator=(proxy &&) noexcept;
@@ -55,6 +58,10 @@ namespace pipewire
 
       public:
         [[rk::needs_update]] static lazy<expected<proxy>> bind(raw_type *);
+
+      public:
+        static proxy from(raw_type *, spa::dict = {});
+        static proxy view(raw_type *, spa::dict = {});
     };
 } // namespace pipewire
 

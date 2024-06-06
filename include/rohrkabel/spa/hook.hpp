@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../utils/deleter.hpp"
+
 #include <memory>
 
 struct spa_hook;
@@ -19,8 +21,10 @@ namespace pipewire::spa
       public:
         ~hook();
 
+      private:
+        hook(deleter<raw_type>, raw_type *);
+
       public:
-        hook();
         hook(hook &&) noexcept;
 
       public:
@@ -28,6 +32,13 @@ namespace pipewire::spa
 
       public:
         [[nodiscard]] raw_type *get() const;
+
+      public:
+        [[nodiscard]] static hook create();
+
+      public:
+        [[nodiscard]] static hook from(raw_type *);
+        [[nodiscard]] static hook view(raw_type *);
 
       public:
         [[nodiscard]] operator raw_type *() const &;
