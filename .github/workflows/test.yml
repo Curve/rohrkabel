@@ -35,11 +35,11 @@ jobs:
 
       - name: 🧰 Install Dependencies
         if: ${{ matrix.container == 'archlinux' }}
-        run: "pacman --noconfirm -Syu base-devel cmake gcc git make pipewire pipewire-pulse"
+        run: "pacman --noconfirm -Syu base-devel cmake gcc git make pipewire pipewire-pulse tmate openssh"
 
       - name: 🧰 Install Dependencies
         if: ${{ matrix.container == 'fedora:40' }}
-        run: "dnf install -y pipewire-devel make automake git gcc gcc-c++ kernel-devel cmake libasan"
+        run: "dnf install -y pipewire-devel make automake git gcc gcc-c++ kernel-devel cmake libasan tmate"
 
       - name: 🐛 Debug Workflow
         if: ${{ github.event.inputs.debug == 'true' }}
