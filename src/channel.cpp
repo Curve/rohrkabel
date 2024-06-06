@@ -5,6 +5,7 @@
 #include <chrono>
 
 #include <cstdint>
+
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -45,7 +46,7 @@ namespace pipewire
             return;
         }
 
-        pw_loop_remove_source(m_impl->loop->loop(), source);
+        pw_loop_destroy_source(m_impl->loop->loop(), source);
     }
 
     channel_state::channel_state() : m_impl(std::make_unique<impl>())
