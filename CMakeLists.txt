@@ -1,20 +1,13 @@
 cmake_minimum_required(VERSION 3.21)
-project(rohrkabel LANGUAGES CXX VERSION 6.0)
+project(rohrkabel LANGUAGES CXX VERSION 7.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
 # --------------------------------------------------------------------------------------------------------
 
 option(rohrkabel_examples       "Build examples"                             OFF)
+option(rohrkabel_sanitizer      "Enable Sanitizer (GCC)"                     OFF)
 option(rohrkabel_prefer_remote  "Prefer remote packages over local packages"  ON)
-
-# --------------------------------------------------------------------------------------------------------
-# Warning for non unix platforms
-# --------------------------------------------------------------------------------------------------------
-
-if (NOT UNIX)
-    message(FATAL_ERROR "[rohrkabel] pipewire only supports linux")
-endif()
 
 # --------------------------------------------------------------------------------------------------------
 # Sync `CPM_DOWNLOAD_ALL` with `rohrkabel_prefer_remote`
@@ -25,6 +18,15 @@ if (rohrkabel_prefer_remote)
 endif()
 
 set(CPM_DOWNLOAD_ALL ${rohrkabel_prefer_remote})
+
+# --------------------------------------------------------------------------------------------------------
+# Enable Sanitizer
+# --------------------------------------------------------------------------------------------------------
+
+if (rohrkabel_sanitizer)
+  add_compile_options(-fsanitize=address -fsanitize=leak)
+  add_link_options(-fsanitize=address -fsanitize=leak)
+endif()
 
 # --------------------------------------------------------------------------------------------------------
 # Create library
