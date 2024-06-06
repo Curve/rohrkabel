@@ -40,7 +40,7 @@ jobs:
 
       - name: 🧰 Install Dependencies
         if: ${{ matrix.container == 'fedora:40' }}
-        run: "dnf install -y pipewire-devel make automake git gcc gcc-c++ kernel-devel cmake"
+        run: "dnf install -y pipewire-devel make automake git gcc gcc-c++ kernel-devel cmake libasan"
 
       - name: 🐛 Debug Workflow
         if: ${{ github.event.inputs.debug == 'true' }}
