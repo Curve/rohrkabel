@@ -12,8 +12,8 @@ int main()
 {
     auto loop    = pw::main_loop::create();
     auto context = pw::context::create(loop);
-    auto core    = context->core();
-    auto reg     = core->registry();
+    auto core    = pw::core::create(context);
+    auto reg     = pw::registry::create(core);
 
     auto listener = reg->listen();
 

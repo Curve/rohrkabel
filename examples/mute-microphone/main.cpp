@@ -13,8 +13,8 @@ int main()
 {
     auto main_loop = pw::main_loop::create();
     auto context   = pipewire::context::create(main_loop);
-    auto core      = context->core();
-    auto reg       = core->registry();
+    auto core      = pw::core::create(context);
+    auto reg       = pw::registry::create(core);
 
     std::vector<pw::device> devices;
 
