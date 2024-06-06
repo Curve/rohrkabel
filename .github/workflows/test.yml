@@ -60,9 +60,10 @@ jobs:
           export PULSE_RUNTIME_DIR=/tmp
           export DISPLAY=:0.0
 
+          mkdir -p /run/dbus
           dbus-daemon --system --fork
-          Xvfb -screen $DISPLAY 1920x1080x24 &
 
+          Xvfb -screen $DISPLAY 1920x1080x24 &
           pipewire &
 
           ./build/examples/roundtrip/roundtrip-example
