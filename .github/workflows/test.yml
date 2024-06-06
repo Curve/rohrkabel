@@ -41,7 +41,19 @@ jobs:
         if: ${{ matrix.container == 'fedora:40' }}
         run: dnf install -y pipewire-devel make automake git gcc gcc-c++ kernel-devel cmake libasan tmate dbus xorg-x11-server-Xvfb
 
-      - name: 🎧 Setup PipeWire
+      - name: 🐛 Debug Workflow
+        if: ${{ github.event.inputs.debug == 'true' }}
+        uses: mxschmitt/action-tmate@v3
+        with:
+          install-dependencies: false
+          limit-access-to-actor: true
+
+      - name: 🔨 Compile
+        run: |
+          cmake -B build -Drohrkabel_examples=ON -Drohrkabel_sanitizer=ON
+          cmake --build build --config ${{ matrix.config }}
+
+      - name: 🎧 Setup PipeWire / 🔬 Run Examples
         run: |
           export XDG_RUNTIME_DIR=/tmp
           export PIPEWIRE_RUNTIME_DIR=/tmp
@@ -53,12 +65,4 @@ jobs:
 
           pipewire &
 
-      - name: 🐛 Debug Workflow
-        if: ${{ github.event.inputs.debug == 'true' }}
-        uses: mxschmitt/action-tmate@v3
-        with:
-          install-dependencies: false
-          limit-access-to-actor: true
-
-      - name: 🔨 Compile
-        run: "mkdir build && cd build && cmake .. -Drohrkabel_examples=ON -Drohrkabel_sanitizer=ON && cmake --build . --config ${{ matrix.config }}"
+          ./build/examples/roundtrip/roundtrip-example
