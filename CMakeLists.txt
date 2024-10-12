@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(rohrkabel LANGUAGES CXX VERSION 7.0)
+project(rohrkabel LANGUAGES CXX VERSION 7.1)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -93,13 +93,13 @@ CPMFindPackage(
 
 CPMFindPackage(
   NAME           ereignis
-  VERSION        3.1
+  VERSION        4.3
   GIT_REPOSITORY "https://github.com/Curve/ereignis"
 )
 
 CPMFindPackage(
   NAME           boost_callable_traits
-  GIT_TAG        boost-1.85.0
+  GIT_TAG        boost-1.86.0
   GIT_REPOSITORY "https://github.com/boostorg/callable_traits"
 )
 
