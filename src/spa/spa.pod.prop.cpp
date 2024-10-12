@@ -9,7 +9,6 @@ namespace pipewire::spa
     struct pod_prop::impl
     {
         raw_type *prop;
-        const raw_info *type;
     };
 
     pod_prop::~pod_prop() = default;
@@ -44,11 +43,6 @@ namespace pipewire::spa
         return pod::view(&m_impl->prop->value);
     }
 
-    std::string pod_prop::name() const
-    {
-        return m_impl->type->name;
-    }
-
     std::uint32_t pod_prop::key() const
     {
         return m_impl->prop->key;
@@ -64,21 +58,17 @@ namespace pipewire::spa
         return m_impl->prop;
     }
 
-    const pod_prop::raw_info *pod_prop::type_info() const
-    {
-        return m_impl->type;
-    }
-
     pod_prop::operator raw_type *() const &
     {
         return get();
     }
 
-    pod_prop pod_prop::view(raw_type *prop, const raw_info *type)
+    pod_prop pod_prop::view(raw_type *prop)
     {
+        // TODO: Improve, use new pw_unique_ptr
+
         pod_prop rtn;
 
-        rtn.m_impl->type = spa_debug_type_find(type->values, prop->key);
         rtn.m_impl->prop = prop;
 
         return rtn;

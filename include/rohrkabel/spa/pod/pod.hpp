@@ -3,6 +3,8 @@
 #include <string>
 #include <memory>
 #include <vector>
+
+#include <optional>
 #include <cstdint>
 
 struct spa_pod;
@@ -10,7 +12,7 @@ struct spa_type_info;
 
 namespace pipewire::spa
 {
-    enum class pod_type : std::uint8_t
+    enum class type : std::uint8_t
     {
         string    = 8,
         boolean   = 2,
@@ -19,7 +21,14 @@ namespace pipewire::spa
         array     = 13,
     };
 
-    class pod_object_body;
+    enum class prop : std::uint32_t
+    {
+        mute            = 65540,
+        channel_volumes = 65544,
+    };
+
+    class pod_prop;
+    class pod_object;
 
     class pod
     {
@@ -46,17 +55,16 @@ namespace pipewire::spa
         pod &operator=(const pod &) noexcept;
 
       public:
-        [[nodiscard]] pod_type type() const;
+        [[nodiscard]] std::optional<pod_prop> find(prop) const;
+        [[nodiscard]] std::optional<pod_prop> find_recursive(prop) const;
+
+      public:
+        [[nodiscard]] spa::type type() const;
         [[nodiscard]] std::size_t size() const;
-        [[nodiscard]] std::string name() const;
 
       public:
         template <typename T>
-        [[nodiscard]] T body() const = delete;
-
-      public:
-        template <typename T>
-        [[nodiscard]] T read() const = delete;
+        [[nodiscard]] T as() const = delete;
 
       public:
         template <typename T>
@@ -64,7 +72,6 @@ namespace pipewire::spa
 
       public:
         [[nodiscard]] raw_type *get() const;
-        [[nodiscard]] const spa_type_info *type_info() const;
 
       public:
         [[nodiscard]] operator raw_type *() const &;
@@ -76,21 +83,18 @@ namespace pipewire::spa
     };
 
     template <>
-    bool pod::read() const;
+    bool pod::as() const;
     template <>
-    float pod::read() const;
+    float pod::as() const;
     template <>
-    std::vector<float> pod::read() const;
+    pod_object pod::as() const;
     template <>
-    std::string pod::read() const;
-
+    std::string pod::as() const;
     template <>
-    pod_object_body pod::body<pod_object_body>() const;
+    std::vector<void *> pod::as() const;
 
     template <>
     void pod::write(bool);
     template <>
     void pod::write(float);
-    template <>
-    void pod::write(std::vector<float>);
 } // namespace pipewire::spa

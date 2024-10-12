@@ -2,8 +2,8 @@
 #include <format>
 #include <iostream>
 
-#include <rohrkabel/node/node.hpp>
-#include <rohrkabel/spa/pod/object/body.hpp>
+#include <rohrkabel/device/device.hpp>
+#include <rohrkabel/spa/pod/object/object.hpp>
 
 #include <rohrkabel/registry/events.hpp>
 #include <rohrkabel/registry/registry.hpp>
@@ -17,25 +17,25 @@ int main()
     auto core      = pw::core::create(context);
     auto reg       = pw::registry::create(core);
 
-    std::vector<pw::node> devices;
+    std::vector<pw::device> devices;
 
     auto listener = reg->listen();
 
     auto on_global = [&](const pipewire::global &global) {
-        if (global.type != pipewire::node::type)
+        if (global.type != pipewire::device::type)
         {
             return;
         }
 
-        auto device = reg->bind<pipewire::node>(global.id).get();
-        auto props  = device->info().props;
+        auto device = reg->bind<pipewire::device>(global.id).get();
+        auto info   = device->info();
 
-        if (!props.contains("node.nick"))
+        if (info.props["media.class"] != "Audio/Device")
         {
             return;
         }
 
-        if (props["media.class"].find("Audio") == std::string::npos)
+        if (!info.props.contains("device.description"))
         {
             return;
         }
@@ -49,11 +49,9 @@ int main()
     for (auto i = 0u; devices.size() > i; i++)
     {
         auto &device = devices.at(i);
+        auto name    = device.info().props.at("device.description");
 
-        auto name  = device.info().props.at("node.nick");
-        auto media = device.info().props.at("media.class");
-
-        std::cout << std::format("{}. {} ({})", i, name, media) << std::endl;
+        std::cout << std::format("{}. {}", i, name) << std::endl;
     }
 
     std::cout << std::endl;
@@ -63,7 +61,7 @@ int main()
     std::cin >> selection;
 
     auto &device = devices.at(selection);
-    std::cout << "Input new volume for '" << device.info().props.at("node.nick") << "': ";
+    std::cout << "Input new volume for '" << device.info().props.at("device.description") << "': ";
 
     float volume{0};
     std::cin >> volume;
@@ -72,57 +70,22 @@ int main()
     auto params = device.params();
     core->update();
 
-    auto get_channels = [](const pw::spa::pod &pod) {
-        // NOLINTNEXTLINE
-        auto impl = [](const pw::spa::pod_prop *parent, const pw::spa::pod &pod,
-                       auto &self) -> std::optional<pw::spa::pod_prop> {
-            if (pod.type() == pw::spa::pod_type::object)
-            {
-                for (const auto &item : pod.body<pw::spa::pod_object_body>())
-                {
-                    auto rtn = self(&item, item.value(), self);
-
-                    if (!rtn.has_value())
-                    {
-                        continue;
-                    }
-
-                    return rtn;
-                }
-            }
-
-            if (!parent || !parent->name().ends_with("channelVolumes"))
-            {
-                return std::nullopt;
-            }
-
-            return *parent;
-        };
-
-        return impl(nullptr, pod, impl);
-    };
-
     for (const auto &[pod_id, pod] : params.get())
     {
-        auto channels = get_channels(pod);
+        auto prop = pod.find_recursive(pw::spa::prop::channel_volumes);
 
-        if (!channels)
+        if (!prop)
         {
             continue;
         }
 
         // pipewire uses cubic volumes! (that's why we use std::cbrt, and std::pow)
 
-        std::cout << std::format("Channels: {} ({}) [{}]", channels->name(), pod_id, channels->key()) << std::endl;
+        auto channels     = prop->value().as<std::vector<void *>>();
+        auto cubic_volume = std::powf(volume / 100, 3);
 
-        auto volumes = channels->value().read<std::vector<float>>();
-        std::cout << std::format("Changed volume from {}% to {}%", std::cbrt(volumes[0]) * 100, volume) << std::endl;
-
-        auto new_volumes = volumes | std::views::transform([volume](auto &&...) {
-                               return std::pow(volume / 100, 3);
-                           });
-
-        channels->value().write<std::vector<float>>({new_volumes.begin(), new_volumes.end()});
+        *reinterpret_cast<float *>(channels[0]) = cubic_volume;
+        *reinterpret_cast<float *>(channels[1]) = cubic_volume;
 
         device.set_param(pod_id, 0, pod);
         core->update();
@@ -130,6 +93,6 @@ int main()
         return 0;
     }
 
-    std::cout << "Could not find channels for node!" << std::endl;
+    std::cout << "Could not find volume prop for device!" << std::endl;
     return 1;
 }

@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include <rohrkabel/device/device.hpp>
-#include <rohrkabel/spa/pod/object/body.hpp>
+#include <rohrkabel/spa/pod/object/object.hpp>
 
 #include <rohrkabel/registry/events.hpp>
 #include <rohrkabel/registry/registry.hpp>
@@ -67,48 +67,16 @@ int main()
     auto params = device.params();
     core->update();
 
-    auto get_mute = [](const pw::spa::pod &pod) {
-        // NOLINTNEXTLINE
-        auto impl = [](const pw::spa::pod_prop *parent, const pw::spa::pod &pod,
-                       auto &self) -> std::optional<pw::spa::pod_prop> {
-            if (pod.type() == pw::spa::pod_type::object)
-            {
-                for (const auto &item : pod.body<pw::spa::pod_object_body>())
-                {
-                    auto rtn = self(&item, item.value(), self);
-
-                    if (!rtn.has_value())
-                    {
-                        continue;
-                    }
-
-                    return rtn;
-                }
-            }
-
-            if (parent && pod.type() == pw::spa::pod_type::boolean && parent->name().find("mute") != std::string::npos)
-            {
-                return *parent;
-            }
-
-            return std::nullopt;
-        };
-
-        return impl(nullptr, pod, impl);
-    };
-
     for (const auto &[pod_id, pod] : params.get())
     {
-        auto mute = get_mute(pod);
+        auto prop = pod.find_recursive(pw::spa::prop::mute);
 
-        if (!mute)
+        if (!prop)
         {
             continue;
         }
 
-        std::cout << std::format("Mute-Prop: {} ({}) [{}]", mute->name(), pod_id, mute->key()) << std::endl;
-        mute->value().write(!mute->value().read<bool>());
-
+        prop->value().write(!prop->value().as<bool>());
         device.set_param(pod_id, 0, pod);
         core->update();
 
@@ -119,14 +87,3 @@ int main()
     std::cout << "Could not find mute prop for device!" << std::endl;
     return 1;
 }
-
-//? Instead of enumerating all pods you could also use the short version:
-/*
-    auto mute =
-   pods.at(13).body<pipewire::spa::pod_object_body>().at(10).value().body<pipewire::spa::pod_object_body>().at(65540).value();
-
-    mute.as<bool>() = !mute.as<bool>();
-    device.set_param(13, pods.at(13).get());
-
-    core.sync();
-*/

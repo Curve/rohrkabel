@@ -1,20 +1,19 @@
 #pragma once
 
-#include "body.hpp"
+#include "object.hpp"
+#include "../prop.hpp"
 
 #include <memory>
 #include <cstddef>
 #include <iterator>
 
-struct spa_pod_prop;
-
 namespace pipewire::spa
 {
-    class pod_object_body::sentinel
+    class pod_object::sentinel
     {
     };
 
-    class pod_object_body::iterator : public std::forward_iterator_tag
+    class pod_object::iterator : public std::forward_iterator_tag
     {
         struct impl;
 
@@ -30,8 +29,10 @@ namespace pipewire::spa
 
       public:
         iterator();
+
+      public:
         iterator(const iterator &);
-        iterator(const pod_object_body *);
+        iterator(const pod_object *);
 
       public:
         iterator &operator=(const iterator &);

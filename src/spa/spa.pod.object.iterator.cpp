@@ -4,12 +4,15 @@
 
 namespace pipewire::spa
 {
-    using iterator = pod_object_body::iterator;
+    using iterator = pod_object::iterator;
 
     struct iterator::impl
     {
         spa_pod_prop *iter;
-        const pod_object_body *body;
+        const pod_object *object;
+
+      public:
+        bool operator==(const impl &) const = default;
     };
 
     iterator::~iterator() = default;
@@ -21,10 +24,10 @@ namespace pipewire::spa
         *m_impl = *other.m_impl;
     }
 
-    iterator::iterator(const pod_object_body *body) : iterator()
+    iterator::iterator(const pod_object *object) : iterator()
     {
-        m_impl->iter = spa_pod_prop_first(body->get());
-        m_impl->body = body;
+        m_impl->iter   = spa_pod_prop_first(&object->get()->body);
+        m_impl->object = object;
     }
 
     iterator &iterator::operator=(const iterator &other)
@@ -59,16 +62,19 @@ namespace pipewire::spa
 
     pod_prop iterator::operator*() const
     {
-        return pod_prop::view(m_impl->iter, m_impl->body->type_info());
+        return pod_prop::view(m_impl->iter);
     }
 
     bool iterator::operator==(const iterator &other) const
     {
-        return m_impl->iter == other.m_impl->iter && m_impl->body == other.m_impl->body;
+        return *m_impl == *other.m_impl;
     }
 
     bool iterator::operator==(const sentinel &) const
     {
-        return !spa_pod_prop_is_inside(m_impl->body->get(), m_impl->body->size(), m_impl->iter);
+        auto *body = &m_impl->object->get()->body;
+        auto &pod  = m_impl->object->get()->pod;
+
+        return !spa_pod_prop_is_inside(body, pod.size, m_impl->iter);
     }
 } // namespace pipewire::spa
