@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 #include <cstdint>
 
 struct spa_pod;
@@ -15,6 +16,7 @@ namespace pipewire::spa
         boolean   = 2,
         object    = 15,
         num_float = 6,
+        array     = 13,
     };
 
     class pod_object_body;
@@ -78,6 +80,8 @@ namespace pipewire::spa
     template <>
     float pod::read() const;
     template <>
+    std::vector<float> pod::read() const;
+    template <>
     std::string pod::read() const;
 
     template <>
@@ -87,4 +91,6 @@ namespace pipewire::spa
     void pod::write(bool);
     template <>
     void pod::write(float);
+    template <>
+    void pod::write(std::vector<float>);
 } // namespace pipewire::spa

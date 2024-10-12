@@ -81,6 +81,24 @@ namespace pipewire::spa
     }
 
     template <>
+    std::vector<float> pod::read() const
+    {
+        assert(type() == pod_type::array);
+
+        std::vector<float> rtn;
+
+        auto *array = reinterpret_cast<spa_pod_array *>(m_impl->pod.get());
+        float *iter = {};
+
+        SPA_POD_ARRAY_FOREACH(array, iter)
+        {
+            rtn.emplace_back(*iter);
+        }
+
+        return rtn;
+    }
+
+    template <>
     std::string pod::read() const
     {
         assert(type() == pod_type::string);
@@ -99,6 +117,23 @@ namespace pipewire::spa
     {
         assert(type() == pod_type::num_float);
         reinterpret_cast<spa_pod_float *>(m_impl->pod.get())->value = value;
+    }
+
+    template <>
+    void pod::write(std::vector<float> value)
+    {
+        assert(type() == pod_type::array);
+
+        auto *array = reinterpret_cast<spa_pod_array *>(m_impl->pod.get());
+
+        float *iter   = {};
+        std::size_t i = 0;
+
+        SPA_POD_ARRAY_FOREACH(array, iter)
+        {
+            assert(i < value.size());
+            *iter = value.at(i++);
+        }
     }
 
     pod::raw_type *pod::get() const
