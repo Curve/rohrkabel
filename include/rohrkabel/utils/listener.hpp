@@ -9,7 +9,7 @@ namespace pipewire
     template <typename Listener, typename Raw>
     concept valid_listener = requires() { requires std::constructible_from<Listener, Raw *>; };
 
-    template <typename T, ereignis::ereignis_event... Events>
+    template <typename T, typename... Events>
     struct listener : public spa::hook
     {
         using events = ereignis::manager<Events...>;
@@ -37,13 +37,13 @@ namespace pipewire
 
       public:
         template <T Event>
-        std::uint64_t on(events::template type_t<Event> &&callback)
+        std::uint64_t on(events::template type<Event> &&callback)
         {
             return m_events->template at<Event>().add(std::move(callback));
         }
 
         template <T Event>
-        void once(events::template type_t<Event> &&callback)
+        void once(events::template type<Event> &&callback)
         {
             m_events->template at<Event>().once(std::move(callback));
         }
