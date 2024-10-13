@@ -72,7 +72,7 @@ namespace pipewire
 
     properties properties::from(raw_type *properties)
     {
-        static const auto deleter = [](auto *properties) {
+        static constexpr auto deleter = [](auto *properties) {
             pw_properties_free(properties);
         };
 

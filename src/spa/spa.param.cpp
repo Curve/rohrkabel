@@ -16,7 +16,7 @@ namespace pipewire::spa
     {
         std::vector<param_info> rtn{count};
 
-        for (auto i = 0u; info && count > i; i++)
+        for (auto i = 0u; info && count > i; ++i)
         {
             rtn.emplace_back(from(info[i]));
         }
