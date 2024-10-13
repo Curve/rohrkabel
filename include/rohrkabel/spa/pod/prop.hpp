@@ -32,7 +32,10 @@ namespace pipewire::spa
         pod_prop &operator=(pod_prop &&) noexcept;
 
       public:
-        [[nodiscard]] pod value() const;
+        [[nodiscard]] pod value() const &;
+        [[nodiscard]] pod value() const && = delete;
+
+      public:
         [[nodiscard]] std::uint32_t flags() const;
         [[nodiscard]] enum_value<prop> key() const;
 

@@ -36,7 +36,10 @@ namespace pipewire::spa
         pod_object &operator=(pod_object &&) noexcept;
 
       public:
-        [[nodiscard]] spa::pod pod() const;
+        [[nodiscard]] spa::pod pod() const &;
+        [[nodiscard]] spa::pod pod() const && = delete;
+
+      public:
         [[nodiscard]] spa::type type() const;
         [[nodiscard]] std::uint32_t id() const;
 

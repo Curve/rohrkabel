@@ -26,7 +26,7 @@ namespace pipewire::spa
         return *this;
     }
 
-    pod pod_prop::value() const
+    pod pod_prop::value() const &
     {
         return pod::view(&m_impl->prop->value);
     }

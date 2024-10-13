@@ -27,7 +27,7 @@ namespace pipewire::spa
         return *this;
     }
 
-    spa::pod pod_object::pod() const
+    spa::pod pod_object::pod() const &
     {
         return spa::pod::view(&m_impl->object->pod);
     }
