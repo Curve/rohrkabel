@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(rohrkabel LANGUAGES CXX VERSION 7.1)
+project(rohrkabel LANGUAGES CXX VERSION 8.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
