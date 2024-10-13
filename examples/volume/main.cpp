@@ -81,12 +81,14 @@ int main()
 
         // pipewire uses cubic volumes! (that's why we use std::cbrt, and std::pow)
 
-        auto channels     = prop->value().as<std::vector<void *>>();
-        auto cubic_volume = std::powf(volume / 100, 3);
+        auto channels      = prop->value().as<std::vector<float>>();
+        auto cubic_volumes = channels | std::views::transform([volume](auto &&) {
+                                 return std::powf(volume / 100, 3);
+                             });
 
-        *reinterpret_cast<float *>(channels[0]) = cubic_volume;
-        *reinterpret_cast<float *>(channels[1]) = cubic_volume;
+        std::cout << std::format("Updating volume from {}% to {}%", std::cbrt(channels[0]) * 100, volume) << std::endl;
 
+        prop->value().write<std::vector<float>>({cubic_volumes.begin(), cubic_volumes.end()});
         device.set_param(pod_id, 0, pod);
         core->update();
 
