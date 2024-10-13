@@ -40,16 +40,16 @@ namespace pipewire
 
       public:
         template <class Listener = registry_listener>
-            requires valid_listener<Listener, raw_type>
+            requires detail::valid_listener<Listener, raw_type>
         [[rk::needs_update]] [[nodiscard]] Listener listen();
 
       public:
         template <class T, update_strategy Strategy = update_strategy::sync>
-            requires valid_proxy<T>
+            requires detail::valid_proxy<T>
         [[nodiscard]] lazy<expected<T>> bind(std::uint32_t id);
 
         template <class T>
-            requires valid_proxy<T>
+            requires detail::valid_proxy<T>
         [[nodiscard]] lazy<expected<T>> bind(std::uint32_t id, update_strategy strategy);
 
       public:

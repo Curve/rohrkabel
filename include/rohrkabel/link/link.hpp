@@ -41,7 +41,7 @@ namespace pipewire
 
       public:
         template <class Listener = link_listener>
-            requires valid_listener<Listener, raw_type>
+            requires detail::valid_listener<Listener, raw_type>
         [[rk::needs_update]] [[nodiscard]] Listener listen();
 
       public:

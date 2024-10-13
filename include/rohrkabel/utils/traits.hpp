@@ -7,7 +7,7 @@
 #include <concepts>
 #include <type_traits>
 
-namespace pipewire
+namespace pipewire::detail
 {
     template <typename T>
     concept is_pointer = std::is_pointer_v<T>;
@@ -20,7 +20,24 @@ namespace pipewire
         requires not std::is_pointer_v<typename T::raw_type>;
         { obj.get() } -> is_pointer;
         { obj.bind(nullptr) } -> std::same_as<lazy<expected<T>>>;
-        { obj.type } -> std::same_as<const char *&>;
-        { obj.version } -> std::same_as<const std::uint32_t &>;
+        { T::type } -> std::same_as<const char *&>;
+        { T::version } -> std::same_as<const std::uint32_t &>;
     };
-} // namespace pipewire
+
+    template <typename T>
+    struct vector_traits : std::false_type
+    {
+    };
+
+    template <typename T>
+    struct vector_traits<std::vector<T>> : std::true_type
+    {
+        using type = T;
+    };
+
+    template <typename T>
+    concept is_vector = vector_traits<T>::value;
+
+    template <typename T>
+    using vector_type = vector_traits<T>::type;
+} // namespace pipewire::detail

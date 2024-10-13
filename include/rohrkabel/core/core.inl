@@ -7,14 +7,14 @@
 namespace pipewire
 {
     template <class Listener>
-        requires valid_listener<Listener, core::raw_type>
+        requires detail::valid_listener<Listener, core::raw_type>
     Listener core::listen()
     {
         return {get()};
     }
 
     template <typename T>
-        requires valid_proxy<T>
+        requires detail::valid_proxy<T>
     lazy<expected<T>> core::create(factory factory, update_strategy strategy)
     {
         using args_t = boost::callable_traits::args_t<decltype(&T::bind)>;

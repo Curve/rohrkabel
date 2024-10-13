@@ -61,12 +61,12 @@ namespace pipewire
 
       public:
         template <class Listener = core_listener>
-            requires valid_listener<Listener, raw_type>
+            requires detail::valid_listener<Listener, raw_type>
         [[rk::needs_update]] [[nodiscard]] Listener listen();
 
       public:
         template <typename T>
-            requires valid_proxy<T>
+            requires detail::valid_proxy<T>
         [[nodiscard]] lazy<expected<T>> create(factory, update_strategy strategy = update_strategy::sync);
 
         template <typename T, typename Factory = factory>

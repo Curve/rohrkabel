@@ -7,14 +7,14 @@
 namespace pipewire
 {
     template <class Listener>
-        requires valid_listener<Listener, registry::raw_type>
+        requires detail::valid_listener<Listener, registry::raw_type>
     Listener registry::listen()
     {
         return {get()};
     }
 
     template <typename T, update_strategy Strategy>
-        requires valid_proxy<T>
+        requires detail::valid_proxy<T>
     lazy<expected<T>> registry::bind(std::uint32_t id)
     {
         using args_t = boost::callable_traits::args_t<decltype(&T::bind)>;
@@ -27,7 +27,7 @@ namespace pipewire
     }
 
     template <typename T>
-        requires valid_proxy<T>
+        requires detail::valid_proxy<T>
     lazy<expected<T>> registry::bind(std::uint32_t id, update_strategy strategy)
     {
         if (strategy == update_strategy::none)
