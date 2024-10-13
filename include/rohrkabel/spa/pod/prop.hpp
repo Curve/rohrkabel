@@ -23,15 +23,13 @@ namespace pipewire::spa
         ~pod_prop();
 
       private:
-        pod_prop();
+        pod_prop(deleter<raw_type>, raw_type *);
 
       public:
         pod_prop(pod_prop &&) noexcept;
-        pod_prop(const pod_prop &) noexcept;
 
       public:
         pod_prop &operator=(pod_prop &&) noexcept;
-        pod_prop &operator=(const pod_prop &) noexcept;
 
       public:
         [[nodiscard]] pod value() const;
