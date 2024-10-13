@@ -31,14 +31,14 @@ namespace pipewire::spa
         return pod::view(&m_impl->prop->value);
     }
 
-    std::uint32_t pod_prop::key() const
-    {
-        return m_impl->prop->key;
-    }
-
     std::uint32_t pod_prop::flags() const
     {
         return m_impl->prop->flags;
+    }
+
+    enum_value<prop> pod_prop::key() const
+    {
+        return m_impl->prop->key;
     }
 
     pod_prop::raw_type *pod_prop::get() const

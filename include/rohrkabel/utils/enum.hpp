@@ -20,7 +20,7 @@ namespace pipewire
       public:
         [[nodiscard]] T get() const
         {
-            return static_Cast<T>(m_value);
+            return static_cast<T>(m_value);
         }
 
         [[nodiscard]] underlying value() const
@@ -37,6 +37,22 @@ namespace pipewire
         [[nodiscard]] operator underlying() const
         {
             return value();
+        }
+
+      public:
+        bool operator==(const enum_value &other) const
+        {
+            return m_value == other.m_value;
+        }
+
+        bool operator==(const underlying &other) const
+        {
+            return m_value == other;
+        }
+
+        bool operator==(const T &other) const
+        {
+            return get() == other;
         }
     };
 } // namespace pipewire

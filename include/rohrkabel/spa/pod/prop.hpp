@@ -33,8 +33,8 @@ namespace pipewire::spa
 
       public:
         [[nodiscard]] pod value() const;
-        [[nodiscard]] std::uint32_t key() const;
         [[nodiscard]] std::uint32_t flags() const;
+        [[nodiscard]] enum_value<prop> key() const;
 
       public:
         [[nodiscard]] raw_type *get() const;

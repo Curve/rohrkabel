@@ -65,8 +65,8 @@ namespace pipewire::spa
         [[nodiscard]] std::optional<pod_prop> find_recursive(enum_value<prop>) const;
 
       public:
-        [[nodiscard]] spa::type type() const;
         [[nodiscard]] std::size_t size() const;
+        [[nodiscard]] enum_value<spa::type> type() const;
 
       public:
         template <typename T>

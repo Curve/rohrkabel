@@ -66,7 +66,7 @@ namespace pipewire::spa
 
         for (auto &&prop : as<pod_object>())
         {
-            if (prop.key() != key.value())
+            if (prop.key() != key)
             {
                 continue;
             }
@@ -111,14 +111,14 @@ namespace pipewire::spa
         return find_recursive(*this, find_recursive);
     }
 
-    spa::type pod::type() const
-    {
-        return static_cast<spa::type>(m_impl->pod->type);
-    }
-
     std::size_t pod::size() const
     {
         return m_impl->pod->size;
+    }
+
+    enum_value<spa::type> pod::type() const
+    {
+        return m_impl->pod->type;
     }
 
     template <>
