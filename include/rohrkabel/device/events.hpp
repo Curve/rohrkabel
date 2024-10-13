@@ -18,9 +18,9 @@ namespace pipewire
 
     class device_listener
         : public listener<
-              device_event,                                                                                          //
-              ereignis::event<device_event::info, void(const device_info &)>,                                        //
-              ereignis::event<device_event::param, void(int, std::uint32_t, std::uint32_t, std::uint32_t, spa::pod)> //
+              device_event,                                                                                                  //
+              ereignis::event<device_event::info, void(const device_info &)>,                                                //
+              ereignis::event<device_event::param, void(int, std::uint32_t, std::uint32_t, std::uint32_t, const spa::pod &)> //
               >
     {
         struct impl;

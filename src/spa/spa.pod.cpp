@@ -9,25 +9,27 @@
 
 namespace pipewire::spa
 {
-    // TODO: Make move-only?
-
     struct pod::impl
     {
-        std::shared_ptr<raw_type> pod;
+        pw_unique_ptr<raw_type> pod;
     };
 
     pod::~pod() = default;
 
-    pod::pod(std::shared_ptr<raw_type> pod) : m_impl(std::make_unique<impl>())
-    {
-        m_impl->pod = std::move(pod);
-    }
+    pod::pod(deleter<raw_type> deleter, raw_type *pod) : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{pod, deleter})) {}
+
+    pod::pod(const pod &other) : m_impl(std::move(copy(other.get()).m_impl)) {}
 
     pod::pod(pod &&other) noexcept : m_impl(std::move(other.m_impl)) {}
 
-    pod::pod(const pod &other) noexcept : m_impl(std::make_unique<impl>())
+    pod &pod::operator=(const pod &other)
     {
-        *m_impl = *other.m_impl;
+        if (&other != this)
+        {
+            m_impl = std::move(copy(other.get()).m_impl);
+        }
+
+        return *this;
     }
 
     pod &pod::operator=(pod &&other) noexcept
@@ -36,30 +38,46 @@ namespace pipewire::spa
         return *this;
     }
 
-    pod &pod::operator=(const pod &other) noexcept
+    std::vector<void *> pod::array() const
     {
-        if (&other != this)
+        assert(type() == spa::type::array);
+
+        std::vector<void *> rtn;
+
+        auto *array = reinterpret_cast<spa_pod_array *>(m_impl->pod.get());
+        void *iter  = {};
+
+        SPA_POD_ARRAY_FOREACH(array, iter)
         {
-            *m_impl = *other.m_impl;
+            rtn.emplace_back(iter);
         }
 
-        return *this;
+        return rtn;
     }
 
-    std::optional<pod_prop> pod::find(prop key) const
+    std::optional<pod_prop> pod::find(enum_value<prop> key) const
     {
-        const auto *prop = spa_pod_find_prop(m_impl->pod.get(), nullptr, static_cast<std::uint32_t>(key));
+        // Re-implementation of `spa_pod_find_prop` without const return value
 
-        if (!prop)
+        if (type() != spa::type::object)
         {
             return std::nullopt;
         }
 
-        // TODO: const_cast :>(
-        return pod_prop::view(const_cast<spa_pod_prop *>(prop)); // NOLINT(*-const-cast)
+        for (auto &&prop : as<pod_object>())
+        {
+            if (prop.key() != key.value())
+            {
+                continue;
+            }
+
+            return std::move(prop);
+        }
+
+        return std::nullopt;
     }
 
-    std::optional<pod_prop> pod::find_recursive(prop key) const
+    std::optional<pod_prop> pod::find_recursive(enum_value<prop> key) const
     {
         auto find_recursive = [key](const auto &pod, auto &self) -> std::optional<pod_prop> // NOLINT(*-recursion)
         {
@@ -123,6 +141,7 @@ namespace pipewire::spa
         assert(type() == spa::type::object);
         return pod_object::view(reinterpret_cast<spa_pod_object *>(m_impl->pod.get()));
     }
+
     template <>
     std::string pod::as() const
     {
@@ -131,32 +150,14 @@ namespace pipewire::spa
     }
 
     template <>
-    std::vector<void *> pod::as() const
-    {
-        assert(type() == spa::type::array);
-
-        std::vector<void *> rtn;
-
-        auto *array = reinterpret_cast<spa_pod_array *>(m_impl->pod.get());
-        void *iter  = {};
-
-        SPA_POD_ARRAY_FOREACH(array, iter)
-        {
-            rtn.emplace_back(iter);
-        }
-
-        return rtn;
-    }
-
-    template <>
-    void pod::write(bool value)
+    void pod::write(const bool &value)
     {
         assert(type() == spa::type::boolean);
         reinterpret_cast<spa_pod_bool *>(m_impl->pod.get())->value = value;
     }
 
     template <>
-    void pod::write(float value)
+    void pod::write(const float &value)
     {
         assert(type() == spa::type::num_float);
         reinterpret_cast<spa_pod_float *>(m_impl->pod.get())->value = value;
@@ -174,18 +175,15 @@ namespace pipewire::spa
 
     pod pod::view(raw_type *pod)
     {
-        auto deleter = [](raw_type *) {
-        };
-
-        return {std::shared_ptr<raw_type>(pod, deleter)};
+        return {view_deleter<raw_type>, pod};
     }
 
     pod pod::copy(const raw_type *pod)
     {
-        auto deleter = [](raw_type *pod) {
+        static constexpr auto deleter = [](auto *pod) {
             free(pod); // NOLINT(*-malloc)
         };
 
-        return {std::shared_ptr<raw_type>(spa_pod_copy(pod), deleter)};
+        return {deleter, spa_pod_copy(pod)};
     }
 } // namespace pipewire::spa

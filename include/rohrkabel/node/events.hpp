@@ -17,9 +17,9 @@ namespace pipewire
 
     class node_listener
         : public listener<
-              node_event,                                                                                          //
-              ereignis::event<node_event::info, void(node_info)>,                                                  //
-              ereignis::event<node_event::param, void(int, std::uint32_t, std::uint32_t, std::uint32_t, spa::pod)> //
+              node_event,                                                                                                  //
+              ereignis::event<node_event::info, void(node_info)>,                                                          //
+              ereignis::event<node_event::param, void(int, std::uint32_t, std::uint32_t, std::uint32_t, const spa::pod &)> //
               >
     {
         struct impl;

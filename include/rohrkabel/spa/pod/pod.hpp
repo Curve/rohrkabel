@@ -1,5 +1,8 @@
 #pragma once
 
+#include "../../utils/enum.hpp"
+#include "../../utils/traits.hpp"
+
 #include <string>
 #include <memory>
 #include <vector>
@@ -44,19 +47,22 @@ namespace pipewire::spa
         ~pod();
 
       private:
-        pod(std::shared_ptr<raw_type>);
+        pod(deleter<raw_type>, raw_type *);
 
       public:
+        pod(const pod &);
         pod(pod &&) noexcept;
-        pod(const pod &) noexcept;
 
       public:
+        pod &operator=(const pod &);
         pod &operator=(pod &&) noexcept;
-        pod &operator=(const pod &) noexcept;
+
+      private:
+        [[nodiscard]] std::vector<void *> array() const;
 
       public:
-        [[nodiscard]] std::optional<pod_prop> find(prop) const;
-        [[nodiscard]] std::optional<pod_prop> find_recursive(prop) const;
+        [[nodiscard]] std::optional<pod_prop> find(enum_value<prop>) const;
+        [[nodiscard]] std::optional<pod_prop> find_recursive(enum_value<prop>) const;
 
       public:
         [[nodiscard]] spa::type type() const;
@@ -66,9 +72,17 @@ namespace pipewire::spa
         template <typename T>
         [[nodiscard]] T as() const = delete;
 
+        template <typename T>
+            requires(detail::is_vector<T> and std::is_arithmetic_v<detail::vector_type<T>>)
+        [[nodiscard]] T as() const;
+
       public:
         template <typename T>
-        void write(T) = delete;
+        void write(const T &) = delete;
+
+        template <typename T>
+            requires(detail::is_vector<T> and std::is_arithmetic_v<detail::vector_type<T>>)
+        void write(const T &);
 
       public:
         [[nodiscard]] raw_type *get() const;
@@ -90,11 +104,11 @@ namespace pipewire::spa
     pod_object pod::as() const;
     template <>
     std::string pod::as() const;
-    template <>
-    std::vector<void *> pod::as() const;
 
     template <>
-    void pod::write(bool);
+    void pod::write(const bool &);
     template <>
-    void pod::write(float);
+    void pod::write(const float &);
 } // namespace pipewire::spa
+
+#include "pod.inl"

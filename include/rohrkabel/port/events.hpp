@@ -17,9 +17,9 @@ namespace pipewire
 
     class port_listener
         : public listener<
-              port_event,                                                                                          //
-              ereignis::event<port_event::info, void(port_info)>,                                                  //
-              ereignis::event<port_event::param, void(int, std::uint32_t, std::uint32_t, std::uint32_t, spa::pod)> //
+              port_event,                                                                                                  //
+              ereignis::event<port_event::info, void(port_info)>,                                                          //
+              ereignis::event<port_event::param, void(int, std::uint32_t, std::uint32_t, std::uint32_t, const spa::pod &)> //
               >
     {
         struct impl;
