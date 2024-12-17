@@ -129,6 +129,13 @@ namespace pipewire::spa
     }
 
     template <>
+    int pod::as() const
+    {
+        assert(type() == spa::type::num_int);
+        return reinterpret_cast<spa_pod_int *>(m_impl->pod.get())->value;
+    }
+
+    template <>
     float pod::as() const
     {
         assert(type() == spa::type::num_float);
@@ -154,6 +161,13 @@ namespace pipewire::spa
     {
         assert(type() == spa::type::boolean);
         reinterpret_cast<spa_pod_bool *>(m_impl->pod.get())->value = value;
+    }
+
+    template <>
+    void pod::write(const int &value)
+    {
+        assert(type() == spa::type::num_int);
+        reinterpret_cast<spa_pod_int *>(m_impl->pod.get())->value = value;
     }
 
     template <>
