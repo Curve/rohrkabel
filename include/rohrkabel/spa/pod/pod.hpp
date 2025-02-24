@@ -20,6 +20,7 @@ namespace pipewire::spa
         string    = 8,
         boolean   = 2,
         object    = 15,
+        num_int   = 4,
         num_float = 6,
         array     = 13,
     };
@@ -99,6 +100,8 @@ namespace pipewire::spa
     template <>
     bool pod::as() const;
     template <>
+    int pod::as() const;
+    template <>
     float pod::as() const;
     template <>
     pod_object pod::as() const;
@@ -107,6 +110,8 @@ namespace pipewire::spa
 
     template <>
     void pod::write(const bool &);
+    template <>
+    void pod::write(const int &);
     template <>
     void pod::write(const float &);
 } // namespace pipewire::spa
