@@ -2,6 +2,8 @@
 
 #include "core.hpp"
 
+#include <coco/utils/utils.hpp>
+
 namespace pipewire
 {
     template <detail::Listener<core::raw_type> Listener>
@@ -26,5 +28,12 @@ namespace pipewire
         }
 
         return T::bind(reinterpret_cast<raw_t>(create_object(std::move(factory))));
+    }
+
+    template <detail::Awaitable Awaitable>
+    auto core::await(Awaitable awaitable) const
+    {
+        run_once();
+        return coco::await(std::move(awaitable));
     }
 } // namespace pipewire

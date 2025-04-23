@@ -65,6 +65,12 @@ namespace pipewire
         [[nodiscard]] task<typename Factory::result> create(Factory);
 
       public:
+        void run_once() const;
+
+        template <detail::Awaitable Awaitable>
+        auto await(Awaitable) const;
+
+      public:
         [[nodiscard]] raw_type *get() const;
         [[nodiscard]] std::shared_ptr<pipewire::context> context() const;
 

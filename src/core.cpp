@@ -67,16 +67,19 @@ namespace pipewire
 
     void core::run_once() const
     {
-        auto loop = context()->loop();
+        auto listener = listen();
+        auto loop     = context()->loop();
 
-        coco::then(sync(), [this, loop](auto id) {
-            if (m_impl->last_seq != id)
+        listener.on<core_event::done>([&](auto id, auto seq) {
+            if (id != core_id || seq != m_impl->last_seq)
             {
                 return;
             }
 
             loop->quit();
         });
+
+        m_impl->last_seq = sync(0);
 
         loop->run();
     }

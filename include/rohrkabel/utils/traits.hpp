@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <concepts>
 
+#include <coco/traits/traits.hpp>
+
 namespace pipewire
 {
     class proxy;
@@ -58,5 +60,8 @@ namespace pipewire
 
         template <typename T>
         concept Factory = requires() { typename T::result; };
+
+        template <typename T>
+        concept Awaitable = coco::Awaitable<T>;
     } // namespace detail
 } // namespace pipewire
