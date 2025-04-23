@@ -17,10 +17,10 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~channel_state();
+        channel_state();
 
       public:
-        channel_state();
+        ~channel_state();
 
       public:
         void emit();

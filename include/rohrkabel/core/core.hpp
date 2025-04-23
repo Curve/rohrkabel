@@ -2,6 +2,8 @@
 
 #include "../context.hpp"
 #include "../properties.hpp"
+
+#include "../utils/task.hpp"
 #include "../utils/traits.hpp"
 #include "../utils/deleter.hpp"
 
@@ -12,14 +14,14 @@ struct pw_core;
 
 namespace pipewire
 {
-    enum class update_strategy : std::uint8_t
-    {
-        sync,
-        none,
-    };
+    class proxy;
+    class core_listener;
 
     struct factory
     {
+        using result = proxy;
+
+      public:
         std::string name;
         properties props;
 
@@ -27,8 +29,6 @@ namespace pipewire
         std::optional<std::string> type;
         std::optional<std::uint32_t> version;
     };
-
-    class core_listener;
 
     class core
     {
@@ -40,37 +40,32 @@ namespace pipewire
       private:
         std::unique_ptr<impl> m_impl;
 
+      private:
+        core(deleter<raw_type>, raw_type *, std::shared_ptr<pipewire::context>);
+
       public:
         ~core();
 
       private:
-        core(deleter<raw_type>, raw_type *, std::shared_ptr<pipewire::context>);
-
-      private:
-        [[nodiscard]] void *create(factory) const;
+        [[nodiscard]] void *create_object(factory) const;
 
       public:
-        template <update_strategy>
-        cancellable_lazy<expected<bool>> update();
+        [[nodiscard]] int sync(int seq) const;
+        [[nodiscard]] task<void> sync() const;
 
       public:
-        cancellable_lazy<expected<bool>> update(update_strategy strategy = update_strategy::sync);
+        void run_once() const;
 
       public:
-        [[nodiscard]] int sync(int seq);
+        template <detail::Listener<raw_type> Listener = core_listener>
+        [[nodiscard]] Listener listen() const;
 
       public:
-        template <class Listener = core_listener>
-            requires detail::valid_listener<Listener, raw_type>
-        [[rk::needs_update]] [[nodiscard]] Listener listen();
+        template <detail::Proxy T>
+        [[nodiscard]] task<T> create(factory);
 
-      public:
-        template <typename T>
-            requires detail::valid_proxy<T>
-        [[nodiscard]] lazy<expected<T>> create(factory, update_strategy strategy = update_strategy::sync);
-
-        template <typename T, typename Factory = factory>
-        [[nodiscard]] lazy<expected<T>> create(Factory, update_strategy strategy = update_strategy::sync);
+        template <typename Factory = factory>
+        [[nodiscard]] task<typename Factory::result> create(Factory);
 
       public:
         [[nodiscard]] raw_type *get() const;

@@ -2,8 +2,10 @@
 #include "node/events.hpp"
 
 #include "spa/param.hpp"
+#include "utils/task.hpp"
 
 #include <pipewire/pipewire.h>
+#include <coco/promise/promise.hpp>
 
 namespace pipewire
 {
@@ -13,43 +15,30 @@ namespace pipewire
         node_info info;
     };
 
-    node::~node() = default;
-
-    node::node(node &&other) noexcept : proxy(std::move(other)), m_impl(std::move(other.m_impl)) {}
-
     node::node(proxy &&base, node_info info) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
         m_impl->node = reinterpret_cast<raw_type *>(proxy::get());
         m_impl->info = std::move(info);
     }
 
-    node &node::operator=(node &&other) noexcept
-    {
-        proxy::operator=(std::move(other));
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    node::node(node &&other) noexcept = default;
+
+    node &node::operator=(node &&other) noexcept = default;
+
+    node::~node() = default;
 
     void node::set_param(std::uint32_t id, std::uint32_t flags, const spa::pod &pod)
     {
         pw_node_set_param(m_impl->node, id, flags, pod.get());
     }
 
-    lazy<node::params_t> node::params()
+    lazy<node::params_t> node::params() const
     {
-        struct state
-        {
-            node_listener listener;
+        auto listener = listen();
+        auto params   = params_t{};
 
-          public:
-            params_t params;
-        };
-
-        auto m_state    = std::make_shared<state>(get());
-        auto weak_state = std::weak_ptr{m_state};
-
-        m_state->listener.on<node_event::param>([weak_state](int, uint32_t id, uint32_t, uint32_t, spa::pod param) {
-            weak_state.lock()->params.emplace(id, std::move(param));
+        listener.on<node_event::param>([&](int, uint32_t id, uint32_t, uint32_t, spa::pod param) {
+            params.emplace(id, std::move(param));
         });
 
         for (const auto &param : m_impl->info.params)
@@ -57,9 +46,8 @@ namespace pipewire
             pw_node_enum_params(m_impl->node, 0, param.id, 0, 1, nullptr);
         }
 
-        return make_lazy<params_t>([m_state]() -> params_t {
-            return m_state->params;
-        });
+        co_await lazy<params_t>::wake_on_await{};
+        co_return params;
     }
 
     node::raw_type *node::get() const
@@ -77,35 +65,27 @@ namespace pipewire
         return get();
     }
 
-    lazy<expected<node>> node::bind(raw_type *raw)
+    task<node> node::bind(raw_type *raw)
     {
-        struct state
+        auto _proxy   = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
+        auto listener = node_listener{raw};
+
+        auto promise = coco::promise<node_info>{};
+        auto fut     = promise.get_future();
+
+        listener.once<node_event::info>([promise = std::move(promise)](node_info info) mutable {
+            promise.set_value(std::move(info));
+        });
+
+        auto info  = co_await std::move(fut);
+        auto proxy = co_await std::move(_proxy);
+
+        if (!proxy.has_value())
         {
-            node_listener listener;
+            co_return std::unexpected{proxy.error()};
+        }
 
-          public:
-            std::promise<node_info> info;
-        };
-
-        auto proxy = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
-
-        auto m_state    = std::make_shared<state>(raw);
-        auto weak_state = std::weak_ptr{m_state};
-
-        m_state->listener.once<node_event::info>([weak_state](node_info info) {
-            weak_state.lock()->info.set_value(std::move(info));
-        });
-
-        return make_lazy<expected<node>>([m_state, proxy_fut = std::move(proxy)]() mutable -> expected<node> {
-            auto proxy = proxy_fut.get();
-
-            if (!proxy.has_value())
-            {
-                return tl::make_unexpected(proxy.error());
-            }
-
-            return node{std::move(proxy.value()), m_state->info.get_future().get()};
-        });
+        co_return node{std::move(proxy.value()), std::move(info)};
     }
 
     const char *node::type            = PW_TYPE_INTERFACE_Node;

@@ -17,7 +17,6 @@ namespace pipewire
 
     class port_listener
         : public listener<
-              port_event,                                                                                                  //
               ereignis::event<port_event::info, void(port_info)>,                                                          //
               ereignis::event<port_event::param, void(int, std::uint32_t, std::uint32_t, std::uint32_t, const spa::pod &)> //
               >
@@ -28,11 +27,10 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~port_listener();
+        port_listener(port::raw_type *);
 
       public:
-        port_listener(port::raw_type *);
-        port_listener(port_listener &&) noexcept;
+        ~port_listener();
 
       public:
         static const std::uint32_t version;

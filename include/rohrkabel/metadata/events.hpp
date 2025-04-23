@@ -6,7 +6,6 @@
 #include "../utils/listener.hpp"
 
 #include <memory>
-#include <ereignis/manager.hpp>
 
 namespace pipewire
 {
@@ -15,10 +14,9 @@ namespace pipewire
         property,
     };
 
-    class metadata_listener
-        : public listener<metadata_event,                                                                 //
-                          ereignis::event<metadata_event::property, int(const char *, metadata_property)> //
-                          >
+    class metadata_listener : public listener<                                                                    //
+                                  ereignis::event<metadata_event::property, int(const char *, metadata_property)> //
+                                  >
     {
         struct impl;
 
@@ -26,11 +24,10 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~metadata_listener();
+        metadata_listener(metadata::raw_type *);
 
       public:
-        metadata_listener(metadata::raw_type *);
-        metadata_listener(metadata_listener &&) noexcept;
+        ~metadata_listener();
 
       public:
         static const std::uint32_t version;

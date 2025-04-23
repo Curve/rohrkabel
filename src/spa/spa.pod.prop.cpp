@@ -11,20 +11,16 @@ namespace pipewire::spa
         pw_unique_ptr<raw_type> prop;
     };
 
-    pod_prop::~pod_prop() = default;
-
     pod_prop::pod_prop(deleter<raw_type> deleter, raw_type *prop)
         : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{prop, deleter}))
     {
     }
 
-    pod_prop::pod_prop(pod_prop &&other) noexcept : m_impl(std::move(other.m_impl)) {}
+    pod_prop::pod_prop(pod_prop &&) noexcept = default;
 
-    pod_prop &pod_prop::operator=(pod_prop &&other) noexcept
-    {
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    pod_prop &pod_prop::operator=(pod_prop &&) noexcept = default;
+
+    pod_prop::~pod_prop() = default;
 
     pod pod_prop::value() const &
     {

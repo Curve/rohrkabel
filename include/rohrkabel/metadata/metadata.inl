@@ -4,9 +4,8 @@
 
 namespace pipewire
 {
-    template <class Listener>
-        requires detail::valid_listener<Listener, metadata::raw_type>
-    Listener metadata::listen()
+    template <detail::Listener<metadata::raw_type> Listener>
+    Listener metadata::listen() const
     {
         return {get()};
     }

@@ -2,6 +2,7 @@
 #include "client/events.hpp"
 
 #include <pipewire/pipewire.h>
+#include <coco/promise/promise.hpp>
 
 namespace pipewire
 {
@@ -11,22 +12,17 @@ namespace pipewire
         client_info info;
     };
 
-    client::~client() = default;
-
-    client::client(client &&other) noexcept : proxy(std::move(other)), m_impl(std::move(other.m_impl)) {}
-
     client::client(proxy &&base, client_info info) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
         m_impl->client = reinterpret_cast<raw_type *>(proxy::get());
         m_impl->info   = std::move(info);
     }
 
-    client &client::operator=(client &&other) noexcept
-    {
-        proxy::operator=(std::move(other));
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    client::client(client &&other) noexcept = default;
+
+    client &client::operator=(client &&other) noexcept = default;
+
+    client::~client() = default;
 
     client::raw_type *client::get() const
     {
@@ -43,35 +39,27 @@ namespace pipewire
         return get();
     }
 
-    lazy<expected<client>> client::bind(raw_type *raw)
+    task<client> client::bind(raw_type *raw)
     {
-        struct state
+        auto _proxy   = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
+        auto listener = client_listener{raw};
+
+        auto promise = coco::promise<client_info>{};
+        auto fut     = promise.get_future();
+
+        listener.once<client_event::info>([promise = std::move(promise)](client_info info) mutable {
+            promise.set_value(std::move(info));
+        });
+
+        auto info  = co_await std::move(fut);
+        auto proxy = co_await std::move(_proxy);
+
+        if (!proxy.has_value())
         {
-            client_listener events;
+            co_return std::unexpected{proxy.error()};
+        }
 
-          public:
-            std::promise<client_info> info;
-        };
-
-        auto proxy = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
-
-        auto m_state    = std::make_shared<state>(raw);
-        auto weak_state = std::weak_ptr{m_state};
-
-        m_state->events.once<client_event::info>([weak_state](client_info info) {
-            weak_state.lock()->info.set_value(std::move(info));
-        });
-
-        return make_lazy<expected<client>>([m_state, fut = std::move(proxy)]() mutable -> expected<client> {
-            auto proxy = fut.get();
-
-            if (!proxy.has_value())
-            {
-                return tl::make_unexpected(proxy.error());
-            }
-
-            return client{std::move(proxy.value()), m_state->info.get_future().get()};
-        });
+        co_return client{std::move(proxy.value()), std::move(info)};
     }
 
     const char *client::type            = PW_TYPE_INTERFACE_Client;

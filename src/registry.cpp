@@ -18,20 +18,16 @@ namespace pipewire
         return pw_registry_bind(get(), id, type, version, 0);
     }
 
-    registry::~registry() = default;
-
     registry::registry(deleter<raw_type> deleter, raw_type *raw, std::shared_ptr<pipewire::core> core)
         : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}, std::move(core)))
     {
     }
 
-    registry::registry(registry &&other) noexcept : m_impl(std::move(other.m_impl)) {}
+    registry::registry(registry &&other) noexcept = default;
 
-    registry &registry::operator=(registry &&other) noexcept
-    {
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    registry &registry::operator=(registry &&other) noexcept = default;
+
+    registry::~registry() = default;
 
     registry::raw_type *registry::get() const
     {

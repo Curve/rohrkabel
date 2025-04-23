@@ -4,9 +4,8 @@
 
 namespace pipewire
 {
-    template <class Listener>
-        requires detail::valid_listener<Listener, proxy::raw_type>
-    Listener proxy::listen()
+    template <detail::Listener<proxy::raw_type> Listener>
+    Listener proxy::listen() const
     {
         return {get()};
     }

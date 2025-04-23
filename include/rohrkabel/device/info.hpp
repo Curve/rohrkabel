@@ -14,6 +14,8 @@ namespace pipewire
     {
         spa::dict props;
         std::uint32_t id;
+
+      public:
         std::uint64_t change_mask;
         std::vector<spa::param_info> params;
 

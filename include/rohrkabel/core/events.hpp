@@ -17,11 +17,11 @@ namespace pipewire
         error,
     };
 
-    class core_listener : public listener<core_event,                                                            //
-                                          ereignis::event<core_event::info, void(const core_info &)>,            //
-                                          ereignis::event<core_event::done, void(std::uint32_t, int)>,           //
-                                          ereignis::event<core_event::error, void(std::uint32_t, const error &)> //
-                                          >
+    class core_listener : public listener<                                                           //
+                              ereignis::event<core_event::info, void(const core_info &)>,            //
+                              ereignis::event<core_event::done, void(std::uint32_t, int)>,           //
+                              ereignis::event<core_event::error, void(std::uint32_t, const error &)> //
+                              >
     {
         struct impl;
 
@@ -29,11 +29,10 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~core_listener();
+        core_listener(core::raw_type *);
 
       public:
-        core_listener(core::raw_type *);
-        core_listener(core_listener &&) noexcept;
+        ~core_listener();
 
       public:
         static const std::uint32_t version;

@@ -14,9 +14,9 @@ namespace pipewire
         info,
     };
 
-    class link_listener : public listener<link_event,                                        //
-                                          ereignis::event<link_event::info, void(link_info)> //
-                                          >
+    class link_listener : public listener<                                       //
+                              ereignis::event<link_event::info, void(link_info)> //
+                              >
     {
         struct impl;
 
@@ -24,11 +24,10 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~link_listener();
+        link_listener(link::raw_type *);
 
       public:
-        link_listener(link::raw_type *);
-        link_listener(link_listener &&) noexcept;
+        ~link_listener();
 
       public:
         static const std::uint32_t version;

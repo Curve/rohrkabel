@@ -19,11 +19,11 @@ namespace pipewire
       private:
         std::unique_ptr<impl> m_impl;
 
-      public:
-        ~context();
-
       private:
         context(deleter<raw_type>, raw_type *, std::shared_ptr<main_loop>);
+
+      public:
+        ~context();
 
       public:
         [[nodiscard]] raw_type *get() const;

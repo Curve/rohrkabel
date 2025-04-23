@@ -17,7 +17,6 @@ namespace pipewire
 
     class node_listener
         : public listener<
-              node_event,                                                                                                  //
               ereignis::event<node_event::info, void(node_info)>,                                                          //
               ereignis::event<node_event::param, void(int, std::uint32_t, std::uint32_t, std::uint32_t, const spa::pod &)> //
               >
@@ -28,11 +27,10 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~node_listener();
+        node_listener(node::raw_type *);
 
       public:
-        node_listener(node::raw_type *);
-        node_listener(node_listener &&) noexcept;
+        ~node_listener();
 
       public:
         static const std::uint32_t version;

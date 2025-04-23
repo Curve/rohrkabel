@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../core/core.hpp"
+#include "../utils/traits.hpp"
 #include "../utils/deleter.hpp"
 
 #include <memory>
@@ -26,31 +27,23 @@ namespace pipewire
       private:
         void *bind(std::uint32_t, const char *, std::uint32_t) const;
 
-      public:
-        ~registry();
-
       private:
         registry(deleter<raw_type>, raw_type *, std::shared_ptr<pipewire::core>);
 
       public:
         registry(registry &&) noexcept;
-
-      public:
         registry &operator=(registry &&) noexcept;
 
       public:
-        template <class Listener = registry_listener>
-            requires detail::valid_listener<Listener, raw_type>
-        [[rk::needs_update]] [[nodiscard]] Listener listen();
+        ~registry();
 
       public:
-        template <class T, update_strategy Strategy = update_strategy::sync>
-            requires detail::valid_proxy<T>
-        [[nodiscard]] lazy<expected<T>> bind(std::uint32_t id);
+        template <detail::Listener<raw_type> Listener = registry_listener>
+        [[nodiscard]] Listener listen() const;
 
-        template <class T>
-            requires detail::valid_proxy<T>
-        [[nodiscard]] lazy<expected<T>> bind(std::uint32_t id, update_strategy strategy);
+      public:
+        template <detail::Proxy T>
+        [[nodiscard]] task<T> bind(std::uint32_t id);
 
       public:
         [[nodiscard]] raw_type *get() const;

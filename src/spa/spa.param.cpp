@@ -14,7 +14,8 @@ namespace pipewire::spa
 
     std::vector<param_info> param_info::from(std::uint32_t count, spa_param_info *info)
     {
-        std::vector<param_info> rtn{count};
+        std::vector<param_info> rtn;
+        rtn.reserve(count);
 
         for (auto i = 0u; info && count > i; ++i)
         {

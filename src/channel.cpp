@@ -20,6 +20,11 @@ namespace pipewire
         std::shared_future<spa_source *> source;
     };
 
+    channel_state::channel_state() : m_impl(std::make_unique<impl>())
+    {
+        m_impl->source = m_impl->promise.get_future().share();
+    }
+
     channel_state::~channel_state()
     {
         if (!m_impl)
@@ -47,11 +52,6 @@ namespace pipewire
         }
 
         pw_loop_destroy_source(m_impl->loop->loop(), source);
-    }
-
-    channel_state::channel_state() : m_impl(std::make_unique<impl>())
-    {
-        m_impl->source = m_impl->promise.get_future().share();
     }
 
     void channel_state::emit()

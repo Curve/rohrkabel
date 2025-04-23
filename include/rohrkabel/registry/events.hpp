@@ -15,10 +15,10 @@ namespace pipewire
         global_removed
     };
 
-    class registry_listener : public listener<registry_event,                                                      //
-                                              ereignis::event<registry_event::global, void(const global &)>,       //
-                                              ereignis::event<registry_event::global_removed, void(std::uint32_t)> //
-                                              >
+    class registry_listener : public listener<                                                         //
+                                  ereignis::event<registry_event::global, void(global)>,               //
+                                  ereignis::event<registry_event::global_removed, void(std::uint32_t)> //
+                                  >
     {
         struct impl;
 
@@ -26,11 +26,10 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~registry_listener();
+        registry_listener(registry::raw_type *);
 
       public:
-        registry_listener(registry::raw_type *);
-        registry_listener(registry_listener &&) noexcept;
+        ~registry_listener();
 
       public:
         static const std::uint32_t version;

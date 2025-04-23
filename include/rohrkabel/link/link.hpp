@@ -1,16 +1,21 @@
 #pragma once
 
 #include "info.hpp"
+
 #include "../proxy/proxy.hpp"
 
 struct pw_link;
 
 namespace pipewire
 {
+    class link;
     class link_listener;
 
     struct link_factory
     {
+        using result = link;
+
+      public:
         std::uint32_t input;
         std::uint32_t output;
     };
@@ -26,30 +31,29 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~link() final;
-
-      public:
-        link(link &&) noexcept;
         link(proxy &&, link_info);
 
       public:
+        link(link &&) noexcept;
         link &operator=(link &&) noexcept;
+
+      public:
+        ~link() final;
 
       public:
         [[nodiscard]] raw_type *get() const;
         [[nodiscard]] link_info info() const;
 
       public:
-        template <class Listener = link_listener>
-            requires detail::valid_listener<Listener, raw_type>
-        [[rk::needs_update]] [[nodiscard]] Listener listen();
+        template <detail::Listener<raw_type> Listener = link_listener>
+        [[nodiscard]] Listener listen() const;
 
       public:
         [[nodiscard]] operator raw_type *() const &;
         [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<link>> bind(raw_type *);
+        static task<link> bind(raw_type *);
 
       public:
         static const char *type;

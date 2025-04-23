@@ -13,6 +13,7 @@ namespace pipewire
         std::uint32_t version;
         std::uint32_t permissions;
 
+      public:
         spa::dict props;
         std::string type;
     };

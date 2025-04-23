@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(rohrkabel LANGUAGES CXX VERSION 8.0)
+project(rohrkabel LANGUAGES CXX VERSION 9.0.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -20,23 +20,14 @@ endif()
 set(CPM_DOWNLOAD_ALL ${rohrkabel_prefer_remote})
 
 # --------------------------------------------------------------------------------------------------------
-# Enable Sanitizer
-# --------------------------------------------------------------------------------------------------------
-
-if (rohrkabel_sanitizer)
-  add_compile_options(-fsanitize=address -fsanitize=leak)
-  add_link_options(-fsanitize=address -fsanitize=leak)
-endif()
-
-# --------------------------------------------------------------------------------------------------------
 # Create library
 # --------------------------------------------------------------------------------------------------------
 
 add_library(${PROJECT_NAME})
 add_library(cr::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_EXTENSIONS OFF CXX_STANDARD_REQUIRED ON)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 23 CXX_EXTENSIONS OFF CXX_STANDARD_REQUIRED ON)
 
 if (PROJECT_IS_TOP_LEVEL)
   target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror -pedantic -pedantic-errors -Wfatal-errors)
@@ -85,22 +76,15 @@ target_include_directories(${PROJECT_NAME} PRIVATE "include/rohrkabel")
 include("cmake/cpm.cmake")
 
 CPMFindPackage(
-  NAME           tl-expected
-  VERSION        1.1.0
-  GIT_REPOSITORY "https://github.com/TartanLlama/expected"
-  OPTIONS        "EXPECTED_BUILD_TESTS OFF"
+  NAME           coco
+  VERSION        3.1.0
+  GIT_REPOSITORY "https://github.com/Curve/coco"
 )
 
 CPMFindPackage(
   NAME           ereignis
-  VERSION        4.3
+  VERSION        5.0.0
   GIT_REPOSITORY "https://github.com/Curve/ereignis"
-)
-
-CPMFindPackage(
-  NAME           boost_callable_traits
-  GIT_TAG        boost-1.86.0
-  GIT_REPOSITORY "https://github.com/boostorg/callable_traits"
 )
 
 CPMFindPackage(
@@ -109,7 +93,7 @@ CPMFindPackage(
   GIT_REPOSITORY "https://github.com/Curve/channel"
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC tl::expected cr::ereignis Boost::callable_traits cr::channel)
+target_link_libraries(${PROJECT_NAME} PUBLIC cr::ereignis cr::channel cr::coco)
 
 # --------------------------------------------------------------------------------------------------------
 # Custom Find-Package configurations
@@ -123,8 +107,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(PipeWire REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PIPEWIRE_LIBRARIES} pthread)
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${PIPEWIRE_INCLUDE_DIRS} ${SPA_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME}             PUBLIC ${PIPEWIRE_LIBRARIES} pthread)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${PIPEWIRE_INCLUDE_DIRS} ${SPA_INCLUDE_DIRS})
 
 # --------------------------------------------------------------------------------------------------------
 # Build examples

@@ -19,17 +19,15 @@ namespace pipewire::spa
       private:
         std::unique_ptr<impl> m_impl;
 
-      public:
-        ~pod_prop();
-
       private:
         pod_prop(deleter<raw_type>, raw_type *);
 
       public:
         pod_prop(pod_prop &&) noexcept;
+        pod_prop &operator=(pod_prop &&) noexcept;
 
       public:
-        pod_prop &operator=(pod_prop &&) noexcept;
+        ~pod_prop();
 
       public:
         [[nodiscard]] pod value() const &;

@@ -1,5 +1,4 @@
-#include "spa/pod/object/object.hpp"
-#include "spa/pod/object/iterator.hpp"
+#include "spa/pod/object.hpp"
 
 #include <spa/pod/pod.h>
 #include <spa/pod/iter.h>
@@ -19,13 +18,9 @@ namespace pipewire::spa
         m_impl->object = object;
     }
 
-    pod_object::pod_object(pod_object &&other) noexcept : m_impl(std::move(other.m_impl)) {}
+    pod_object::pod_object(pod_object &&) noexcept = default;
 
-    pod_object &pod_object::operator=(pod_object &&other) noexcept
-    {
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    pod_object &pod_object::operator=(pod_object &&) noexcept = default;
 
     spa::pod pod_object::pod() const &
     {
@@ -42,14 +37,16 @@ namespace pipewire::spa
         return m_impl->object->body.id;
     }
 
-    pod_object::sentinel pod_object::end() const // NOLINT(*-static)
+    coco::generator<pod_prop> pod_object::props() const
     {
-        return {};
-    }
+        auto *body      = &m_impl->object->body;
+        const auto size = m_impl->object->pod.size;
 
-    pod_object::iterator pod_object::begin() const
-    {
-        return {this};
+        for (auto *it = spa_pod_prop_first(&m_impl->object->body); spa_pod_prop_is_inside(body, size, it);
+             it       = spa_pod_prop_next(it))
+        {
+            co_yield pod_prop::view(it);
+        }
     }
 
     pod_object::raw_type *pod_object::get() const
