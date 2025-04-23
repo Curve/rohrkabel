@@ -43,12 +43,12 @@ namespace pipewire
         return pw_core_sync(m_impl->core.get(), core_id, seq);
     }
 
-    task<int> core::sync() const
+    lazy<int> core::sync() const
     {
         auto listener = listen();
         auto pending  = 0;
 
-        auto promise = coco::promise<std::expected<int, error>>{};
+        auto promise = coco::promise<int>{};
         auto fut     = promise.get_future();
 
         listener.on<core_event::done>([&](auto id, auto seq) {
@@ -60,17 +60,7 @@ namespace pipewire
             promise.set_value(seq);
         });
 
-        listener.on<core_event::error>([&](auto id, const auto &error) {
-            if (id != core_id)
-            {
-                return;
-            }
-
-            promise.set_value(std::unexpected{error});
-        });
-
-        pending          = sync(0);
-        m_impl->last_seq = pending;
+        pending = sync(0);
 
         co_return co_await std::move(fut);
     }

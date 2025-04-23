@@ -51,10 +51,7 @@ namespace pipewire
 
       public:
         [[nodiscard]] int sync(int seq) const;
-        [[nodiscard]] task<int> sync() const;
-
-      public:
-        void run_once() const;
+        [[nodiscard]] lazy<int> sync() const;
 
       public:
         template <detail::Listener<raw_type> Listener = core_listener>
