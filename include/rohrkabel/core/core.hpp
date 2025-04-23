@@ -51,7 +51,7 @@ namespace pipewire
 
       public:
         [[nodiscard]] int sync(int seq) const;
-        [[nodiscard]] task<void> sync() const;
+        [[nodiscard]] task<int> sync() const;
 
       public:
         void run_once() const;
@@ -64,7 +64,7 @@ namespace pipewire
         template <detail::Proxy T>
         [[nodiscard]] task<T> create(factory);
 
-        template <typename Factory = factory>
+        template <detail::Factory Factory = factory>
         [[nodiscard]] task<typename Factory::result> create(Factory);
 
       public:

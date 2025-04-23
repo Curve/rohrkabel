@@ -19,6 +19,9 @@ namespace pipewire
     {
         pw_unique_ptr<raw_type> core;
         std::shared_ptr<pipewire::context> context;
+
+      public:
+        std::atomic<int> last_seq;
     };
 
     core::core(deleter<raw_type> deleter, raw_type *raw, std::shared_ptr<pipewire::context> context)
@@ -40,12 +43,12 @@ namespace pipewire
         return pw_core_sync(m_impl->core.get(), core_id, seq);
     }
 
-    task<void> core::sync() const
+    task<int> core::sync() const
     {
         auto listener = listen();
         auto pending  = 0;
 
-        auto promise = coco::promise<std::expected<void, error>>{};
+        auto promise = coco::promise<std::expected<int, error>>{};
         auto fut     = promise.get_future();
 
         listener.on<core_event::done>([&](auto id, auto seq) {
@@ -54,7 +57,7 @@ namespace pipewire
                 return;
             }
 
-            promise.set_value({});
+            promise.set_value(seq);
         });
 
         listener.on<core_event::error>([&](auto id, const auto &error) {
@@ -66,7 +69,8 @@ namespace pipewire
             promise.set_value(std::unexpected{error});
         });
 
-        pending = sync(0);
+        pending          = sync(0);
+        m_impl->last_seq = pending;
 
         co_return co_await std::move(fut);
     }
@@ -74,7 +78,16 @@ namespace pipewire
     void core::run_once() const
     {
         auto loop = context()->loop();
-        coco::then(sync(), [loop](auto) { loop->quit(); });
+
+        coco::then(sync(), [this, loop](auto id) {
+            if (m_impl->last_seq != id)
+            {
+                return;
+            }
+
+            loop->quit();
+        });
+
         loop->run();
     }
 

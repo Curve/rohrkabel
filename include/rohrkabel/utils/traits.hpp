@@ -55,5 +55,8 @@ namespace pipewire
             { T::type } -> std::same_as<const char *&>;
             { T::version } -> std::same_as<const std::uint32_t &>;
         };
+
+        template <typename T>
+        concept Factory = requires() { typename T::result; };
     } // namespace detail
 } // namespace pipewire
