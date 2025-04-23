@@ -30,10 +30,7 @@ int main()
             return;
         }
 
-        auto _device = reg->bind<pw::device>(global.id);
-        core->run_once();
-
-        auto device = coco::await(std::move(_device));
+        auto device = core->await(reg->bind<pw::device>(global.id));
 
         if (!device.has_value())
         {
@@ -78,10 +75,9 @@ int main()
 
     std::println();
 
-    auto params = device.params();
-    core->run_once();
+    auto params = core->await(device.params());
 
-    for (const auto &[pod_id, pod] : coco::await(std::move(params)))
+    for (const auto &[pod_id, pod] : params)
     {
         auto prop = pod.find_recursive(pw::spa::prop::channel_volumes);
 

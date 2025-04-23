@@ -27,10 +27,7 @@ int main()
             return;
         }
 
-        auto task = reg->bind<pw::device>(global.id);
-        core->run_once();
-
-        auto device = coco::await(std::move(task));
+        auto device = core->await(reg->bind<pw::device>(global.id));
 
         if (!device.has_value())
         {
@@ -67,10 +64,9 @@ int main()
     auto &device = devices.at(selection);
     std::println("\nMuting: {}", device.info().props.at("device.description"));
 
-    auto params = device.params();
-    core->run_once();
+    auto params = core->await(device.params());
 
-    for (const auto &[pod_id, pod] : coco::await(std::move(params)))
+    for (const auto &[pod_id, pod] : params)
     {
         auto prop = pod.find_recursive(pw::spa::prop::mute);
 

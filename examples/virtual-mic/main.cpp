@@ -48,10 +48,8 @@ int main()
     const auto on_global = [&](const pw::global &global) {
         if (global.type == pw::metadata::type)
         {
-            auto _metadata = reg->bind<pw::metadata>(global.id);
-            core->run_once();
+            auto metadata = core->await(reg->bind<pw::metadata>(global.id));
 
-            auto metadata   = coco::await(std::move(_metadata));
             auto props      = metadata->props();
             auto properties = metadata->properties();
 
@@ -66,10 +64,7 @@ int main()
 
         if (global.type == pw::node::type)
         {
-            auto _node = reg->bind<pw::node>(global.id);
-            core->run_once();
-
-            auto node = coco::await(std::move(_node));
+            auto node = core->await(reg->bind<pw::node>(global.id));
 
             if (!node)
             {
@@ -81,10 +76,7 @@ int main()
 
         if (global.type == pw::port::type)
         {
-            auto _port = reg->bind<pw::port>(global.id);
-            core->run_once();
-
-            auto port = coco::await(std::move(_port));
+            auto port = core->await(reg->bind<pw::port>(global.id));
 
             if (!port)
             {
@@ -132,14 +124,10 @@ int main()
         return 1;
     }
 
-    auto _virt_mic = core->create(pw::null_sink_factory{
+    auto virt_mic = core->await(core->create(pw::null_sink_factory{
         .name      = "Virtual Mic",
         .positions = {"FL", "FR"},
-    });
-
-    core->run_once();
-
-    auto virt_mic = coco::await(std::move(_virt_mic));
+    }));
 
     if (!virt_mic)
     {
@@ -248,9 +236,7 @@ int main()
             continue;
         }
 
-        auto _link = core->create(factory.value());
-        core->run_once();
-        auto link = coco::await(std::move(_link));
+        auto link = core->await(core->create(factory.value()));
 
         if (!link)
         {
@@ -259,6 +245,7 @@ int main()
         }
 
         links.emplace_back(std::move(link.value()));
+        std::println("Created link: [{:<3}] -> [{:<3}]", factory->input, factory->output);
     }
 
     std::cin.get();
