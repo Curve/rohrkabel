@@ -1,8 +1,10 @@
-#include <format>
+#include <print>
 #include <iostream>
 
+#include <coco/utils/utils.hpp>
+
 #include <rohrkabel/device/device.hpp>
-#include <rohrkabel/spa/pod/object/object.hpp>
+#include <rohrkabel/spa/pod/object.hpp>
 
 #include <rohrkabel/registry/events.hpp>
 #include <rohrkabel/registry/registry.hpp>
@@ -11,63 +13,64 @@ namespace pw = pipewire;
 
 int main()
 {
-    auto main_loop = pw::main_loop::create();
-    auto context   = pipewire::context::create(main_loop);
-    auto core      = pw::core::create(context);
-    auto reg       = pw::registry::create(core);
-
-    std::vector<pw::device> devices;
+    auto loop    = pw::main_loop::create();
+    auto context = pw::context::create(loop);
+    auto core    = pw::core::create(context);
+    auto reg     = pw::registry::create(core);
 
     auto listener = reg->listen();
+    auto devices  = std::vector<pw::device>{};
 
-    auto on_global = [&](const pipewire::global &global) {
-        if (global.type != pipewire::device::type)
+    auto on_global = [&](const pw::global &global) {
+        if (global.type != pw::device::type)
         {
             return;
         }
 
-        auto device = reg->bind<pipewire::device>(global.id).get();
-        auto info   = device->info();
+        auto task = reg->bind<pw::device>(global.id);
+        core->run_once();
 
-        if (info.props["media.class"] != "Audio/Device")
+        auto device = coco::await(std::move(task));
+
+        if (!device.has_value())
         {
             return;
         }
 
-        if (!info.props.contains("device.description"))
+        if (!device->info().props.contains("device.description"))
         {
             return;
         }
 
-        devices.emplace_back(std::move(*device));
+        if (device->info().props["media.class"] != "Audio/Device")
+        {
+            return;
+        }
+
+        devices.emplace_back(std::move(device.value()));
     };
 
     listener.on<pipewire::registry_event::global>(on_global);
-    core->update();
+    core->run_once();
 
     for (auto i = 0u; devices.size() > i; i++)
     {
         auto &device = devices.at(i);
-        auto name    = device.info().props.at("device.description");
-
-        std::cout << std::format("{}. {}", i, name) << std::endl;
+        std::println("{}. {}", i, device.info().props.at("device.description"));
     }
 
-    std::cout << std::endl;
-    std::cout << "Select a device to mute: ";
+    std::print("\nSelect a device to mute: ");
 
     std::size_t selection{0};
     std::cin >> selection;
 
     auto &device = devices.at(selection);
-
-    std::cout << std::endl;
-    std::cout << "Muting: " << device.info().props.at("device.description") << std::endl;
+    std::println("\nMuting: {}", device.info().props.at("device.description"));
 
     auto params = device.params();
-    core->update();
+    core->run_once();
 
-    for (const auto &[pod_id, pod] : params.get())
+    for (const auto &[pod_id, pod] : coco::await(std::move(params)))
     {
         auto prop = pod.find_recursive(pw::spa::prop::mute);
 
@@ -76,14 +79,18 @@ int main()
             continue;
         }
 
-        prop->value().write(!prop->value().as<bool>());
-        device.set_param(pod_id, 0, pod);
-        core->update();
+        auto previous = prop->value().read<bool>();
 
-        std::cout << "Device muted!" << std::endl;
+        prop->value().write(!previous);
+        device.set_param(pod_id, 0, pod);
+
+        core->run_once();
+        std::println("Device {}!", previous ? "Unmuted" : "Muted");
+
         return 0;
     }
 
-    std::cout << "Could not find mute prop for device!" << std::endl;
+    std::println("Could not find mute prop!");
+
     return 1;
 }
