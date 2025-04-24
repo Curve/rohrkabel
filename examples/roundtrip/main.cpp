@@ -1,5 +1,4 @@
 #include <print>
-#include <coco/utils/utils.hpp>
 
 #include <rohrkabel/registry/events.hpp>
 #include <rohrkabel/registry/registry.hpp>
@@ -17,7 +16,8 @@ int main()
 
     auto listener = reg->listen();
 
-    auto on_global = [](const pw::global &global) {
+    auto on_global = [](const pw::global &global)
+    {
         std::println("object: id:{} type:{}/{}", global.id, global.type, global.version);
     };
 

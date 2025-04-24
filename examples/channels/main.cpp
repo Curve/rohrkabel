@@ -1,9 +1,13 @@
-#include <thread>
+#include <print>
 #include <iostream>
 
+#include <thread>
+#include <optional>
+
 #include <rohrkabel/node/node.hpp>
-#include <rohrkabel/channel/channel.hpp>
 #include <rohrkabel/registry/registry.hpp>
+
+#include <rohrkabel/channel/channel.hpp>
 
 namespace pw = pipewire;
 
@@ -12,79 +16,79 @@ struct create_virtual_mic
     std::string name;
 };
 
-struct check_node
-{
-};
-
 struct terminate
 {
 };
 
-using recipe = pw::recipe<create_virtual_mic, check_node, terminate>;
+using recipe = pw::recipe<create_virtual_mic, terminate>;
+
+template <typename... Ts>
+struct overload : Ts...
+{
+    using Ts::operator()...;
+};
 
 int main()
 {
-    auto [sender, receiver] = pw::channel<recipe>();
-
-    auto thread = [](recipe::receiver receiver) {
+    auto thread = [](recipe::receiver receiver)
+    {
         auto loop    = pw::main_loop::create();
         auto context = pw::context::create(loop);
         auto core    = pw::core::create(context);
         auto reg     = pw::registry::create(core);
 
-        std::vector<pw::expected<pw::node>> created;
+        auto created = std::optional<pw::node>{};
+        auto stopped = std::atomic<bool>{false};
 
-        bool exit = false;
+        auto visitor = overload{[&](create_virtual_mic msg) -> coco::stray
+                                {
+                                    // We check if the stopped flag is set, so that we don't await something after the run-loop
+                                    // was stopped.
 
-        receiver.attach(loop, [&]<typename T>(const T &msg) {
-            if constexpr (std::same_as<T, create_virtual_mic>)
-            {
-                auto node = core->create<pw::node>(pw::null_sink_factory{
-                    .name      = msg.name,
-                    .positions = {"FL", "FR"},
-                });
+                                    if (stopped)
+                                    {
+                                        co_return;
+                                    }
 
-                created.emplace_back(std::move(node.get()));
-            }
-            else if constexpr (std::same_as<T, check_node>)
-            {
-                auto &mic = created.back();
+                                    auto node = co_await core->create(pw::null_sink_factory{
+                                        .name      = msg.name,
+                                        .positions = {"FL", "FR"},
+                                    });
 
-                if (!mic.has_value())
-                {
-                    std::cerr << "Failed to create node!" << std::endl;
+                                    if (!node)
+                                    {
+                                        std::println(stderr, "Failed to create node: {}", node.error().message);
+                                        co_return;
+                                    }
 
-                    auto error = mic.error();
-                    std::cerr << error.message << std::endl;
+                                    std::println("Created node: {}", node->id());
+                                    created.emplace(std::move(node.value()));
+                                },
+                                [&](terminate) -> coco::stray
+                                {
+                                    stopped = true;
+                                    loop->quit();
+                                    co_return;
+                                }};
 
-                    return;
-                }
+        receiver.attach(loop, visitor);
 
-                std::cout << "Created successfully!" << std::endl;
-                std::cout << mic.value().id() << std::endl;
-            }
-            else if constexpr (std::same_as<T, terminate>)
-            {
-                exit = true;
-                loop->quit();
-            }
-        });
-
-        while (!exit)
-        {
-            loop->run();
-        }
+        core->run_once();
+        loop->run();
     };
 
-    std::thread t1{thread, std::move(receiver)};
+    auto [sender, receiver] = pw::channel<recipe>();
+    std::jthread t{thread, std::move(receiver)};
 
-    sender.send(create_virtual_mic{"Test Node"});
-    std::cin.get();
-    sender.send(check_node{});
+    auto name = std::string{};
+
+    std::print("Name of node: ");
+    std::getline(std::cin >> std::ws, name);
+
+    sender.send(create_virtual_mic{std::move(name)});
+
     std::cin.get();
     sender.send(terminate{});
-
-    t1.join();
 
     return 0;
 }

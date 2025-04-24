@@ -3,9 +3,6 @@
 
 #include <cmath>
 
-#include <coco/stray/stray.hpp>
-#include <coco/utils/utils.hpp>
-
 #include <rohrkabel/device/device.hpp>
 #include <rohrkabel/spa/pod/object.hpp>
 
@@ -24,7 +21,8 @@ int main()
     auto listener = reg->listen();
     auto devices  = std::vector<pw::device>{};
 
-    auto on_global = [&](const pw::global &global) {
+    auto on_global = [&](const pw::global &global)
+    {
         if (global.type != pw::device::type)
         {
             return;
@@ -89,9 +87,11 @@ int main()
         // pipewire uses cubic volumes! (that's why we use std::cbrt, and std::pow)
 
         auto channels      = prop->value().as<std::vector<float>>();
-        auto cubic_volumes = channels | std::views::transform([volume](auto &&) {
-                                 return std::powf(volume / 100, 3);
-                             });
+        auto cubic_volumes = channels | std::views::transform(
+                                            [volume](auto &&)
+                                            {
+                                                return std::powf(volume / 100, 3);
+                                            });
 
         prop->value().write<std::vector<float>>({cubic_volumes.begin(), cubic_volumes.end()});
         device.set_param(pod_id, 0, pod);

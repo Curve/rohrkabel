@@ -1,9 +1,5 @@
 #include <print>
-#include <ranges>
 #include <iostream>
-
-#include <coco/stray/stray.hpp>
-#include <coco/utils/utils.hpp>
 
 #include <rohrkabel/port/port.hpp>
 #include <rohrkabel/link/link.hpp>
@@ -45,7 +41,8 @@ int main()
     auto nodes = std::vector<pw::node>{};
     auto ports = std::vector<pw::port>{};
 
-    const auto on_global = [&](const pw::global &global) {
+    const auto on_global = [&](const pw::global &global)
+    {
         if (global.type == pw::metadata::type)
         {
             auto metadata = core->await(reg->bind<pw::metadata>(global.id));
@@ -96,8 +93,10 @@ int main()
         return 1;
     }
 
-    const auto is = [&](auto what) {
-        return [what](auto &&x) {
+    const auto is = [&](auto what)
+    {
+        return [what](auto &&x)
+        {
             auto props = x.props();
             return props["node.name"] == what;
         };

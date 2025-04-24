@@ -1,8 +1,6 @@
 #include <print>
 #include <iostream>
 
-#include <coco/utils/utils.hpp>
-
 #include <rohrkabel/device/device.hpp>
 #include <rohrkabel/spa/pod/object.hpp>
 
@@ -21,7 +19,8 @@ int main()
     auto listener = reg->listen();
     auto devices  = std::vector<pw::device>{};
 
-    auto on_global = [&](const pw::global &global) {
+    auto on_global = [&](const pw::global &global)
+    {
         if (global.type != pw::device::type)
         {
             return;
