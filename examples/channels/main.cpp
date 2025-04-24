@@ -72,8 +72,6 @@ int main()
                                 }};
 
         receiver.attach(loop, visitor);
-
-        core->run_once();
         loop->run();
     };
 
