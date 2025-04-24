@@ -1,22 +1,16 @@
 <div align="center"> 
-    <img src="assets/logo.svg" height=312>
+    <img src="assets/logo.svg" height="256">
 </div>
-
-<br/>
-
-<p align="center">
-    A C++20 pipewire-api wrapper
-</p>
 
 
 ## 📃 Description
 
-_rohrkabel_ is a wrapper around the pipewire-api that embraces RAII and tries to simplify working with pipewire.
+_Rohrkabel_ is a C++23 wrapper around the pipewire-api that embraces **RAII** and **Coroutines**.
 
-> [!NOTE]  
-> As of writing only a portion of the pipewire-api has been wrapped.  
-> In case we're missing something you need feel free to [open an issue](https://github.com/Curve/rohrkabel/issues/new).  
-> More portions of the api might be covered in the future depending on personal demand as well as demand from [Soundux](https://github.com/Soundux/Soundux). 
+As of writing this, only a portion of the pipewire-api has been wrapped.
+However, this library easily allows to access the underlying wrapped objects and also allows to wrap existing pipewire objects without taking over their lifetime.
+
+More portions of the pipewire-api will be wrapped based on user demand or (in-house) downstream ([Soundux](https://github.com/Soundux/Soundux), [venmic](https://github.com/Vencord/venmic)) demand.
 
 ## 📦 Installation
 
@@ -24,7 +18,7 @@ _rohrkabel_ is a wrapper around the pipewire-api that embraces RAII and tries to
   ```cmake
   CPMFindPackage(
     NAME           rohrkabel
-    VERSION        4.0
+    VERSION        9.0.0
     GIT_REPOSITORY "https://github.com/Curve/rohrkabel"
   )
   ```
@@ -33,7 +27,7 @@ _rohrkabel_ is a wrapper around the pipewire-api that embraces RAII and tries to
   ```cmake
   include(FetchContent)
 
-  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Curve/rohrkabel" GIT_TAG v4.0)
+  FetchContent_Declare(rohrkabel GIT_REPOSITORY "https://github.com/Curve/rohrkabel" GIT_TAG v9.0.0)
   FetchContent_MakeAvailable(rohrkabel)
 
   target_link_libraries(<target> cr::rohrkabel)
