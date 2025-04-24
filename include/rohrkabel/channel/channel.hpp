@@ -1,6 +1,8 @@
 #pragma once
 
+#include <memory>
 #include <functional>
+
 #include <cr/channel.hpp>
 
 struct spa_source;
@@ -26,7 +28,7 @@ namespace pipewire
         void emit();
 
       public:
-        void attach(std::shared_ptr<main_loop>, std::function<void()> callback);
+        void attach(std::shared_ptr<main_loop>, std::move_only_function<void()> callback);
     };
 
     template <typename T>
@@ -50,17 +52,18 @@ namespace pipewire
         receiver(std::shared_ptr<cr::queue<T>>, std::shared_ptr<channel_state>);
 
       public:
-        template <typename Callback>
-            requires cr::visitable<T, Callback>
-        void attach(const std::shared_ptr<main_loop> &, Callback &&);
+        template <cr::Visitable<T> Callback>
+        void attach(std::shared_ptr<main_loop>, Callback &&);
     };
 
     template <typename... T>
     struct recipe
     {
-        using is_recipe = std::true_type;
-        using sender    = pipewire::sender<cr::internal::deduce_t<T...>>;
-        using receiver  = pipewire::receiver<cr::internal::deduce_t<T...>>;
+        using sender   = pipewire::sender<cr::impl::deduce_t<T...>>;
+        using receiver = pipewire::receiver<cr::impl::deduce_t<T...>>;
+
+      public:
+        static constexpr bool is_recipe = true;
     };
 
     template <typename... T>

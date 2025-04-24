@@ -24,22 +24,21 @@ namespace pipewire
     }
 
     template <typename T>
-    template <typename Callback>
-        requires cr::visitable<T, Callback>
-    void receiver<T>::attach(const std::shared_ptr<main_loop> &loop, Callback &&callback)
+    template <cr::Visitable<T> Callback>
+    void receiver<T>::attach(std::shared_ptr<main_loop> loop, Callback &&callback)
     {
         static auto receive = [this, callback = std::forward<Callback>(callback)]()
         {
             cr::receiver<T>::recv(callback);
         };
 
-        m_state->attach(loop, std::move(receive));
+        m_state->attach(std::move(loop), std::move(receive));
     }
 
     template <typename... T>
     auto channel()
     {
-        auto queue = std::make_shared<cr::queue<cr::internal::deduce_t<T...>>>();
+        auto queue = std::make_shared<cr::queue<cr::impl::deduce_t<T...>>>();
         auto state = std::make_shared<channel_state>();
 
         return std::make_pair(sender{queue, state}, receiver{queue, state});

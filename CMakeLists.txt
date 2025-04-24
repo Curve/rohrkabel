@@ -89,7 +89,7 @@ CPMFindPackage(
 
 CPMFindPackage(
   NAME           channel
-  VERSION        2.3
+  VERSION        3.0.1
   GIT_REPOSITORY "https://github.com/Curve/channel"
 )
 
