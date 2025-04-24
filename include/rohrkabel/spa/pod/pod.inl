@@ -7,7 +7,7 @@
 namespace pipewire::spa
 {
     template <detail::VectorWhere<std::is_arithmetic> T>
-    T pod::as() const
+    T pod::read() const
     {
         using value_type = detail::vector_traits<T>::type;
 

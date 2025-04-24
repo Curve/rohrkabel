@@ -83,7 +83,7 @@ namespace pipewire::spa
         [[nodiscard]] T read() const;
 
         template <detail::VectorWhere<std::is_arithmetic> T>
-        [[nodiscard]] T as() const;
+        [[nodiscard]] T read() const;
 
       public:
         template <PodWritable T>
