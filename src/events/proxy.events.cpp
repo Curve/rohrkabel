@@ -1,4 +1,3 @@
-#include "proxy/proxy.hpp"
 #include "proxy/events.hpp"
 
 #include <pipewire/pipewire.h>
@@ -14,17 +13,20 @@ namespace pipewire
     {
         m_impl->events.version = version;
 
-        m_impl->events.error = [](void *data, int seq, int res, const char *message) {
+        m_impl->events.error = [](void *data, int seq, int res, const char *message)
+        {
             auto &events = *reinterpret_cast<listener::events *>(data);
             events.get<proxy_event::error>().fire(seq, res, message);
         };
 
-        m_impl->events.bound = [](void *data, std::uint32_t global) {
+        m_impl->events.bound = [](void *data, std::uint32_t global)
+        {
             auto &events = *reinterpret_cast<listener::events *>(data);
             events.get<proxy_event::bound>().fire(global);
         };
 
-        m_impl->events.bound_props = [](void *data, std::uint32_t global, const spa_dict *props) {
+        m_impl->events.bound_props = [](void *data, std::uint32_t global, const spa_dict *props)
+        {
             auto &events = *reinterpret_cast<listener::events *>(data);
             events.get<proxy_event::bound_props>().fire(global, props);
         };

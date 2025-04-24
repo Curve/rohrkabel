@@ -9,14 +9,13 @@ namespace pipewire::spa
         pw_unique_ptr<raw_type> hook;
     };
 
-    hook::hook(deleter<raw_type> deleter, raw_type *raw)
-        : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}))
+    hook::hook(deleter<raw_type> deleter, raw_type *raw) : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}))
     {
     }
 
-    hook::hook(hook &&other) noexcept = default;
+    hook::hook(hook &&) noexcept = default;
 
-    hook &hook::operator=(hook &&other) noexcept = default;
+    hook &hook::operator=(hook &&) noexcept = default;
 
     hook::~hook() = default;
 
@@ -35,7 +34,8 @@ namespace pipewire::spa
 
     hook hook::from(raw_type *hook)
     {
-        static constexpr auto deleter = [](auto *hook) {
+        static constexpr auto deleter = [](auto *hook)
+        {
             spa_hook_remove(hook);
             delete hook;
         };

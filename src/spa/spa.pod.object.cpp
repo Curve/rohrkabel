@@ -2,7 +2,6 @@
 
 #include <spa/pod/pod.h>
 #include <spa/pod/iter.h>
-#include <spa/debug/pod.h>
 
 namespace pipewire::spa
 {

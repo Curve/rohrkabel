@@ -1,5 +1,4 @@
 #include "client/events.hpp"
-#include "client/client.hpp"
 
 #include <pipewire/pipewire.h>
 
@@ -14,12 +13,14 @@ namespace pipewire
     {
         m_impl->events.version = version;
 
-        m_impl->events.info = [](void *data, const pw_client_info *info) {
+        m_impl->events.info = [](void *data, const pw_client_info *info)
+        {
             auto &events = *reinterpret_cast<listener::events *>(data);
             events.get<client_event::info>().fire(client_info::from(info));
         };
 
-        m_impl->events.permissions = [](void *data, std::uint32_t index, std::uint32_t count, const pw_permission *permission) {
+        m_impl->events.permissions = [](void *data, std::uint32_t index, std::uint32_t count, const pw_permission *permission)
+        {
             auto &events = *reinterpret_cast<listener::events *>(data);
             events.get<client_event::permission>().fire(index, count, permission);
         };

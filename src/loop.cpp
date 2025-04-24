@@ -2,7 +2,6 @@
 #include "utils/check.hpp"
 
 #include <mutex>
-#include <memory>
 
 #include <pipewire/pipewire.h>
 
@@ -49,9 +48,11 @@ namespace pipewire
     {
         static std::once_flag flag;
 
-        std::call_once(flag, [] {
-            pw_init(nullptr, nullptr);
-        });
+        std::call_once(flag,
+                       []
+                       {
+                           pw_init(nullptr, nullptr);
+                       });
 
         auto *loop = pw_main_loop_new(nullptr);
         check(loop, "Failed to create main_loop");

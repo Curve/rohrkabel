@@ -1,8 +1,7 @@
 #include "utils/check.hpp"
 
-#include <format>
+#include <print>
 #include <cstring>
-#include <iostream>
 
 namespace pipewire
 {
@@ -18,9 +17,7 @@ namespace pipewire
 
         const auto *error       = strerror(errno); // NOLINT(*-mt-unsafe)
         auto [file, line, func] = std::make_tuple(loc.file_name(), loc.line(), loc.function_name());
-
-        std::cerr << std::format(R"([{}] ({}:{}): check failed "{}", error is "{}")", func, file, line, message, error)
-                  << std::endl;
+        std::println(stderr, R"([{}] ({}:{}): check failed "{}", error is "{}")", func, file, line, message, error);
     }
 #endif
 } // namespace pipewire

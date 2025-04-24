@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../spa/dict.hpp"
-
 #include "../utils/task.hpp"
 #include "../utils/traits.hpp"
 #include "../utils/deleter.hpp"

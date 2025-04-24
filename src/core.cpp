@@ -8,10 +8,8 @@
 
 #include <ranges>
 
-#include <coco/utils/utils.hpp>
-#include <coco/promise/promise.hpp>
-
 #include <pipewire/pipewire.h>
+#include <coco/promise/promise.hpp>
 
 namespace pipewire
 {
@@ -51,14 +49,16 @@ namespace pipewire
         auto promise = coco::promise<int>{};
         auto fut     = promise.get_future();
 
-        listener.on<core_event::done>([&](auto id, auto seq) {
-            if (id != core_id || seq != pending)
+        listener.on<core_event::done>(
+            [&](auto id, auto seq)
             {
-                return;
-            }
+                if (id != core_id || seq != pending)
+                {
+                    return;
+                }
 
-            promise.set_value(seq);
-        });
+                promise.set_value(seq);
+            });
 
         pending = sync(0);
 
@@ -70,14 +70,16 @@ namespace pipewire
         auto listener = listen();
         auto loop     = context()->loop();
 
-        listener.on<core_event::done>([&](auto id, auto seq) {
-            if (id != core_id || seq != m_impl->last_seq)
+        listener.on<core_event::done>(
+            [&](auto id, auto seq)
             {
-                return;
-            }
+                if (id != core_id || seq != m_impl->last_seq)
+                {
+                    return;
+                }
 
-            loop->quit();
-        });
+                loop->quit();
+            });
 
         m_impl->last_seq = sync(0);
 
@@ -143,7 +145,8 @@ namespace pipewire
 
     std::shared_ptr<core> core::from(raw_type *core, std::shared_ptr<pipewire::context> context)
     {
-        static constexpr auto deleter = [](auto *core) {
+        static constexpr auto deleter = [](auto *core)
+        {
             pw_core_disconnect(core);
         };
 

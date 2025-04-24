@@ -18,9 +18,9 @@ namespace pipewire
         m_impl->info = std::move(info);
     }
 
-    port::port(port &&other) noexcept = default;
+    port::port(port &&) noexcept = default;
 
-    port &port::operator=(port &&other) noexcept = default;
+    port &port::operator=(port &&) noexcept = default;
 
     port::~port() = default;
 
@@ -29,9 +29,11 @@ namespace pipewire
         auto listener = listen();
         auto params   = params_t{};
 
-        listener.on<port_event::param>([&](auto, auto id, auto, auto, spa::pod param) {
-            params.emplace(id, std::move(param));
-        });
+        listener.on<port_event::param>(
+            [&](auto, auto id, auto, auto, spa::pod param)
+            {
+                params.emplace(id, std::move(param));
+            });
 
         for (const auto &param : m_impl->info.params)
         {
@@ -65,9 +67,11 @@ namespace pipewire
         auto promise = coco::promise<port_info>{};
         auto fut     = promise.get_future();
 
-        listener.once<port_event::info>([promise = std::move(promise)](port_info info) mutable {
-            promise.set_value(std::move(info));
-        });
+        listener.once<port_event::info>(
+            [promise = std::move(promise)](port_info info) mutable
+            {
+                promise.set_value(std::move(info));
+            });
 
         auto info  = co_await std::move(fut);
         auto proxy = co_await std::move(_proxy);

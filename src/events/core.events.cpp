@@ -1,4 +1,3 @@
-#include "core/core.hpp"
 #include "core/events.hpp"
 
 #include <pipewire/pipewire.h>
@@ -14,17 +13,20 @@ namespace pipewire
     {
         m_impl->events.version = version;
 
-        m_impl->events.info = [](void *data, const pw_core_info *info) {
+        m_impl->events.info = [](void *data, const pw_core_info *info)
+        {
             auto &events = *reinterpret_cast<listener::events *>(data);
             events.get<core_event::info>().fire(core_info::from(info));
         };
 
-        m_impl->events.done = [](void *data, std::uint32_t id, int seq) {
+        m_impl->events.done = [](void *data, std::uint32_t id, int seq)
+        {
             auto &events = *reinterpret_cast<listener::events *>(data);
             events.get<core_event::done>().fire(id, seq);
         };
 
-        m_impl->events.error = [](void *data, std::uint32_t id, int seq, int res, const char *message) {
+        m_impl->events.error = [](void *data, std::uint32_t id, int seq, int res, const char *message)
+        {
             auto &events = *reinterpret_cast<listener::events *>(data);
             events.get<core_event::error>().fire(id, error{seq, res, message});
         };

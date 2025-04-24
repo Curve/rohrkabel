@@ -1,6 +1,5 @@
 #include "context.hpp"
 
-#include "loop.hpp"
 #include "utils/check.hpp"
 
 #include <pipewire/pipewire.h>

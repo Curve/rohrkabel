@@ -22,6 +22,7 @@ namespace pipewire
         port_direction direction;
         std::uint64_t change_mask;
 
+      public:
         spa::dict props;
         std::vector<spa::param_info> params;
 

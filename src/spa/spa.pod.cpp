@@ -15,10 +15,7 @@ namespace pipewire::spa
         pw_unique_ptr<raw_type> pod;
     };
 
-    pod::pod(deleter<raw_type> deleter, raw_type *pod)
-        : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{pod, deleter}))
-    {
-    }
+    pod::pod(deleter<raw_type> deleter, raw_type *pod) : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{pod, deleter})) {}
 
     pod::pod(pod &&) noexcept = default;
 
@@ -229,7 +226,8 @@ namespace pipewire::spa
 
     pod pod::copy(const raw_type *pod)
     {
-        static constexpr auto deleter = [](auto *pod) {
+        static constexpr auto deleter = [](auto *pod)
+        {
             free(pod); // NOLINT(*-malloc)
         };
 

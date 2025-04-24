@@ -47,9 +47,11 @@ namespace pipewire
         auto promise = coco::promise<link_info>{};
         auto fut     = promise.get_future();
 
-        listener.once<link_event::info>([promise = std::move(promise)](link_info info) mutable {
-            promise.set_value(std::move(info));
-        });
+        listener.once<link_event::info>(
+            [promise = std::move(promise)](link_info info) mutable
+            {
+                promise.set_value(std::move(info));
+            });
 
         auto info  = co_await std::move(fut);
         auto proxy = co_await std::move(_proxy);

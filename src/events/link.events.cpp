@@ -1,4 +1,3 @@
-#include "link/link.hpp"
 #include "link/events.hpp"
 
 #include <pipewire/pipewire.h>
@@ -14,7 +13,8 @@ namespace pipewire
     {
         m_impl->events.version = version;
 
-        m_impl->events.info = [](void *data, const pw_link_info *info) {
+        m_impl->events.info = [](void *data, const pw_link_info *info)
+        {
             auto &events = *reinterpret_cast<listener::events *>(data);
             events.get<link_event::info>().fire(link_info::from(info));
         };

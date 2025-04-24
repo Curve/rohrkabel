@@ -20,9 +20,9 @@ namespace pipewire
         m_impl->properties = std::move(properties);
     }
 
-    metadata::metadata(metadata &&other) noexcept = default;
+    metadata::metadata(metadata &&) noexcept = default;
 
-    metadata &metadata::operator=(metadata &&other) noexcept = default;
+    metadata &metadata::operator=(metadata &&) noexcept = default;
 
     metadata::~metadata() = default;
 
@@ -60,10 +60,12 @@ namespace pipewire
 
         auto properties = properties_t{};
 
-        listener.on<metadata_event::property>([&](auto key, auto property) {
-            properties.emplace(key, std::move(property));
-            return 0;
-        });
+        listener.on<metadata_event::property>(
+            [&](auto key, auto property)
+            {
+                properties.emplace(key, std::move(property));
+                return 0;
+            });
 
         co_await task<metadata>::wake_on_await{};
         auto proxy = co_await std::move(_proxy);

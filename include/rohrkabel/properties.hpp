@@ -21,17 +21,15 @@ namespace pipewire
       private:
         std::unique_ptr<impl> m_impl;
 
-      public:
-        ~properties();
-
       private:
         properties(deleter<raw_type>, raw_type *);
 
       public:
         properties(properties &&) noexcept;
+        properties &operator=(properties &&) noexcept;
 
       public:
-        properties &operator=(properties &&) noexcept;
+        ~properties();
 
       public:
         void set(const std::string &key, const std::string &value);

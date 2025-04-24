@@ -1,9 +1,6 @@
 #include "node/node.hpp"
 #include "node/events.hpp"
 
-#include "spa/param.hpp"
-#include "utils/task.hpp"
-
 #include <pipewire/pipewire.h>
 #include <coco/promise/promise.hpp>
 
@@ -21,9 +18,9 @@ namespace pipewire
         m_impl->info = std::move(info);
     }
 
-    node::node(node &&other) noexcept = default;
+    node::node(node &&) noexcept = default;
 
-    node &node::operator=(node &&other) noexcept = default;
+    node &node::operator=(node &&) noexcept = default;
 
     node::~node() = default;
 
@@ -37,9 +34,11 @@ namespace pipewire
         auto listener = listen();
         auto params   = params_t{};
 
-        listener.on<node_event::param>([&](int, uint32_t id, uint32_t, uint32_t, spa::pod param) {
-            params.emplace(id, std::move(param));
-        });
+        listener.on<node_event::param>(
+            [&](int, uint32_t id, uint32_t, uint32_t, spa::pod param)
+            {
+                params.emplace(id, std::move(param));
+            });
 
         for (const auto &param : m_impl->info.params)
         {
@@ -73,9 +72,11 @@ namespace pipewire
         auto promise = coco::promise<node_info>{};
         auto fut     = promise.get_future();
 
-        listener.once<node_event::info>([promise = std::move(promise)](node_info info) mutable {
-            promise.set_value(std::move(info));
-        });
+        listener.once<node_event::info>(
+            [promise = std::move(promise)](node_info info) mutable
+            {
+                promise.set_value(std::move(info));
+            });
 
         auto info  = co_await std::move(fut);
         auto proxy = co_await std::move(_proxy);

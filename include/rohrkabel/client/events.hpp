@@ -1,8 +1,6 @@
 #pragma once
 
-#include "info.hpp"
 #include "client.hpp"
-
 #include "../utils/listener.hpp"
 
 #include <memory>

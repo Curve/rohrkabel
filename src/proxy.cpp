@@ -17,9 +17,9 @@ namespace pipewire
     {
     }
 
-    proxy::proxy(proxy &&other) noexcept = default;
+    proxy::proxy(proxy &&) noexcept = default;
 
-    proxy &proxy::operator=(proxy &&other) noexcept = default;
+    proxy &proxy::operator=(proxy &&) noexcept = default;
 
     proxy::~proxy() = default;
 
@@ -64,21 +64,27 @@ namespace pipewire
         auto done = coco::promise<expected<void>>{};
         auto fut  = done.get_future();
 
-        listener.once<proxy_event::bound>([&](std::uint32_t) {
-            done.set_value({});
-        });
+        listener.once<proxy_event::bound>(
+            [&](std::uint32_t)
+            {
+                done.set_value({});
+            });
 
-        listener.once<proxy_event::bound_props>([&](std::uint32_t, spa::dict properties) {
-            props = std::move(properties);
-        });
+        listener.once<proxy_event::bound_props>(
+            [&](std::uint32_t, spa::dict properties)
+            {
+                props = std::move(properties);
+            });
 
-        listener.once<proxy_event::error>([&](int seq, int res, const char *message) {
-            done.set_value(std::unexpected<error>{{
-                .seq     = seq,
-                .res     = res,
-                .message = message,
-            }});
-        });
+        listener.once<proxy_event::error>(
+            [&](int seq, int res, const char *message)
+            {
+                done.set_value(std::unexpected<error>{{
+                    .seq     = seq,
+                    .res     = res,
+                    .message = message,
+                }});
+            });
 
         co_await task<proxy>::wake_on_await{};
         auto result = co_await std::move(fut);

@@ -1,8 +1,6 @@
 #pragma once
 
 #include "metadata.hpp"
-
-#include "property.hpp"
 #include "../utils/listener.hpp"
 
 #include <memory>

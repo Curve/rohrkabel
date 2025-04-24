@@ -11,6 +11,7 @@ namespace pipewire
     using pw_unique_ptr = std::unique_ptr<T, deleter<T>>;
 
     template <typename T>
-    static constexpr inline auto view_deleter = [](T *) {
+    static constexpr inline auto view_deleter = [](T *)
+    {
     };
 } // namespace pipewire

@@ -18,9 +18,9 @@ namespace pipewire
         m_impl->info   = std::move(info);
     }
 
-    client::client(client &&other) noexcept = default;
+    client::client(client &&) noexcept = default;
 
-    client &client::operator=(client &&other) noexcept = default;
+    client &client::operator=(client &&) noexcept = default;
 
     client::~client() = default;
 
@@ -47,9 +47,11 @@ namespace pipewire
         auto promise = coco::promise<client_info>{};
         auto fut     = promise.get_future();
 
-        listener.once<client_event::info>([promise = std::move(promise)](client_info info) mutable {
-            promise.set_value(std::move(info));
-        });
+        listener.once<client_event::info>(
+            [promise = std::move(promise)](client_info info) mutable
+            {
+                promise.set_value(std::move(info));
+            });
 
         auto info  = co_await std::move(fut);
         auto proxy = co_await std::move(_proxy);

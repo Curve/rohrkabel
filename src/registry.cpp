@@ -23,9 +23,9 @@ namespace pipewire
     {
     }
 
-    registry::registry(registry &&other) noexcept = default;
+    registry::registry(registry &&) noexcept = default;
 
-    registry &registry::operator=(registry &&other) noexcept = default;
+    registry &registry::operator=(registry &&) noexcept = default;
 
     registry::~registry() = default;
 
@@ -59,7 +59,8 @@ namespace pipewire
 
     registry registry::from(raw_type *registry, std::shared_ptr<pipewire::core> core)
     {
-        static constexpr auto deleter = [](auto *registry) {
+        static constexpr auto deleter = [](auto *registry)
+        {
             pw_proxy_destroy(reinterpret_cast<proxy::raw_type *>(registry));
         };
 

@@ -1,4 +1,3 @@
-#include "port/port.hpp"
 #include "port/events.hpp"
 
 #include <pipewire/pipewire.h>
@@ -14,12 +13,14 @@ namespace pipewire
     {
         m_impl->events.version = version;
 
-        m_impl->events.info = [](void *data, const pw_port_info *info) {
+        m_impl->events.info = [](void *data, const pw_port_info *info)
+        {
             auto &events = *reinterpret_cast<listener::events *>(data);
             events.get<port_event::info>().fire(port_info::from(info));
         };
 
-        m_impl->events.param = [](void *data, int seq, uint32_t id, uint32_t index, uint32_t next, const struct spa_pod *param) {
+        m_impl->events.param = [](void *data, int seq, uint32_t id, uint32_t index, uint32_t next, const struct spa_pod *param)
+        {
             auto &events = *reinterpret_cast<listener::events *>(data);
             events.get<port_event::param>().fire(seq, id, index, next, spa::pod::copy(param));
         };

@@ -34,9 +34,11 @@ namespace pipewire
         auto listener = listen();
         auto params   = params_t{};
 
-        listener.on<device_event::param>([&](int, uint32_t id, uint32_t, uint32_t, spa::pod param) {
-            params.emplace(id, std::move(param));
-        });
+        listener.on<device_event::param>(
+            [&](int, uint32_t id, uint32_t, uint32_t, spa::pod param)
+            {
+                params.emplace(id, std::move(param));
+            });
 
         for (const auto &param : m_impl->info.params)
         {
@@ -70,9 +72,11 @@ namespace pipewire
         auto promise = coco::promise<device_info>{};
         auto fut     = promise.get_future();
 
-        listener.once<device_event::info>([promise = std::move(promise)](device_info info) mutable {
-            promise.set_value(std::move(info));
-        });
+        listener.once<device_event::info>(
+            [promise = std::move(promise)](device_info info) mutable
+            {
+                promise.set_value(std::move(info));
+            });
 
         auto info  = co_await std::move(fut);
         auto proxy = co_await std::move(_proxy);

@@ -1,8 +1,6 @@
 #pragma once
 
-#include "info.hpp"
 #include "link.hpp"
-
 #include "../utils/listener.hpp"
 
 #include <memory>
