@@ -86,7 +86,7 @@ int main()
 
         // pipewire uses cubic volumes! (that's why we use std::cbrt, and std::pow)
 
-        auto channels      = prop->value().as<std::vector<float>>();
+        auto channels      = prop->value().read<std::vector<float>>();
         auto cubic_volumes = channels | std::views::transform(
                                             [volume](auto &&)
                                             {
