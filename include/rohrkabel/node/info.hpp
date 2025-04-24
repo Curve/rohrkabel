@@ -23,6 +23,7 @@ namespace pipewire
     {
         std::uint32_t id;
 
+      public:
         struct
         {
             std::uint32_t max;
@@ -35,12 +36,15 @@ namespace pipewire
             std::uint32_t current;
         } output;
 
+      public:
         spa::dict props;
         node_state state;
 
+      public:
         std::string error;
         std::uint64_t change_mask;
 
+      public:
         std::vector<spa::param_info> params;
 
       public:

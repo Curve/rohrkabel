@@ -1,6 +1,5 @@
 #pragma once
 
-#include "info.hpp"
 #include "device.hpp"
 
 #include "../spa/pod/pod.hpp"
@@ -17,8 +16,7 @@ namespace pipewire
     };
 
     class device_listener
-        : public listener<
-              device_event,                                                                                                  //
+        : public listener<                                                                                                   //
               ereignis::event<device_event::info, void(const device_info &)>,                                                //
               ereignis::event<device_event::param, void(int, std::uint32_t, std::uint32_t, std::uint32_t, const spa::pod &)> //
               >
@@ -29,11 +27,10 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~device_listener();
+        device_listener(device::raw_type *);
 
       public:
-        device_listener(device::raw_type *);
-        device_listener(device_listener &&) noexcept;
+        ~device_listener();
 
       public:
         static const std::uint32_t version;

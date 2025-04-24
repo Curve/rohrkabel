@@ -18,17 +18,15 @@ namespace pipewire::spa
       private:
         std::unique_ptr<impl> m_impl;
 
-      public:
-        ~hook();
-
       private:
         hook(deleter<raw_type>, raw_type *);
 
       public:
         hook(hook &&) noexcept;
+        hook &operator=(hook &&) noexcept;
 
       public:
-        hook &operator=(hook &&) noexcept;
+        ~hook();
 
       public:
         [[nodiscard]] raw_type *get() const;

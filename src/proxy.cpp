@@ -1,8 +1,8 @@
 #include "proxy/proxy.hpp"
 #include "proxy/events.hpp"
-#include "utils/deleter.hpp"
 
 #include <pipewire/pipewire.h>
+#include <coco/promise/promise.hpp>
 
 namespace pipewire
 {
@@ -12,20 +12,16 @@ namespace pipewire
         pw_unique_ptr<raw_type> proxy;
     };
 
-    proxy::~proxy() = default;
-
     proxy::proxy(deleter<raw_type> deleter, raw_type *raw, spa::dict dict)
         : m_impl(std::make_unique<impl>(std::move(dict), pw_unique_ptr<raw_type>{raw, deleter}))
     {
     }
 
-    proxy::proxy(proxy &&other) noexcept : m_impl(std::move(other.m_impl)) {}
+    proxy::proxy(proxy &&) noexcept = default;
 
-    proxy &proxy::operator=(proxy &&other) noexcept
-    {
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    proxy &proxy::operator=(proxy &&) noexcept = default;
+
+    proxy::~proxy() = default;
 
     spa::dict proxy::props() const
     {
@@ -60,51 +56,50 @@ namespace pipewire
         return get();
     }
 
-    lazy<expected<proxy>> proxy::bind(raw_type *raw)
+    task<proxy> proxy::bind(raw_type *raw)
     {
-        struct state
-        {
-            proxy_listener listener;
+        auto listener = proxy_listener{raw};
+        auto props    = spa::dict{};
 
-          public:
-            spa::dict props;
-            std::promise<expected<void>> done;
-        };
+        auto done = coco::promise<expected<void>>{};
+        auto fut  = done.get_future();
 
-        auto m_state    = std::make_shared<state>(raw);
-        auto weak_state = std::weak_ptr{m_state};
-
-        m_state->listener.once<proxy_event::bound>([weak_state](std::uint32_t) {
-            weak_state.lock()->done.set_value({});
-        });
-
-        m_state->listener.once<proxy_event::bound_props>([weak_state](std::uint32_t, spa::dict props) {
-            weak_state.lock()->props = std::move(props);
-        });
-
-        m_state->listener.once<proxy_event::error>([weak_state](int seq, int res, const char *message) {
-            weak_state.lock()->done.set_value(tl::make_unexpected<error>({seq, res, message}));
-        });
-
-        return make_lazy<expected<proxy>>([m_state, raw]() -> expected<proxy> {
-            auto done = m_state->done.get_future().get();
-
-            if (!done.has_value())
+        listener.once<proxy_event::bound>(
+            [&](std::uint32_t)
             {
-                return tl::make_unexpected(done.error());
-            }
+                done.set_value({});
+            });
 
-            return from(raw, std::move(m_state->props));
-        });
+        listener.once<proxy_event::bound_props>(
+            [&](std::uint32_t, spa::dict properties)
+            {
+                props = std::move(properties);
+            });
+
+        listener.once<proxy_event::error>(
+            [&](int seq, int res, const char *message)
+            {
+                done.set_value(std::unexpected<error>{{
+                    .seq     = seq,
+                    .res     = res,
+                    .message = message,
+                }});
+            });
+
+        co_await task<proxy>::wake_on_await{};
+        auto result = co_await std::move(fut);
+
+        if (!result.has_value())
+        {
+            co_return std::unexpected{result.error()};
+        }
+
+        co_return from(raw, std::move(props));
     }
 
     proxy proxy::from(raw_type *raw, spa::dict props)
     {
-        static constexpr auto deleter = [](auto *proxy) {
-            pw_proxy_destroy(proxy);
-        };
-
-        return {deleter, raw, std::move(props)};
+        return {pw_proxy_destroy, raw, std::move(props)};
     }
 
     proxy proxy::view(raw_type *raw, spa::dict props)

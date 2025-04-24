@@ -1,10 +1,4 @@
 on:
-  workflow_dispatch:
-    inputs:
-      debug:
-        type: boolean
-        description: Enable Debugging
-
   push:
     branches: ["**"]
 
@@ -20,37 +14,37 @@ jobs:
   test:
     strategy:
       fail-fast: false
-      matrix:
-        config: ["Release", "Debug"]
-        container: ["archlinux", "fedora:40"]
 
-    runs-on: ubuntu-latest
+      matrix:
+        type: [gcc, clang]
+        config: [Release, Debug]
+
+        include:
+          - type: gcc
+            os: ubuntu-latest
+            container: archlinux:base-devel
+            deps: pacman --noconfirm -Syu git cmake gcc ninja make
+
+          - type: clang
+            os: ubuntu-latest
+            container: archlinux:base-devel
+            deps: pacman --noconfirm -Syu git cmake clang ninja make
+
+    runs-on: ${{ matrix.os }}
     container: ${{ matrix.container }}
 
-    name: 🧪 Test on ${{ matrix.container }} (⚙️ ${{ matrix.config }})
+    name: ${{ matrix.type }}-${{ matrix.config }}
 
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      - name: 🧰 Install Dependencies
-        if: ${{ matrix.container == 'archlinux' }}
-        run: pacman --noconfirm -Syu base-devel cmake gcc git make pipewire pipewire-pulse tmate openssh dbus xorg-server-xvfb
+      - name: 🧰 Dependencies
+        run: ${{ matrix.deps }} pipewire pipewire-pulse dbus xorg-server-xvfb
 
-      - name: 🧰 Install Dependencies
-        if: ${{ matrix.container == 'fedora:40' }}
-        run: dnf install -y pipewire-devel make automake git gcc gcc-c++ kernel-devel cmake libasan tmate dbus-daemon xorg-x11-server-Xvfb
-
-      - name: 🐛 Debug Workflow
-        if: ${{ github.event.inputs.debug == 'true' }}
-        uses: mxschmitt/action-tmate@v3
-        with:
-          install-dependencies: false
-          limit-access-to-actor: true
-
-      - name: 🔨 Compile
+      - name: 🔧 Compile
         run: |
-          cmake -B build -Drohrkabel_examples=ON -Drohrkabel_sanitizer=ON
+          cmake -B build -Drohrkabel_examples=ON ${{ matrix.cmake_args }}
           cmake --build build --config ${{ matrix.config }}
 
       - name: 🎧 Setup PipeWire / 🔬 Run Examples

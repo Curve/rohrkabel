@@ -1,11 +1,12 @@
 #pragma once
 
+#include <utility>
 #include <type_traits>
 
 namespace pipewire
 {
     template <typename T>
-        requires std::is_enum_v<T>
+        requires std::is_scoped_enum_v<T>
     struct enum_value
     {
         using underlying = std::underlying_type_t<T>;
@@ -14,7 +15,7 @@ namespace pipewire
         underlying m_value;
 
       public:
-        enum_value(T value) : m_value(static_cast<underlying>(value)) {}
+        enum_value(T value) : m_value(std::to_underlying(value)) {}
         enum_value(underlying value) : m_value(value) {}
 
       public:
@@ -42,12 +43,12 @@ namespace pipewire
       public:
         bool operator==(const enum_value &other) const
         {
-            return m_value == other.m_value;
+            return value() == other.value();
         }
 
         bool operator==(const underlying &other) const
         {
-            return m_value == other;
+            return value() == other;
         }
 
         bool operator==(const T &other) const

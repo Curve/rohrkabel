@@ -9,20 +9,16 @@ namespace pipewire
         pw_unique_ptr<raw_type> properties;
     };
 
-    properties::~properties() = default;
-
     properties::properties(deleter<raw_type> deleter, raw_type *raw)
         : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}))
     {
     }
 
-    properties::properties(properties &&properties) noexcept : m_impl(std::move(properties.m_impl)) {}
+    properties::properties(properties &&) noexcept = default;
 
-    properties &properties::operator=(properties &&other) noexcept
-    {
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    properties &properties::operator=(properties &&) noexcept = default;
+
+    properties::~properties() = default;
 
     void properties::set(const std::string &key, const std::string &value)
     {
@@ -31,8 +27,7 @@ namespace pipewire
 
     properties::mapped properties::map() const
     {
-        mapped rtn;
-
+        auto rtn    = mapped{};
         void *state = nullptr;
 
         while (const auto *key = pw_properties_iterate(m_impl->properties.get(), &state))
@@ -72,7 +67,8 @@ namespace pipewire
 
     properties properties::from(raw_type *properties)
     {
-        static constexpr auto deleter = [](auto *properties) {
+        static constexpr auto deleter = [](auto *properties)
+        {
             pw_properties_free(properties);
         };
 

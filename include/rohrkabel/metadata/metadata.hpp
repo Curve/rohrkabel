@@ -26,39 +26,41 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~metadata() final;
-
-      public:
-        metadata(metadata &&) noexcept;
         metadata(proxy &&, properties_t);
 
       public:
+        metadata(metadata &&) noexcept;
         metadata &operator=(metadata &&) noexcept;
 
       public:
-        [[rk::needs_update]] void clear_property(std::uint32_t id, const std::string &key);
-        [[rk::needs_update]] void set_property(std::uint32_t id, std::string key, std::string type, std::string value);
+        ~metadata() final;
+
+      public:
+        void clear_property(std::uint32_t id, const std::string &key);
+        void set_property(std::uint32_t id, std::string key, std::string type, std::string value);
 
       public:
         [[nodiscard]] raw_type *get() const;
         [[nodiscard]] properties_t properties() const;
 
       public:
-        template <class Listener = metadata_listener>
-            requires detail::valid_listener<Listener, raw_type>
-        [[rk::needs_update]] [[nodiscard]] Listener listen();
+        template <detail::Listener<raw_type> Listener = metadata_listener>
+        [[nodiscard]] Listener listen() const;
 
       public:
         [[nodiscard]] operator raw_type *() const &;
         [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<metadata>> bind(raw_type *);
+        [[rk::needs_sync]] static task<metadata> bind(raw_type *);
 
       public:
         static const char *type;
         static const std::uint32_t version;
     };
+
+    template <>
+    inline constexpr bool detail::sync_after_bind<metadata> = true;
 } // namespace pipewire
 
 #include "metadata.inl"

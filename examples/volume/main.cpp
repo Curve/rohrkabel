@@ -1,9 +1,10 @@
-#include <cmath>
-#include <format>
+#include <print>
 #include <iostream>
 
+#include <cmath>
+
 #include <rohrkabel/device/device.hpp>
-#include <rohrkabel/spa/pod/object/object.hpp>
+#include <rohrkabel/spa/pod/object.hpp>
 
 #include <rohrkabel/registry/events.hpp>
 #include <rohrkabel/registry/registry.hpp>
@@ -12,23 +13,29 @@ namespace pw = pipewire;
 
 int main()
 {
-    auto main_loop = pw::main_loop::create();
-    auto context   = pipewire::context::create(main_loop);
-    auto core      = pw::core::create(context);
-    auto reg       = pw::registry::create(core);
-
-    std::vector<pw::device> devices;
+    auto loop    = pw::main_loop::create();
+    auto context = pipewire::context::create(loop);
+    auto core    = pw::core::create(context);
+    auto reg     = pw::registry::create(core);
 
     auto listener = reg->listen();
+    auto devices  = std::vector<pw::device>{};
 
-    auto on_global = [&](const pipewire::global &global) {
-        if (global.type != pipewire::device::type)
+    auto on_global = [&](const pw::global &global)
+    {
+        if (global.type != pw::device::type)
         {
             return;
         }
 
-        auto device = reg->bind<pipewire::device>(global.id).get();
-        auto info   = device->info();
+        auto device = core->await(reg->bind<pw::device>(global.id));
+
+        if (!device.has_value())
+        {
+            return;
+        }
+
+        auto info = device->info();
 
         if (info.props["media.class"] != "Audio/Device")
         {
@@ -40,37 +47,35 @@ int main()
             return;
         }
 
-        devices.emplace_back(std::move(*device));
+        devices.emplace_back(std::move(device.value()));
     };
 
     listener.on<pipewire::registry_event::global>(on_global);
-    core->update();
+    core->run_once();
 
     for (auto i = 0u; devices.size() > i; i++)
     {
         auto &device = devices.at(i);
         auto name    = device.info().props.at("device.description");
-
-        std::cout << std::format("{}. {}", i, name) << std::endl;
+        std::println("{}. {}", i, name);
     }
 
-    std::cout << std::endl;
-    std::cout << "Select a device to change the volume of: ";
+    std::print("\nSelect a device to change the volume of: ");
 
     std::size_t selection{0};
     std::cin >> selection;
 
     auto &device = devices.at(selection);
-    std::cout << "Input new volume for '" << device.info().props.at("device.description") << "': ";
+    std::print("Input new volume for '{}': ", device.info().props.at("device.description"));
 
     float volume{0};
     std::cin >> volume;
-    std::cout << std::endl;
 
-    auto params = device.params();
-    core->update();
+    std::println();
 
-    for (const auto &[pod_id, pod] : params.get())
+    auto params = core->await(device.params());
+
+    for (const auto &[pod_id, pod] : params)
     {
         auto prop = pod.find_recursive(pw::spa::prop::channel_volumes);
 
@@ -82,19 +87,22 @@ int main()
         // pipewire uses cubic volumes! (that's why we use std::cbrt, and std::pow)
 
         auto channels      = prop->value().as<std::vector<float>>();
-        auto cubic_volumes = channels | std::views::transform([volume](auto &&) {
-                                 return std::powf(volume / 100, 3);
-                             });
-
-        std::cout << std::format("Updating volume from {}% to {}%", std::cbrt(channels[0]) * 100, volume) << std::endl;
+        auto cubic_volumes = channels | std::views::transform(
+                                            [volume](auto &&)
+                                            {
+                                                return std::powf(volume / 100, 3);
+                                            });
 
         prop->value().write<std::vector<float>>({cubic_volumes.begin(), cubic_volumes.end()});
         device.set_param(pod_id, 0, pod);
-        core->update();
+
+        core->run_once();
+        std::cout << std::format("Updated volume from {}% to {}%", std::cbrt(channels[0]) * 100, volume) << std::endl;
 
         return 0;
     }
 
-    std::cout << "Could not find volume prop for device!" << std::endl;
+    std::println("Could not find volume prop for device!");
+
     return 1;
 }

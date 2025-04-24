@@ -1,8 +1,6 @@
 #pragma once
 
-#include "info.hpp"
 #include "client.hpp"
-
 #include "../utils/listener.hpp"
 
 #include <memory>
@@ -18,8 +16,7 @@ namespace pipewire
     };
 
     class client_listener
-        : public listener<
-              client_event,                                                                                        //
+        : public listener<                                                                                         //
               ereignis::event<client_event::info, void(client_info)>,                                              //
               ereignis::event<client_event::permission, void(std::uint32_t, std::uint32_t, const pw_permission *)> //
               >
@@ -30,11 +27,10 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~client_listener();
+        client_listener(client::raw_type *);
 
       public:
-        client_listener(client::raw_type *);
-        client_listener(client_listener &&) noexcept;
+        ~client_listener();
 
       public:
         static const std::uint32_t version;

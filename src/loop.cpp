@@ -2,7 +2,6 @@
 #include "utils/check.hpp"
 
 #include <mutex>
-#include <memory>
 
 #include <pipewire/pipewire.h>
 
@@ -13,21 +12,21 @@ namespace pipewire
         pw_unique_ptr<raw_type> main_loop;
     };
 
-    main_loop::~main_loop() = default;
-
     main_loop::main_loop(deleter<raw_type> deleter, raw_type *raw)
         : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}))
     {
     }
 
-    void main_loop::quit() const
-    {
-        pw_main_loop_quit(m_impl->main_loop.get());
-    }
+    main_loop::~main_loop() = default;
 
     void main_loop::run() const
     {
         pw_main_loop_run(m_impl->main_loop.get());
+    }
+
+    void main_loop::quit() const
+    {
+        pw_main_loop_quit(m_impl->main_loop.get());
     }
 
     main_loop::raw_type *main_loop::get() const
@@ -49,9 +48,11 @@ namespace pipewire
     {
         static std::once_flag flag;
 
-        std::call_once(flag, [] {
-            pw_init(nullptr, nullptr);
-        });
+        std::call_once(flag,
+                       []
+                       {
+                           pw_init(nullptr, nullptr);
+                       });
 
         auto *loop = pw_main_loop_new(nullptr);
         check(loop, "Failed to create main_loop");
@@ -66,11 +67,7 @@ namespace pipewire
 
     std::shared_ptr<main_loop> main_loop::from(raw_type *raw)
     {
-        static constexpr auto deleter = [](auto *loop) {
-            pw_main_loop_destroy(loop);
-        };
-
-        return std::shared_ptr<main_loop>(new main_loop{deleter, raw});
+        return std::shared_ptr<main_loop>(new main_loop{pw_main_loop_destroy, raw});
     }
 
     std::shared_ptr<main_loop> main_loop::view(raw_type *raw)

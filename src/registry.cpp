@@ -18,20 +18,16 @@ namespace pipewire
         return pw_registry_bind(get(), id, type, version, 0);
     }
 
-    registry::~registry() = default;
-
     registry::registry(deleter<raw_type> deleter, raw_type *raw, std::shared_ptr<pipewire::core> core)
         : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}, std::move(core)))
     {
     }
 
-    registry::registry(registry &&other) noexcept : m_impl(std::move(other.m_impl)) {}
+    registry::registry(registry &&) noexcept = default;
 
-    registry &registry::operator=(registry &&other) noexcept
-    {
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    registry &registry::operator=(registry &&) noexcept = default;
+
+    registry::~registry() = default;
 
     registry::raw_type *registry::get() const
     {
@@ -63,7 +59,8 @@ namespace pipewire
 
     registry registry::from(raw_type *registry, std::shared_ptr<pipewire::core> core)
     {
-        static constexpr auto deleter = [](auto *registry) {
+        static constexpr auto deleter = [](auto *registry)
+        {
             pw_proxy_destroy(reinterpret_cast<proxy::raw_type *>(registry));
         };
 

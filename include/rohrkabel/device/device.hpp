@@ -1,6 +1,7 @@
 #pragma once
 
 #include "info.hpp"
+
 #include "../proxy/proxy.hpp"
 #include "../spa/pod/pod.hpp"
 
@@ -28,25 +29,24 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~device() final;
-
-      public:
-        device(device &&) noexcept;
         device(proxy &&, device_info);
 
       public:
+        device(device &&) noexcept;
         device &operator=(device &&) noexcept;
 
       public:
-        [[rk::needs_update]] void set_param(std::uint32_t id, std::uint32_t flags, const spa::pod &pod);
+        ~device() final;
 
       public:
-        [[nodiscard]] [[rk::needs_update]] lazy<params_t> params() const;
+        void set_param(std::uint32_t id, std::uint32_t flags, const spa::pod &pod);
 
       public:
-        template <class Listener = device_listener>
-            requires detail::valid_listener<Listener, raw_type>
-        [[rk::needs_update]] [[nodiscard]] Listener listen();
+        [[rk::needs_sync]] [[nodiscard]] lazy<params_t> params() const;
+
+      public:
+        template <detail::Listener<raw_type> Listener = device_listener>
+        [[nodiscard]] Listener listen() const;
 
       public:
         [[nodiscard]] raw_type *get() const;
@@ -57,7 +57,7 @@ namespace pipewire
         [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<device>> bind(raw_type *);
+        static task<device> bind(raw_type *);
 
       public:
         static const char *type;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "info.hpp"
+
 #include "../proxy/proxy.hpp"
 #include "../spa/pod/pod.hpp"
 
@@ -14,10 +15,14 @@ struct pw_node;
 
 namespace pipewire
 {
+    class node;
     class node_listener;
 
     struct null_sink_factory
     {
+        using result = node;
+
+      public:
         std::string name;
         std::set<std::string> positions;
     };
@@ -36,36 +41,35 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~node() final;
-
-      public:
-        node(node &&) noexcept;
         node(proxy &&, node_info);
 
       public:
+        node(node &&) noexcept;
         node &operator=(node &&) noexcept;
 
       public:
-        [[rk::needs_update]] void set_param(std::uint32_t id, std::uint32_t flags, const spa::pod &pod);
+        ~node() final;
 
       public:
-        [[nodiscard]] [[rk::needs_update]] lazy<params_t> params();
+        void set_param(std::uint32_t id, std::uint32_t flags, const spa::pod &pod);
+
+      public:
+        [[nodiscard]] [[rk::needs_sync]] lazy<params_t> params() const;
 
       public:
         [[nodiscard]] raw_type *get() const;
         [[nodiscard]] node_info info() const;
 
       public:
-        template <class Listener = node_listener>
-            requires detail::valid_listener<Listener, raw_type>
-        [[rk::needs_update]] [[nodiscard]] Listener listen();
+        template <detail::Listener<raw_type> Listener = node_listener>
+        [[nodiscard]] Listener listen() const;
 
       public:
         [[nodiscard]] operator raw_type *() const &;
         [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<node>> bind(raw_type *);
+        static task<node> bind(raw_type *);
 
       public:
         static const char *type;

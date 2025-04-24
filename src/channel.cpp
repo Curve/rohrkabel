@@ -1,9 +1,8 @@
 #include "channel/channel.hpp"
+
 #include "loop.hpp"
 
 #include <future>
-#include <chrono>
-
 #include <cstdint>
 
 #include <pipewire/pipewire.h>
@@ -12,13 +11,18 @@ namespace pipewire
 {
     struct channel_state::impl
     {
-        std::function<void()> callback;
+        std::move_only_function<void()> callback;
         std::shared_ptr<main_loop> loop;
 
       public:
         std::promise<spa_source *> promise;
         std::shared_future<spa_source *> source;
     };
+
+    channel_state::channel_state() : m_impl(std::make_unique<impl>())
+    {
+        m_impl->source = m_impl->promise.get_future().share();
+    }
 
     channel_state::~channel_state()
     {
@@ -49,20 +53,16 @@ namespace pipewire
         pw_loop_destroy_source(m_impl->loop->loop(), source);
     }
 
-    channel_state::channel_state() : m_impl(std::make_unique<impl>())
-    {
-        m_impl->source = m_impl->promise.get_future().share();
-    }
-
     void channel_state::emit()
     {
         auto *source = m_impl->source.get();
         pw_loop_signal_event(m_impl->loop->loop(), source);
     }
 
-    void channel_state::attach(std::shared_ptr<main_loop> loop, std::function<void()> callback)
+    void channel_state::attach(std::shared_ptr<main_loop> loop, std::move_only_function<void()> callback)
     {
-        auto receive = [](void *data, std::uint64_t) {
+        auto receive = [](void *data, std::uint64_t)
+        {
             reinterpret_cast<impl *>(data)->callback();
         };
 

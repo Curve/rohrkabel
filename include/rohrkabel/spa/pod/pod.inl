@@ -2,33 +2,34 @@
 
 #include "pod.hpp"
 
+#include <ranges>
+
 namespace pipewire::spa
 {
-    template <typename T>
-        requires(detail::is_vector<T> and std::is_arithmetic_v<detail::vector_type<T>>)
+    template <detail::VectorWhere<std::is_arithmetic> T>
     T pod::as() const
     {
-        auto rtn = array() | std::views::transform([](auto &&x) {
-                       return *reinterpret_cast<detail::vector_type<T> *>(x);
-                   });
+        using value_type = detail::vector_traits<T>::type;
 
-        return {rtn.begin(), rtn.end()};
+        auto transform = [](auto &&x)
+        {
+            return *reinterpret_cast<value_type *>(x);
+        };
+
+        return array()                            //
+               | std::views::transform(transform) //
+               | std::ranges::to<std::vector>();
     }
 
-    template <typename T>
-        requires(detail::is_vector<T> and std::is_arithmetic_v<detail::vector_type<T>>)
+    template <detail::VectorWhere<std::is_arithmetic> T>
     void pod::write(const T &value)
     {
-        auto raw = array();
+        using value_type = detail::vector_traits<T>::type;
+        auto raw         = array();
 
-        for (auto i = 0u; raw.size() > i; ++i)
+        for (auto i = 0uz; value.size() > i; i++)
         {
-            if (raw.size() <= i)
-            {
-                continue;
-            }
-
-            *reinterpret_cast<detail::vector_type<T> *>(raw[i]) = value[i];
+            *reinterpret_cast<value_type *>(raw[i]) = value[i];
         }
     }
 } // namespace pipewire::spa

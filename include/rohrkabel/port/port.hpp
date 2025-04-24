@@ -1,6 +1,7 @@
 #pragma once
 
 #include "info.hpp"
+
 #include "../proxy/proxy.hpp"
 #include "../spa/pod/pod.hpp"
 
@@ -28,33 +29,32 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~port() final;
-
-      public:
-        port(port &&) noexcept;
         port(proxy &&, port_info);
 
       public:
+        port(port &&) noexcept;
         port &operator=(port &&) noexcept;
 
       public:
-        [[nodiscard]] [[rk::needs_update]] lazy<params_t> params() const;
+        ~port() final;
+
+      public:
+        [[rk::needs_sync]] [[nodiscard]] lazy<params_t> params() const;
 
       public:
         [[nodiscard]] raw_type *get() const;
         [[nodiscard]] port_info info() const;
 
       public:
-        template <class Listener = port_listener>
-            requires detail::valid_listener<Listener, raw_type>
-        [[rk::needs_update]] [[nodiscard]] Listener listen();
+        template <detail::Listener<raw_type> Listener = port_listener>
+        [[nodiscard]] Listener listen() const;
 
       public:
         [[nodiscard]] operator raw_type *() const &;
         [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<port>> bind(raw_type *);
+        static task<port> bind(raw_type *);
 
       public:
         static const char *type;

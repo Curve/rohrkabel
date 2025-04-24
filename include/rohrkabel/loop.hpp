@@ -19,15 +19,15 @@ namespace pipewire
       private:
         std::unique_ptr<impl> m_impl;
 
-      public:
-        ~main_loop();
-
       private:
         main_loop(deleter<raw_type>, raw_type *);
 
       public:
+        ~main_loop();
+
+      public:
+        void run() const;
         void quit() const;
-        [[rk::blocking]] void run() const;
 
       public:
         [[nodiscard]] raw_type *get() const;

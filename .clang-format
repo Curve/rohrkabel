@@ -1,5 +1,4 @@
 ---
-Language: Cpp
 InsertNewlineAtEOF: true
 AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
@@ -28,7 +27,7 @@ AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: true
 BinPackParameters: true
 BraceWrapping:
-  BeforeLambdaBody: false
+  BeforeLambdaBody: true
   AfterCaseLabel: false
   AfterClass: true
   AfterControlStatement: true

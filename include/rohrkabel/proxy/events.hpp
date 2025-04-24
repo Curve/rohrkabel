@@ -16,11 +16,11 @@ namespace pipewire
         bound_props,
     };
 
-    class proxy_listener : public listener<proxy_event,                                                              //
-                                           ereignis::event<proxy_event::error, void(int, int, const char *)>,        //
-                                           ereignis::event<proxy_event::bound, void(std::uint32_t)>,                 //
-                                           ereignis::event<proxy_event::bound_props, void(std::uint32_t, spa::dict)> //
-                                           >
+    class proxy_listener : public listener<                                                              //
+                               ereignis::event<proxy_event::error, void(int, int, const char *)>,        //
+                               ereignis::event<proxy_event::bound, void(std::uint32_t)>,                 //
+                               ereignis::event<proxy_event::bound_props, void(std::uint32_t, spa::dict)> //
+                               >
     {
         struct impl;
 
@@ -28,11 +28,10 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~proxy_listener();
+        proxy_listener(proxy::raw_type *);
 
       public:
-        proxy_listener(proxy::raw_type *);
-        proxy_listener(proxy_listener &&) noexcept;
+        ~proxy_listener();
 
       public:
         static const std::uint32_t version;

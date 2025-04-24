@@ -1,5 +1,5 @@
-#include "loop.hpp"
 #include "context.hpp"
+
 #include "utils/check.hpp"
 
 #include <pipewire/pipewire.h>
@@ -12,12 +12,12 @@ namespace pipewire
         std::shared_ptr<main_loop> loop;
     };
 
-    context::~context() = default;
-
     context::context(deleter<raw_type> deleter, raw_type *raw, std::shared_ptr<main_loop> loop)
         : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}, std::move(loop)))
     {
     }
+
+    context::~context() = default;
 
     context::raw_type *context::get() const
     {
@@ -49,11 +49,7 @@ namespace pipewire
 
     std::shared_ptr<context> context::from(raw_type *raw, std::shared_ptr<main_loop> loop)
     {
-        static constexpr auto deleter = [](auto *context) {
-            pw_context_destroy(context);
-        };
-
-        return std::shared_ptr<context>(new context{deleter, raw, std::move(loop)});
+        return std::shared_ptr<context>(new context{pw_context_destroy, raw, std::move(loop)});
     }
 
     std::shared_ptr<context> context::view(raw_type *raw, std::shared_ptr<main_loop> loop)

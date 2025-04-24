@@ -13,9 +13,11 @@ namespace pipewire
     {
         spa::dict props;
 
+      public:
         std::uint32_t id;
         std::uint32_t cookie;
 
+      public:
         std::string name;
         std::string version;
         std::string user_name;

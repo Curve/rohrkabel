@@ -20,30 +20,29 @@ namespace pipewire
         std::unique_ptr<impl> m_impl;
 
       public:
-        ~client() final;
-
-      public:
-        client(client &&) noexcept;
         client(proxy &&, client_info);
 
       public:
+        client(client &&) noexcept;
         client &operator=(client &&) noexcept;
+
+      public:
+        ~client() final;
 
       public:
         [[nodiscard]] raw_type *get() const;
         [[nodiscard]] client_info info() const;
 
       public:
-        template <class Listener = client_listener>
-            requires detail::valid_listener<Listener, raw_type>
-        [[rk::needs_update]] [[nodiscard]] Listener listen();
+        template <detail::Listener<raw_type> Listener = client_listener>
+        [[nodiscard]] Listener listen() const;
 
       public:
         [[nodiscard]] operator raw_type *() const &;
         [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<client>> bind(raw_type *);
+        static task<client> bind(raw_type *);
 
       public:
         static const char *type;

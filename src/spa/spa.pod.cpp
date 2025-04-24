@@ -1,9 +1,10 @@
 #include "spa/pod/pod.hpp"
 
 #include "spa/pod/prop.hpp"
-#include "spa/pod/object/object.hpp"
+#include "spa/pod/object.hpp"
 
-#include <cassert>
+#include "utils/check.hpp"
+
 #include <spa/debug/pod.h>
 #include <spa/pod/builder.h>
 
@@ -14,17 +15,17 @@ namespace pipewire::spa
         pw_unique_ptr<raw_type> pod;
     };
 
-    pod::~pod() = default;
-
     pod::pod(deleter<raw_type> deleter, raw_type *pod) : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{pod, deleter})) {}
+
+    pod::pod(pod &&) noexcept = default;
+
+    pod &pod::operator=(pod &&) noexcept = default;
 
     pod::pod(const pod &other) : m_impl(std::move(copy(other.get()).m_impl)) {}
 
-    pod::pod(pod &&other) noexcept : m_impl(std::move(other.m_impl)) {}
-
     pod &pod::operator=(const pod &other)
     {
-        if (&other != this)
+        if (this != &other)
         {
             m_impl = std::move(copy(other.get()).m_impl);
         }
@@ -32,15 +33,11 @@ namespace pipewire::spa
         return *this;
     }
 
-    pod &pod::operator=(pod &&other) noexcept
-    {
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    pod::~pod() = default;
 
     std::vector<void *> pod::array() const
     {
-        assert(type() == spa::type::array);
+        check(type() == spa::type::array, "Converting pod to wrong type");
 
         std::vector<void *> rtn;
 
@@ -55,6 +52,9 @@ namespace pipewire::spa
         return rtn;
     }
 
+    template <>
+    pod_object pod::read() const;
+
     std::optional<pod_prop> pod::find(enum_value<prop> key) const
     {
         // Re-implementation of `spa_pod_find_prop` without const return value
@@ -64,7 +64,7 @@ namespace pipewire::spa
             return std::nullopt;
         }
 
-        for (auto &&prop : as<pod_object>())
+        for (auto &&prop : read<pod_object>().props())
         {
             if (prop.key() != key)
             {
@@ -79,7 +79,7 @@ namespace pipewire::spa
 
     std::optional<pod_prop> pod::find_recursive(enum_value<prop> key) const
     {
-        auto find_recursive = [key](const auto &pod, auto &self) -> std::optional<pod_prop> // NOLINT(*-recursion)
+        return [key](this auto &&impl, const auto &pod) -> std::optional<pod_prop> // NOLINT(*-recursion)
         {
             if (auto ret = pod.find(key); ret)
             {
@@ -91,11 +91,9 @@ namespace pipewire::spa
                 return std::nullopt;
             }
 
-            auto object = pod.template as<spa::pod_object>();
-
-            for (const auto &child : object)
+            for (const auto &child : pod.template read<spa::pod_object>().props())
             {
-                auto ret = self(child.value(), self);
+                auto ret = impl(child.value());
 
                 if (!ret)
                 {
@@ -106,9 +104,7 @@ namespace pipewire::spa
             }
 
             return std::nullopt;
-        };
-
-        return find_recursive(*this, find_recursive);
+        }(*this);
     }
 
     std::size_t pod::size() const
@@ -122,59 +118,95 @@ namespace pipewire::spa
     }
 
     template <>
-    bool pod::as() const
+    bool pod::read() const
     {
-        assert(type() == spa::type::boolean);
+        check(type() == spa::type::boolean, "Converting pod to wrong type");
         return reinterpret_cast<spa_pod_bool *>(m_impl->pod.get())->value;
     }
 
     template <>
-    int pod::as() const
+    int pod::read() const
     {
-        assert(type() == spa::type::num_int);
+        check(type() == spa::type::num_int, "Converting pod to wrong type");
         return reinterpret_cast<spa_pod_int *>(m_impl->pod.get())->value;
     }
 
     template <>
-    float pod::as() const
+    long pod::read() const
     {
-        assert(type() == spa::type::num_float);
+        check(type() == spa::type::num_long, "Converting pod to wrong type");
+        return reinterpret_cast<spa_pod_long *>(m_impl->pod.get())->value;
+    }
+
+    template <>
+    float pod::read() const
+    {
+        check(type() == spa::type::num_float, "Converting pod to wrong type");
         return reinterpret_cast<spa_pod_float *>(m_impl->pod.get())->value;
     }
 
     template <>
-    pod_object pod::as<pod_object>() const
+    double pod::read() const
     {
-        assert(type() == spa::type::object);
+        check(type() == spa::type::num_double, "Converting pod to wrong type");
+        return reinterpret_cast<spa_pod_double *>(m_impl->pod.get())->value;
+    }
+
+    template <>
+    pod_object pod::read() const
+    {
+        check(type() == spa::type::object, "Converting pod to wrong type");
         return pod_object::view(reinterpret_cast<spa_pod_object *>(m_impl->pod.get()));
     }
 
     template <>
-    std::string pod::as() const
+    std::string pod::read() const
     {
-        assert(type() == spa::type::string);
-        return {reinterpret_cast<const char *>(SPA_POD_CONTENTS(spa_pod_string, m_impl->pod.get()))};
+        check(type() == spa::type::string, "Converting pod to wrong type");
+
+        const auto *content = SPA_POD_CONTENTS(spa_pod_string, m_impl->pod.get());
+
+        if (!content)
+        {
+            return {};
+        }
+
+        return {reinterpret_cast<const char *>(content)};
     }
 
     template <>
-    void pod::write(const bool &value)
+    void pod::write(bool value)
     {
-        assert(type() == spa::type::boolean);
+        check(type() == spa::type::boolean, "Converting pod to wrong type");
         reinterpret_cast<spa_pod_bool *>(m_impl->pod.get())->value = value;
     }
 
     template <>
-    void pod::write(const int &value)
+    void pod::write(int value)
     {
-        assert(type() == spa::type::num_int);
+        check(type() == spa::type::num_int, "Converting pod to wrong type");
         reinterpret_cast<spa_pod_int *>(m_impl->pod.get())->value = value;
     }
 
     template <>
-    void pod::write(const float &value)
+    void pod::write(long value)
     {
-        assert(type() == spa::type::num_float);
+        check(type() == spa::type::num_long, "Converting pod to wrong type");
+        reinterpret_cast<spa_pod_long *>(m_impl->pod.get())->value = value;
+    }
+
+    template <>
+    void pod::write(float value)
+    {
+        check(type() == spa::type::num_float, "Converting pod to wrong type");
         reinterpret_cast<spa_pod_float *>(m_impl->pod.get())->value = value;
+    }
+
+    template <>
+    void pod::write(double value)
+    {
+        check(type() == spa::type::num_double, "Converting pod to wrong type");
+        reinterpret_cast<spa_pod_double *>(m_impl->pod.get())->value = value;
     }
 
     pod::raw_type *pod::get() const
@@ -194,7 +226,8 @@ namespace pipewire::spa
 
     pod pod::copy(const raw_type *pod)
     {
-        static constexpr auto deleter = [](auto *pod) {
+        static constexpr auto deleter = [](auto *pod)
+        {
             free(pod); // NOLINT(*-malloc)
         };
 

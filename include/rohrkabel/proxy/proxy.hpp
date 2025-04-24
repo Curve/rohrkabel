@@ -1,10 +1,9 @@
 #pragma once
 
 #include "../spa/dict.hpp"
-
-#include "../utils/lazy.hpp"
+#include "../utils/task.hpp"
+#include "../utils/traits.hpp"
 #include "../utils/deleter.hpp"
-#include "../utils/listener.hpp"
 
 #include <string>
 #include <memory>
@@ -26,17 +25,15 @@ namespace pipewire
       private:
         std::unique_ptr<impl> m_impl;
 
-      public:
-        virtual ~proxy();
-
       private:
         proxy(deleter<raw_type>, raw_type *, spa::dict);
 
       public:
         proxy(proxy &&) noexcept;
+        proxy &operator=(proxy &&) noexcept;
 
       public:
-        proxy &operator=(proxy &&) noexcept;
+        virtual ~proxy();
 
       public:
         [[nodiscard]] spa::dict props() const;
@@ -48,21 +45,23 @@ namespace pipewire
         [[nodiscard]] raw_type *get() const;
 
       public:
-        template <class Listener = proxy_listener>
-            requires detail::valid_listener<Listener, raw_type>
-        [[rk::needs_update]] [[nodiscard]] Listener listen();
+        template <detail::Listener<raw_type> Listener = proxy_listener>
+        [[nodiscard]] Listener listen() const;
 
       public:
         [[nodiscard]] operator raw_type *() const &;
         [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[rk::needs_update]] static lazy<expected<proxy>> bind(raw_type *);
+        static task<proxy> bind(raw_type *);
 
       public:
         static proxy from(raw_type *, spa::dict = {});
         static proxy view(raw_type *, spa::dict = {});
     };
+
+    template <>
+    inline constexpr bool detail::sync_after_bind<proxy> = true;
 } // namespace pipewire
 
 #include "proxy.inl"

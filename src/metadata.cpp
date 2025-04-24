@@ -1,6 +1,8 @@
 #include "metadata/events.hpp"
 #include "metadata/metadata.hpp"
 
+#include <coco/promise/promise.hpp>
+
 #include <pipewire/pipewire.h>
 #include <pipewire/extensions/metadata.h>
 
@@ -12,22 +14,17 @@ namespace pipewire
         properties_t properties;
     };
 
-    metadata::~metadata() = default;
-
-    metadata::metadata(metadata &&other) noexcept : proxy(std::move(other)), m_impl(std::move(other.m_impl)) {}
-
     metadata::metadata(proxy &&base, properties_t properties) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
         m_impl->metadata   = reinterpret_cast<raw_type *>(proxy::get());
         m_impl->properties = std::move(properties);
     }
 
-    metadata &metadata::operator=(metadata &&other) noexcept
-    {
-        proxy::operator=(std::move(other));
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    metadata::metadata(metadata &&) noexcept = default;
+
+    metadata &metadata::operator=(metadata &&) noexcept = default;
+
+    metadata::~metadata() = default;
 
     void metadata::clear_property(std::uint32_t id, const std::string &key)
     {
@@ -56,36 +53,29 @@ namespace pipewire
         return get();
     }
 
-    lazy<expected<metadata>> metadata::bind(raw_type *raw)
+    task<metadata> metadata::bind(raw_type *raw)
     {
-        struct state
-        {
-            metadata_listener listener;
+        auto _proxy   = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
+        auto listener = metadata_listener{raw};
 
-          public:
-            properties_t properties;
-        };
+        auto properties = properties_t{};
 
-        auto proxy = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
-
-        auto m_state    = std::make_shared<state>(raw);
-        auto weak_state = std::weak_ptr{m_state};
-
-        m_state->listener.on<metadata_event::property>([weak_state](auto key, auto property) {
-            weak_state.lock()->properties.emplace(key, std::move(property));
-            return 0;
-        });
-
-        return make_lazy<expected<metadata>>([m_state, fut = std::move(proxy)]() mutable -> expected<metadata> {
-            auto proxy = fut.get();
-
-            if (!proxy.has_value())
+        listener.on<metadata_event::property>(
+            [&](auto key, auto property)
             {
-                return tl::make_unexpected(proxy.error());
-            }
+                properties.emplace(key, std::move(property));
+                return 0;
+            });
 
-            return metadata{std::move(proxy.value()), m_state->properties};
-        });
+        co_await task<metadata>::wake_on_await{};
+        auto proxy = co_await std::move(_proxy);
+
+        if (!proxy.has_value())
+        {
+            co_return std::unexpected{proxy.error()};
+        }
+
+        co_return metadata{std::move(proxy.value()), std::move(properties)};
     }
 
     const char *metadata::type            = PW_TYPE_INTERFACE_Metadata;

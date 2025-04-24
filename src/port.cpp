@@ -2,6 +2,7 @@
 #include "port/events.hpp"
 
 #include <pipewire/pipewire.h>
+#include <coco/promise/promise.hpp>
 
 namespace pipewire
 {
@@ -11,48 +12,36 @@ namespace pipewire
         port_info info;
     };
 
-    port::~port() = default;
-
-    port::port(port &&other) noexcept : proxy(std::move(other)), m_impl(std::move(other.m_impl)) {}
-
     port::port(proxy &&base, port_info info) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
         m_impl->port = reinterpret_cast<raw_type *>(proxy::get());
         m_impl->info = std::move(info);
     }
 
-    port &port::operator=(port &&other) noexcept
-    {
-        proxy::operator=(std::move(other));
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    port::port(port &&) noexcept = default;
+
+    port &port::operator=(port &&) noexcept = default;
+
+    port::~port() = default;
 
     lazy<port::params_t> port::params() const
     {
-        struct state
-        {
-            port_listener listener;
+        auto listener = listen();
+        auto params   = params_t{};
 
-          public:
-            params_t params;
-        };
-
-        auto m_state    = std::make_shared<state>(get());
-        auto weak_state = std::weak_ptr{m_state};
-
-        m_state->listener.on<port_event::param>([weak_state](auto, auto id, auto, auto, spa::pod param) {
-            weak_state.lock()->params.emplace(id, std::move(param));
-        });
+        listener.on<port_event::param>(
+            [&](auto, auto id, auto, auto, spa::pod param)
+            {
+                params.emplace(id, std::move(param));
+            });
 
         for (const auto &param : m_impl->info.params)
         {
             pw_port_enum_params(m_impl->port, 0, param.id, 0, 1, nullptr);
         }
 
-        return make_lazy<params_t>([m_state]() -> params_t {
-            return m_state->params;
-        });
+        co_await lazy<params_t>::wake_on_await{};
+        co_return params;
     }
 
     port::raw_type *port::get() const
@@ -70,35 +59,29 @@ namespace pipewire
         return get();
     }
 
-    lazy<expected<port>> port::bind(raw_type *raw)
+    task<port> port::bind(raw_type *raw)
     {
-        struct state
-        {
-            port_listener listener;
+        auto _proxy   = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
+        auto listener = port_listener{raw};
 
-          public:
-            std::promise<port_info> info;
-        };
+        auto promise = coco::promise<port_info>{};
+        auto fut     = promise.get_future();
 
-        auto proxy = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
-
-        auto m_state    = std::make_shared<state>(raw);
-        auto weak_state = std::weak_ptr{m_state};
-
-        m_state->listener.once<port_event::info>([weak_state](port_info info) {
-            weak_state.lock()->info.set_value(std::move(info));
-        });
-
-        return make_lazy<expected<port>>([m_state, proxy_fut = std::move(proxy)]() mutable -> expected<port> {
-            auto proxy = proxy_fut.get();
-
-            if (!proxy.has_value())
+        listener.once<port_event::info>(
+            [promise = std::move(promise)](port_info info) mutable
             {
-                return tl::make_unexpected(proxy.error());
-            }
+                promise.set_value(std::move(info));
+            });
 
-            return port{std::move(proxy.value()), m_state->info.get_future().get()};
-        });
+        auto info  = co_await std::move(fut);
+        auto proxy = co_await std::move(_proxy);
+
+        if (!proxy.has_value())
+        {
+            co_return std::unexpected{proxy.error()};
+        }
+
+        co_return port{std::move(proxy.value()), std::move(info)};
     }
 
     const char *port::type            = PW_TYPE_INTERFACE_Port;

@@ -1,12 +1,11 @@
-#include <format>
-#include <iostream>
-
-#include <rohrkabel/node/node.hpp>
+#include <print>
 
 #include <rohrkabel/registry/events.hpp>
 #include <rohrkabel/registry/registry.hpp>
 
 namespace pw = pipewire;
+
+// Adapted from: https://docs.pipewire.org/page_tutorial3.html
 
 int main()
 {
@@ -17,33 +16,13 @@ int main()
 
     auto listener = reg->listen();
 
-    auto on_global = [&](const pw::global &global) {
-        if (global.type != pw::node::type)
-        {
-            return;
-        }
-
-        auto node = reg->bind<pw::node>(global.id).get();
-
-        if (!node.has_value())
-        {
-            std::cout << std::format("failed to bind {}: {}", global.id, node.error().message) << std::endl;
-            return;
-        }
-
-        auto info = node->info();
-
-        std::cout << std::format("Node ({}): ", info.id) << std::endl;
-        static auto indent = std::string{4, ' '};
-
-        for (const auto &prop : info.props)
-        {
-            std::cout << std::format("{} \"{}\": {}", indent, prop.first, prop.second) << std::endl;
-        }
+    auto on_global = [](const pw::global &global)
+    {
+        std::println("object: id:{} type:{}/{}", global.id, global.type, global.version);
     };
 
     listener.on<pw::registry_event::global>(on_global);
-    core->update();
+    core->run_once(); // Or: coco::then(core->sync(), [&](auto) { loop->quit(); }); loop->run();
 
     return 0;
 }

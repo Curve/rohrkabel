@@ -2,6 +2,7 @@
 #include "device/events.hpp"
 
 #include <pipewire/pipewire.h>
+#include <coco/promise/promise.hpp>
 
 namespace pipewire
 {
@@ -11,22 +12,17 @@ namespace pipewire
         device_info info;
     };
 
-    device::~device() = default;
-
-    device::device(device &&other) noexcept : proxy(std::move(other)), m_impl(std::move(other.m_impl)) {}
-
     device::device(proxy &&base, device_info info) : proxy(std::move(base)), m_impl(std::make_unique<impl>())
     {
         m_impl->device = reinterpret_cast<raw_type *>(proxy::get());
         m_impl->info   = std::move(info);
     }
 
-    device &device::operator=(device &&other) noexcept
-    {
-        proxy::operator=(std::move(other));
-        m_impl = std::move(other.m_impl);
-        return *this;
-    }
+    device::device(device &&) noexcept = default;
+
+    device &device::operator=(device &&) noexcept = default;
+
+    device::~device() = default;
 
     void device::set_param(std::uint32_t id, std::uint32_t flags, const spa::pod &pod)
     {
@@ -35,29 +31,22 @@ namespace pipewire
 
     lazy<device::params_t> device::params() const
     {
-        struct state
-        {
-            device_listener listener;
+        auto listener = listen();
+        auto params   = params_t{};
 
-          public:
-            params_t params;
-        };
-
-        auto m_state    = std::make_shared<state>(get());
-        auto weak_state = std::weak_ptr{m_state};
-
-        m_state->listener.on<device_event::param>([weak_state](int, uint32_t id, uint32_t, uint32_t, spa::pod param) {
-            weak_state.lock()->params.emplace(id, std::move(param));
-        });
+        listener.on<device_event::param>(
+            [&](int, uint32_t id, uint32_t, uint32_t, spa::pod param)
+            {
+                params.emplace(id, std::move(param));
+            });
 
         for (const auto &param : m_impl->info.params)
         {
             pw_device_enum_params(m_impl->device, 0, param.id, 0, 1, nullptr);
         }
 
-        return make_lazy<params_t>([m_state]() {
-            return m_state->params;
-        });
+        co_await lazy<params_t>::wake_on_await{};
+        co_return params;
     }
 
     device::raw_type *device::get() const
@@ -75,35 +64,29 @@ namespace pipewire
         return get();
     }
 
-    lazy<expected<device>> device::bind(raw_type *raw)
+    task<device> device::bind(raw_type *raw)
     {
-        struct state
-        {
-            device_listener listener;
+        auto _proxy   = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
+        auto listener = device_listener{raw};
 
-          public:
-            std::promise<device_info> info;
-        };
+        auto promise = coco::promise<device_info>{};
+        auto fut     = promise.get_future();
 
-        auto proxy = proxy::bind(reinterpret_cast<proxy::raw_type *>(raw));
-
-        auto m_state    = std::make_shared<state>(raw);
-        auto weak_state = std::weak_ptr{m_state};
-
-        m_state->listener.once<device_event::info>([weak_state](device_info info) {
-            weak_state.lock()->info.set_value(std::move(info));
-        });
-
-        return make_lazy<expected<device>>([m_state, fut = std::move(proxy)]() mutable -> expected<device> {
-            auto proxy = fut.get();
-
-            if (!proxy.has_value())
+        listener.once<device_event::info>(
+            [promise = std::move(promise)](device_info info) mutable
             {
-                return tl::make_unexpected(proxy.error());
-            }
+                promise.set_value(std::move(info));
+            });
 
-            return device{std::move(proxy.value()), m_state->info.get_future().get()};
-        });
+        auto info  = co_await std::move(fut);
+        auto proxy = co_await std::move(_proxy);
+
+        if (!proxy.has_value())
+        {
+            co_return std::unexpected{proxy.error()};
+        }
+
+        co_return device{std::move(proxy.value()), std::move(info)};
     }
 
     const char *device::type            = PW_TYPE_INTERFACE_Device;

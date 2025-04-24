@@ -2,6 +2,7 @@
 
 #include "../../utils/enum.hpp"
 #include "../../utils/traits.hpp"
+#include "../../utils/deleter.hpp"
 
 #include <string>
 #include <memory>
@@ -15,14 +16,19 @@ struct spa_type_info;
 
 namespace pipewire::spa
 {
+    class pod_prop;
+    class pod_object;
+
     enum class type : std::uint8_t
     {
-        string    = 8,
-        boolean   = 2,
-        object    = 15,
-        num_int   = 4,
-        num_float = 6,
-        array     = 13,
+        string     = 8,
+        boolean    = 2,
+        object     = 15,
+        num_int    = 4,
+        num_long   = 5,
+        num_float  = 6,
+        num_double = 7,
+        array      = 13,
     };
 
     enum class prop : std::uint32_t
@@ -31,8 +37,11 @@ namespace pipewire::spa
         channel_volumes = 65544,
     };
 
-    class pod_prop;
-    class pod_object;
+    template <typename T>
+    concept PodReadable = detail::OneOf<T, bool, int, long, float, double, std::string, pod_object>;
+
+    template <typename T>
+    concept PodWritable = detail::OneOf<T, bool, int, long, float, double>;
 
     class pod
     {
@@ -44,19 +53,19 @@ namespace pipewire::spa
       private:
         std::unique_ptr<impl> m_impl;
 
-      public:
-        ~pod();
-
       private:
         pod(deleter<raw_type>, raw_type *);
 
       public:
-        pod(const pod &);
         pod(pod &&) noexcept;
+        pod &operator=(pod &&) noexcept;
 
       public:
+        pod(const pod &);
         pod &operator=(const pod &);
-        pod &operator=(pod &&) noexcept;
+
+      public:
+        ~pod();
 
       private:
         [[nodiscard]] std::vector<void *> array() const;
@@ -70,19 +79,17 @@ namespace pipewire::spa
         [[nodiscard]] enum_value<spa::type> type() const;
 
       public:
-        template <typename T>
-        [[nodiscard]] T as() const = delete;
+        template <PodReadable T>
+        [[nodiscard]] T read() const;
 
-        template <typename T>
-            requires(detail::is_vector<T> and std::is_arithmetic_v<detail::vector_type<T>>)
+        template <detail::VectorWhere<std::is_arithmetic> T>
         [[nodiscard]] T as() const;
 
       public:
-        template <typename T>
-        void write(const T &) = delete;
+        template <PodWritable T>
+        void write(T);
 
-        template <typename T>
-            requires(detail::is_vector<T> and std::is_arithmetic_v<detail::vector_type<T>>)
+        template <detail::VectorWhere<std::is_arithmetic> T>
         void write(const T &);
 
       public:
@@ -96,24 +103,6 @@ namespace pipewire::spa
         [[nodiscard]] static pod view(raw_type *);
         [[nodiscard]] static pod copy(const raw_type *);
     };
-
-    template <>
-    bool pod::as() const;
-    template <>
-    int pod::as() const;
-    template <>
-    float pod::as() const;
-    template <>
-    pod_object pod::as() const;
-    template <>
-    std::string pod::as() const;
-
-    template <>
-    void pod::write(const bool &);
-    template <>
-    void pod::write(const int &);
-    template <>
-    void pod::write(const float &);
 } // namespace pipewire::spa
 
 #include "pod.inl"
