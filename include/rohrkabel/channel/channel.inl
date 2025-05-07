@@ -27,7 +27,7 @@ namespace pipewire
     template <cr::Visitable<T> Callback>
     void receiver<T>::attach(std::shared_ptr<main_loop> loop, Callback &&callback)
     {
-        static auto receive = [this, callback = std::forward<Callback>(callback)]()
+        auto receive = [this, callback = std::forward<Callback>(callback)]()
         {
             cr::receiver<T>::recv(callback);
         };
