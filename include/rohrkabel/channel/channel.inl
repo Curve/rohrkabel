@@ -29,7 +29,10 @@ namespace pipewire
     {
         auto receive = [this, callback = std::forward<Callback>(callback)]()
         {
-            cr::receiver<T>::recv(callback);
+            while (auto opt = cr::receiver<T>::try_recv())
+            {
+                std::visit(callback, *opt);
+            }
         };
 
         m_state->attach(std::move(loop), std::move(receive));

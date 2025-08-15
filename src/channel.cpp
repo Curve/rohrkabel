@@ -55,6 +55,10 @@ namespace pipewire
 
     void channel_state::emit()
     {
+        if (m_impl->source.wait_for(std::chrono::milliseconds{0}) != std::future_status::ready)
+        {
+            throw std::runtime_error{"no receiver available"};
+        }
         auto *source = m_impl->source.get();
         pw_loop_signal_event(m_impl->loop->loop(), source);
     }
