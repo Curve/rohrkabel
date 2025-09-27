@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(volume LANGUAGES CXX VERSION 1.0)
+project(volume_example LANGUAGES CXX VERSION 1.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Create library
@@ -24,7 +24,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
         GIT_REPOSITORY "https://github.com/Curve/rohrkabel"
     )
 endif()
-    
+
 # --------------------------------------------------------------------------------------------------------
 # Link required libraries
 # --------------------------------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(rohrkabel LANGUAGES CXX VERSION 9.0.0)
+project(rohrkabel LANGUAGES CXX VERSION 9.0.1)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -30,13 +30,13 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 23 CXX_EXTENSIONS OFF CXX_STANDARD_REQUIRED ON)
 
 if (PROJECT_IS_TOP_LEVEL)
-  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror -pedantic -pedantic-errors -Wfatal-errors)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror -pedantic -pedantic-errors -Wfatal-errors)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  target_compile_options(${PROJECT_NAME} PUBLIC -Wno-attributes=rk::)
+    target_compile_options(${PROJECT_NAME} PUBLIC -Wno-attributes=rk::)
 else()
-  target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unknown-attributes)
+    target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unknown-attributes)
 endif()
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unknown-warning-option -Wno-missing-field-initializers -Wno-cast-function-type)
@@ -53,8 +53,8 @@ endif()
 # Add source files
 # --------------------------------------------------------------------------------------------------------
 
-file(GLOB src 
-  "src/*.cpp" 
+file(GLOB src
+  "src/*.cpp"
   "src/spa/*.cpp"
   "src/info/*.cpp"
   "src/events/*.cpp"
@@ -81,13 +81,13 @@ include("cmake/cpm.cmake")
 
 CPMFindPackage(
   NAME           coco
-  VERSION        3.1.0
+  VERSION        3.2.2
   GIT_REPOSITORY "https://github.com/Curve/coco"
 )
 
 CPMFindPackage(
   NAME           ereignis
-  VERSION        5.0.0
+  VERSION        6.2.0
   GIT_REPOSITORY "https://github.com/Curve/ereignis"
 )
 
@@ -145,5 +145,5 @@ packageProject(
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  DEPENDENCIES "coco 3.1.0;ereignis 5.0.0;channel 3.0.1"
+  DEPENDENCIES "coco 3.2.2;ereignis 6.2.0;channel 3.0.1"
 )
