@@ -111,8 +111,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(PipeWire REQUIRED)
 
-target_link_libraries(${PROJECT_NAME}             PUBLIC ${PIPEWIRE_LIBRARIES} pthread)
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${PIPEWIRE_INCLUDE_DIRS} ${SPA_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} PRIVATE PipeWire::PipeWire)
 
 # --------------------------------------------------------------------------------------------------------
 # Build examples
