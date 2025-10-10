@@ -111,8 +111,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(PipeWire REQUIRED)
 
-target_link_libraries(${PROJECT_NAME}             PUBLIC ${PIPEWIRE_LIBRARIES} pthread)
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${PIPEWIRE_INCLUDE_DIRS} ${SPA_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} PRIVATE PipeWire::PipeWire)
 
 # --------------------------------------------------------------------------------------------------------
 # Build examples
@@ -145,5 +144,7 @@ packageProject(
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  DEPENDENCIES "coco 3.2.2;ereignis 6.2.0;channel 3.0.1"
+  DEPENDENCIES "coco 3.2.2;ereignis 6.2.0;channel 3.0.1;PipeWire"
 )
+
+install(FILES "${PROJECT_SOURCE_DIR}/cmake/FindPipeWire.cmake" DESTINATION lib/cmake/${PROJECT_NAME}-${PROJECT_VERSION})
