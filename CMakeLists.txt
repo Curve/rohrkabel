@@ -146,3 +146,5 @@ packageProject(
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
   DEPENDENCIES "coco 3.2.2;ereignis 6.2.0;channel 3.0.1"
 )
+
+install(FILES "${PROJECT_SOURCE_DIR}/cmake/FindPipeWire.cmake" DESTINATION lib/cmake/${PROJECT_NAME}-${PROJECT_VERSION})
