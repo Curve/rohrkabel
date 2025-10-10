@@ -144,7 +144,7 @@ packageProject(
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  DEPENDENCIES "coco 3.2.2;ereignis 6.2.0;channel 3.0.1"
+  DEPENDENCIES "coco 3.2.2;ereignis 6.2.0;channel 3.0.1;PipeWire"
 )
 
 install(FILES "${PROJECT_SOURCE_DIR}/cmake/FindPipeWire.cmake" DESTINATION lib/cmake/${PROJECT_NAME}-${PROJECT_VERSION})
