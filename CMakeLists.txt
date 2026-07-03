@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.25)
-project(rohrkabel LANGUAGES CXX VERSION 9.1.0)
+project(rohrkabel LANGUAGES CXX VERSION 10.0.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
 # --------------------------------------------------------------------------------------------------------
 
 option(rohrkabel_examples       "Build examples"                             OFF)
-option(rohrkabel_sanitizer      "Enable Sanitizer (GCC)"                     OFF)
+option(rohrkabel_sanitizer      "Enable Sanitizer"                           OFF)
 option(rohrkabel_prefer_remote  "Prefer remote packages over local packages"  ON)
 option(rohrkabel_install        "Add install target"                          ON)
 
@@ -23,6 +23,11 @@ set(CPM_DOWNLOAD_ALL ${rohrkabel_prefer_remote})
 # --------------------------------------------------------------------------------------------------------
 # Create library
 # --------------------------------------------------------------------------------------------------------
+
+if (rohrkabel_sanitizer)
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+endif()
 
 add_library(${PROJECT_NAME})
 add_library(cr::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -111,7 +116,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # --------------------------------------------------------------------------------------------------------
 
 find_package(PipeWire REQUIRED)
-
 target_link_libraries(${PROJECT_NAME} PRIVATE PipeWire::PipeWire)
 
 # --------------------------------------------------------------------------------------------------------

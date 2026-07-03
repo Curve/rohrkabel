@@ -44,7 +44,7 @@ jobs:
 
       - name: 🔧 Compile
         run: |
-          cmake -B build -Drohrkabel_examples=ON ${{ matrix.cmake_args }}
+          cmake -B build -Drohrkabel_examples=ON -Drohrkabel_sanitizer=ON ${{ matrix.cmake_args }}
           cmake --build build --config ${{ matrix.config }}
 
       - name: 🎧 Setup PipeWire / 🔬 Run Examples
@@ -53,6 +53,7 @@ jobs:
           export PIPEWIRE_RUNTIME_DIR=/tmp
           export PULSE_RUNTIME_DIR=/tmp
           export DISPLAY=:0.0
+          export PIPEWIRE_DLCLOSE=false
 
           mkdir -p /run/dbus
           dbus-daemon --system --fork
@@ -60,4 +61,5 @@ jobs:
           Xvfb -screen $DISPLAY 1920x1080x24 &
           pipewire &
 
+          sleep 2
           ./build/examples/roundtrip/roundtrip-example
