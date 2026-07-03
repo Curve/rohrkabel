@@ -44,7 +44,7 @@ namespace pipewire
         [[nodiscard]] properties_t properties() const;
 
       public:
-        template <detail::Listener<raw_type> Listener = metadata_listener>
+        template <detail::listener<raw_type> Listener = metadata_listener>
         [[nodiscard]] Listener listen() const;
 
       public:
@@ -58,9 +58,6 @@ namespace pipewire
         static const char *type;
         static const std::uint32_t version;
     };
-
-    template <>
-    inline constexpr bool detail::sync_after_bind<metadata> = true;
 } // namespace pipewire
 
 #include "metadata.inl"

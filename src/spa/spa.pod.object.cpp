@@ -38,8 +38,8 @@ namespace pipewire::spa
 
     coco::generator<pod_prop> pod_object::props() const
     {
-        auto *body      = &m_impl->object->body;
-        const auto size = m_impl->object->pod.size;
+        auto *const body = &m_impl->object->body;
+        const auto size  = m_impl->object->pod.size;
 
         for (auto *it = spa_pod_prop_first(&m_impl->object->body); spa_pod_prop_is_inside(body, size, it);
              it       = spa_pod_prop_next(it))

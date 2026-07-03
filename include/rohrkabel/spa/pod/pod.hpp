@@ -38,10 +38,10 @@ namespace pipewire::spa
     };
 
     template <typename T>
-    concept PodReadable = detail::OneOf<T, bool, int, long, float, double, std::string, pod_object>;
+    concept PodReadable = detail::one_of<T, bool, int, long, float, double, std::string, pod_object>;
 
     template <typename T>
-    concept PodWritable = detail::OneOf<T, bool, int, long, float, double>;
+    concept PodWritable = detail::one_of<T, bool, int, long, float, double>;
 
     class pod
     {
@@ -82,14 +82,14 @@ namespace pipewire::spa
         template <PodReadable T>
         [[nodiscard]] T read() const;
 
-        template <detail::VectorWhere<std::is_arithmetic> T>
+        template <detail::vector_where<std::is_arithmetic> T>
         [[nodiscard]] T read() const;
 
       public:
         template <PodWritable T>
         void write(T);
 
-        template <detail::VectorWhere<std::is_arithmetic> T>
+        template <detail::vector_where<std::is_arithmetic> T>
         void write(const T &);
 
       public:

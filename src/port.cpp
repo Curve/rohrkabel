@@ -40,7 +40,7 @@ namespace pipewire
             pw_port_enum_params(m_impl->port, 0, param.id, 0, 1, nullptr);
         }
 
-        co_await lazy<params_t>::wake_on_await{};
+        co_await lazy<params_t>::make_lazy{};
         co_return params;
     }
 

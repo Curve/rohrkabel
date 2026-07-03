@@ -46,7 +46,7 @@ namespace pipewire
 
     std::shared_ptr<main_loop> main_loop::create()
     {
-        static std::once_flag flag;
+        static std::once_flag flag{};
 
         std::call_once(flag,
                        []
@@ -54,7 +54,7 @@ namespace pipewire
                            pw_init(nullptr, nullptr);
                        });
 
-        auto *loop = pw_main_loop_new(nullptr);
+        auto *const loop = pw_main_loop_new(nullptr);
         check(loop, "Failed to create main_loop");
 
         if (!loop)

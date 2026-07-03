@@ -34,7 +34,7 @@ namespace pipewire
         [[nodiscard]] client_info info() const;
 
       public:
-        template <detail::Listener<raw_type> Listener = client_listener>
+        template <detail::listener<raw_type> Listener = client_listener>
         [[nodiscard]] Listener listen() const;
 
       public:

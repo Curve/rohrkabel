@@ -36,14 +36,14 @@ namespace pipewire
             return;
         }
 
-        auto status = m_impl->source.wait_for(std::chrono::seconds(0));
+        const auto status = m_impl->source.wait_for(std::chrono::seconds(0));
 
         if (status != std::future_status::ready)
         {
             return;
         }
 
-        auto *source = m_impl->source.get();
+        auto *const source = m_impl->source.get();
 
         if (source->fd < 0)
         {
@@ -55,7 +55,7 @@ namespace pipewire
 
     void channel_state::emit()
     {
-        auto *source = m_impl->source.get();
+        auto *const source = m_impl->source.get();
         pw_loop_signal_event(m_impl->loop->loop(), source);
     }
 
@@ -69,7 +69,7 @@ namespace pipewire
         m_impl->callback = std::move(callback);
         m_impl->loop     = std::move(loop);
 
-        auto *signal = pw_loop_add_event(m_impl->loop->loop(), receive, m_impl.get());
+        auto *const signal = pw_loop_add_event(m_impl->loop->loop(), receive, m_impl.get());
         m_impl->promise.set_value(signal);
     }
 } // namespace pipewire

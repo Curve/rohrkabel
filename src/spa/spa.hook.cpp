@@ -26,9 +26,8 @@ namespace pipewire::spa
 
     hook hook::create()
     {
-        auto *hook = new raw_type;
+        auto *const hook = new raw_type;
         spa_zero(*hook);
-
         return from(hook);
     }
 

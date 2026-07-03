@@ -45,7 +45,7 @@ namespace pipewire
         [[rk::needs_sync]] [[nodiscard]] lazy<params_t> params() const;
 
       public:
-        template <detail::Listener<raw_type> Listener = device_listener>
+        template <detail::listener<raw_type> Listener = device_listener>
         [[nodiscard]] Listener listen() const;
 
       public:

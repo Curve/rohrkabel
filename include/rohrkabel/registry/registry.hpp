@@ -38,11 +38,11 @@ namespace pipewire
         ~registry();
 
       public:
-        template <detail::Listener<raw_type> Listener = registry_listener>
+        template <detail::listener<raw_type> Listener = registry_listener>
         [[nodiscard]] Listener listen() const;
 
       public:
-        template <detail::Proxy T>
+        template <detail::proxy T>
         [[nodiscard]] task<T> bind(std::uint32_t id);
 
       public:

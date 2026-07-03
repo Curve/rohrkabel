@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(rohrkabel LANGUAGES CXX VERSION 9.0.1)
+project(rohrkabel LANGUAGES CXX VERSION 9.1.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -8,6 +8,7 @@ project(rohrkabel LANGUAGES CXX VERSION 9.0.1)
 option(rohrkabel_examples       "Build examples"                             OFF)
 option(rohrkabel_sanitizer      "Enable Sanitizer (GCC)"                     OFF)
 option(rohrkabel_prefer_remote  "Prefer remote packages over local packages"  ON)
+option(rohrkabel_install        "Add install target"                          ON)
 
 # --------------------------------------------------------------------------------------------------------
 # Sync `CPM_DOWNLOAD_ALL` with `rohrkabel_prefer_remote`
@@ -81,13 +82,13 @@ include("cmake/cpm.cmake")
 
 CPMFindPackage(
   NAME           coco
-  VERSION        3.2.2
+  VERSION        4.7.1
   GIT_REPOSITORY "https://github.com/Curve/coco"
 )
 
 CPMFindPackage(
   NAME           ereignis
-  VERSION        6.2.0
+  VERSION        6.3.0
   GIT_REPOSITORY "https://github.com/Curve/ereignis"
 )
 
@@ -131,6 +132,10 @@ endif()
 
 include("cmake/cpm.cmake")
 
+if (NOT rohrkabel_install)
+    return()
+endif()
+
 CPMFindPackage(
   NAME           PackageProject
   VERSION        1.13.0
@@ -144,7 +149,7 @@ packageProject(
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  DEPENDENCIES "coco 3.2.2;ereignis 6.2.0;channel 3.0.1;PipeWire"
+  DEPENDENCIES "coco 4.7.1;ereignis 6.3.0;channel 3.0.1;PipeWire"
 )
 
 install(FILES "${PROJECT_SOURCE_DIR}/cmake/FindPipeWire.cmake" DESTINATION lib/cmake/${PROJECT_NAME}-${PROJECT_VERSION})

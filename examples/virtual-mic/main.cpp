@@ -45,7 +45,7 @@ int main()
     {
         if (global.type == pw::metadata::type)
         {
-            auto metadata = core->await(reg->bind<pw::metadata>(global.id));
+            auto metadata = core->wait(reg->bind<pw::metadata>(global.id));
 
             auto props      = metadata->props();
             auto properties = metadata->properties();
@@ -61,7 +61,7 @@ int main()
 
         if (global.type == pw::node::type)
         {
-            auto node = core->await(reg->bind<pw::node>(global.id));
+            auto node = core->wait(reg->bind<pw::node>(global.id));
 
             if (!node)
             {
@@ -73,7 +73,7 @@ int main()
 
         if (global.type == pw::port::type)
         {
-            auto port = core->await(reg->bind<pw::port>(global.id));
+            auto port = core->wait(reg->bind<pw::port>(global.id));
 
             if (!port)
             {
@@ -123,7 +123,7 @@ int main()
         return 1;
     }
 
-    auto virt_mic = core->await(core->create(pw::null_sink_factory{
+    auto virt_mic = core->wait(core->create(pw::null_sink_factory{
         .name      = "Virtual Mic",
         .positions = {"FL", "FR"},
     }));
@@ -235,7 +235,7 @@ int main()
             continue;
         }
 
-        auto link = core->await(core->create(factory.value()));
+        auto link = core->wait(core->create(factory.value()));
 
         if (!link)
         {

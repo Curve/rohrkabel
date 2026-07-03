@@ -32,13 +32,13 @@ namespace pipewire
 
       public:
         template <auto Event>
-        std::uint64_t on(events::template event<Event>::listener &&listener)
+        std::uint64_t on(events::template event<Event>::listener::callback listener)
         {
             return m_events->template get<Event>().add(std::move(listener));
         }
 
         template <auto Event>
-        void once(events::template event<Event>::listener::callback &&callback)
+        void once(events::template event<Event>::listener::callback callback)
         {
             m_events->template get<Event>().once(std::move(callback));
         }

@@ -28,7 +28,7 @@ namespace pipewire
         m_impl->events.error = [](void *data, std::uint32_t id, int seq, int res, const char *message)
         {
             auto &events = *reinterpret_cast<listener::events *>(data);
-            events.get<core_event::error>().fire(id, error{seq, res, message});
+            events.get<core_event::error>().fire(id, error{.seq = seq, .res = res, .message = message});
         };
 
         pw_core_add_listener(core, listener::get(), &m_impl->events, m_events.get());

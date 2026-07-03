@@ -4,7 +4,7 @@
 
 namespace pipewire
 {
-    template <detail::Listener<link::raw_type> Listener>
+    template <detail::listener<link::raw_type> Listener>
     Listener link::listen() const
     {
         return {get()};

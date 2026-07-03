@@ -45,7 +45,7 @@ namespace pipewire
         [[nodiscard]] raw_type *get() const;
 
       public:
-        template <detail::Listener<raw_type> Listener = proxy_listener>
+        template <detail::listener<raw_type> Listener = proxy_listener>
         [[nodiscard]] Listener listen() const;
 
       public:
@@ -59,9 +59,6 @@ namespace pipewire
         static proxy from(raw_type *, spa::dict = {});
         static proxy view(raw_type *, spa::dict = {});
     };
-
-    template <>
-    inline constexpr bool detail::sync_after_bind<proxy> = true;
 } // namespace pipewire
 
 #include "proxy.inl"

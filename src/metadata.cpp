@@ -35,7 +35,11 @@ namespace pipewire
     void metadata::set_property(std::uint32_t id, std::string key, std::string type, std::string value)
     {
         pw_metadata_set_property(m_impl->metadata, id, key.c_str(), type.c_str(), value.c_str());
-        m_impl->properties.emplace(std::move(key), metadata_property{std::move(type), std::move(value), id});
+        m_impl->properties.emplace(std::move(key), metadata_property{
+                                                       .type    = std::move(type),
+                                                       .value   = std::move(value),
+                                                       .subject = id,
+                                                   });
     }
 
     metadata::raw_type *metadata::get() const
@@ -67,7 +71,7 @@ namespace pipewire
                 return 0;
             });
 
-        co_await task<metadata>::wake_on_await{};
+        co_await task<metadata>::make_lazy{};
         auto proxy = co_await std::move(_proxy);
 
         if (!proxy.has_value())

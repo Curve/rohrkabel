@@ -11,47 +11,49 @@
 
 namespace pw = pipewire;
 
-int main()
+pw::lazy<int> co_main(std::shared_ptr<pw::main_loop> &loop, std::shared_ptr<pw::core> &core) // NOLINT(*-coroutine-parameters)
 {
-    auto loop    = pw::main_loop::create();
-    auto context = pipewire::context::create(loop);
-    auto core    = pw::core::create(context);
-    auto reg     = pw::registry::create(core);
+    const auto exit = [&](auto &&value)
+    {
+        loop->quit();
+        return value;
+    };
 
+    auto reg      = pw::registry::create(core);
     auto listener = reg->listen();
     auto devices  = std::vector<pw::device>{};
 
-    auto on_global = [&](const pw::global &global)
+    auto on_global = [&](pw::global global) -> coco::stray // NOLINT(*-lambda-coroutines)
     {
         if (global.type != pw::device::type)
         {
-            return;
+            co_return;
         }
 
-        auto device = core->await(reg->bind<pw::device>(global.id));
+        auto device = co_await reg->bind<pw::device>(global.id);
 
         if (!device.has_value())
         {
-            return;
+            co_return;
         }
 
         auto info = device->info();
 
         if (info.props["media.class"] != "Audio/Device")
         {
-            return;
+            co_return;
         }
 
         if (!info.props.contains("device.description"))
         {
-            return;
+            co_return;
         }
 
         devices.emplace_back(std::move(device.value()));
     };
 
     listener.on<pipewire::registry_event::global>(on_global);
-    core->run_once();
+    co_await core->sync<pw::sync_mode::recursive>(); // Wait for reg->bind to resolve as well...
 
     for (auto i = 0u; devices.size() > i; i++)
     {
@@ -64,16 +66,16 @@ int main()
 
     std::size_t selection{0};
     std::cin >> selection;
+    std::println();
 
     auto &device = devices.at(selection);
     std::print("Input new volume for '{}': ", device.info().props.at("device.description"));
 
     float volume{0};
     std::cin >> volume;
-
     std::println();
 
-    auto params = core->await(device.params());
+    auto params = co_await core->await(device.params());
 
     for (const auto &[pod_id, pod] : params)
     {
@@ -95,14 +97,26 @@ int main()
 
         prop->value().write<std::vector<float>>({cubic_volumes.begin(), cubic_volumes.end()});
         device.set_param(pod_id, 0, pod);
+        co_await core->sync();
 
-        core->run_once();
-        std::cout << std::format("Updated volume from {}% to {}%", std::cbrt(channels[0]) * 100, volume) << std::endl;
+        std::cout << std::format("Updated volume from {:.2}% to {:.2}%", std::cbrt(channels[0]) * 100, volume) << std::endl;
 
-        return 0;
+        co_return exit(0);
     }
 
     std::println("Could not find volume prop for device!");
 
-    return 1;
+    co_return exit(1);
+}
+
+int main()
+{
+    auto loop    = pw::main_loop::create();
+    auto context = pipewire::context::create(loop);
+    auto core    = pw::core::create(context);
+
+    auto result = co_main(loop, core);
+    loop->run();
+
+    return coco::await(std::move(result));
 }

@@ -46,7 +46,7 @@ namespace pipewire
         [[nodiscard]] port_info info() const;
 
       public:
-        template <detail::Listener<raw_type> Listener = port_listener>
+        template <detail::listener<raw_type> Listener = port_listener>
         [[nodiscard]] Listener listen() const;
 
       public:

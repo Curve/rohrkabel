@@ -6,13 +6,13 @@
 
 namespace pipewire
 {
-    template <detail::Listener<core::raw_type> Listener>
+    template <detail::listener<core::raw_type> Listener>
     Listener core::listen() const
     {
         return {get()};
     }
 
-    template <detail::Proxy T>
+    template <detail::proxy T>
     task<T> core::create(factory factory)
     {
         using raw_t = std::add_pointer_t<typename T::raw_type>;
@@ -30,10 +30,17 @@ namespace pipewire
         return T::bind(reinterpret_cast<raw_t>(create_object(std::move(factory))));
     }
 
-    template <detail::Awaitable Awaitable>
-    auto core::await(Awaitable awaitable) const
+    template <detail::awaitable Awaitable>
+    auto core::wait(Awaitable awaitable) const
     {
         run_once();
         return coco::await(std::move(awaitable));
+    }
+
+    template <detail::awaitable Awaitable>
+    detail::lazy_of<Awaitable> core::await(Awaitable awaitable) const
+    {
+        co_await sync();
+        co_return co_await std::move(awaitable);
     }
 } // namespace pipewire

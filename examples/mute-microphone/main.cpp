@@ -26,7 +26,7 @@ int main()
             return;
         }
 
-        auto device = core->await(reg->bind<pw::device>(global.id));
+        auto device = core->wait(reg->bind<pw::device>(global.id));
 
         if (!device.has_value())
         {
@@ -63,7 +63,7 @@ int main()
     auto &device = devices.at(selection);
     std::println("\nMuting: {}", device.info().props.at("device.description"));
 
-    auto params = core->await(device.params());
+    auto params = core->wait(device.params());
 
     for (const auto &[pod_id, pod] : params)
     {

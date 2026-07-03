@@ -6,7 +6,7 @@
 
 namespace pipewire::spa
 {
-    template <detail::VectorWhere<std::is_arithmetic> T>
+    template <detail::vector_where<std::is_arithmetic> T>
     T pod::read() const
     {
         using value_type = detail::vector_traits<T>::type;
@@ -21,7 +21,7 @@ namespace pipewire::spa
                | std::ranges::to<std::vector>();
     }
 
-    template <detail::VectorWhere<std::is_arithmetic> T>
+    template <detail::vector_where<std::is_arithmetic> T>
     void pod::write(const T &value)
     {
         using value_type = detail::vector_traits<T>::type;

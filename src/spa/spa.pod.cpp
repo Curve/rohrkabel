@@ -41,8 +41,8 @@ namespace pipewire::spa
 
         std::vector<void *> rtn;
 
-        auto *array = reinterpret_cast<spa_pod_array *>(m_impl->pod.get());
-        void *iter  = {};
+        auto *const array = reinterpret_cast<spa_pod_array *>(m_impl->pod.get());
+        void *iter        = {};
 
         SPA_POD_ARRAY_FOREACH(array, iter)
         {

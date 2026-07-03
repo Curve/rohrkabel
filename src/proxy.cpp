@@ -86,7 +86,7 @@ namespace pipewire
                 }});
             });
 
-        co_await task<proxy>::wake_on_await{};
+        co_await task<proxy>::make_lazy{};
         auto result = co_await std::move(fut);
 
         if (!result.has_value())

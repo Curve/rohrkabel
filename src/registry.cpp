@@ -46,7 +46,7 @@ namespace pipewire
 
     std::optional<registry> registry::create(std::shared_ptr<pipewire::core> core)
     {
-        auto *registry = pw_core_get_registry(core->get(), version, 0);
+        auto *const registry = pw_core_get_registry(core->get(), version, 0);
         check(registry, "Failed to get registry");
 
         if (!registry)

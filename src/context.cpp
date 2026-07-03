@@ -36,7 +36,7 @@ namespace pipewire
 
     std::shared_ptr<context> context::create(std::shared_ptr<main_loop> loop)
     {
-        auto *ctx = pw_context_new(loop->loop(), nullptr, 0);
+        auto *const ctx = pw_context_new(loop->loop(), nullptr, 0);
         check(ctx, "Failed to create context");
 
         if (!ctx)

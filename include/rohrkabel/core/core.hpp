@@ -8,6 +8,7 @@
 #include "../utils/deleter.hpp"
 
 #include <memory>
+#include <cstdint>
 #include <optional>
 
 struct pw_core;
@@ -28,6 +29,12 @@ namespace pipewire
       public:
         std::optional<std::string> type;
         std::optional<std::uint32_t> version;
+    };
+
+    enum class sync_mode : std::uint8_t
+    {
+        basic,
+        recursive,
     };
 
     class core
@@ -51,24 +58,31 @@ namespace pipewire
 
       public:
         [[nodiscard]] int sync(int seq) const;
+
+      public:
+        template <sync_mode = sync_mode::basic>
         [[nodiscard]] lazy<int> sync() const;
 
       public:
-        template <detail::Listener<raw_type> Listener = core_listener>
+        template <detail::listener<raw_type> Listener = core_listener>
         [[nodiscard]] Listener listen() const;
 
       public:
-        template <detail::Proxy T>
+        template <detail::proxy T>
         [[nodiscard]] task<T> create(factory);
 
-        template <detail::Factory Factory = factory>
+        template <detail::factory Factory = factory>
         [[nodiscard]] task<typename Factory::result> create(Factory);
 
       public:
         void run_once() const;
 
-        template <detail::Awaitable Awaitable>
-        auto await(Awaitable) const;
+      public:
+        template <detail::awaitable Awaitable>
+        auto wait(Awaitable) const;
+
+        template <detail::awaitable Awaitable>
+        detail::lazy_of<Awaitable> await(Awaitable) const;
 
       public:
         [[nodiscard]] raw_type *get() const;

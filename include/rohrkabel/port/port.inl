@@ -4,7 +4,7 @@
 
 namespace pipewire
 {
-    template <detail::Listener<port::raw_type> Listener>
+    template <detail::listener<port::raw_type> Listener>
     Listener port::listen() const
     {
         return {get()};

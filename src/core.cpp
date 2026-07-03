@@ -7,6 +7,7 @@
 #include "utils/check.hpp"
 
 #include <ranges>
+#include <limits>
 
 #include <pipewire/pipewire.h>
 #include <coco/promise/promise.hpp>
@@ -38,21 +39,39 @@ namespace pipewire
 
     int core::sync(int seq) const
     {
-        return pw_core_sync(m_impl->core.get(), core_id, seq);
+        auto expected = m_impl->last_seq.load();
+        auto updated  = pw_core_sync(m_impl->core.get(), core_id, seq);
+
+        while (expected < updated && !m_impl->last_seq.compare_exchange_weak(expected, updated))
+        {
+            // Assumes that pw_core_sync only returns increasing ids (!)
+        }
+
+        return updated;
     }
 
+    template lazy<int> core::sync<sync_mode::basic>() const;
+    template lazy<int> core::sync<sync_mode::recursive>() const;
+
+    template <sync_mode T>
     lazy<int> core::sync() const
     {
-        auto listener = listen();
-        auto pending  = 0;
+        auto listener                 = listen();
+        [[maybe_unused]] auto pending = std::numeric_limits<int>::max();
 
         auto promise = coco::promise<int>{};
         auto fut     = promise.get_future();
+        auto done    = std::atomic<bool>{false};
 
         listener.on<core_event::done>(
-            [&](auto id, auto seq)
+            [&](auto id, auto seq) mutable
             {
-                if (id != core_id || seq != pending)
+                if (id != core_id || seq < (T == sync_mode::basic ? pending : m_impl->last_seq.load()))
+                {
+                    return;
+                }
+
+                if (done.exchange(true))
                 {
                     return;
                 }
@@ -67,21 +86,13 @@ namespace pipewire
 
     void core::run_once() const
     {
-        auto listener = listen();
-        auto loop     = context()->loop();
+        auto loop = context()->loop();
 
-        listener.on<core_event::done>(
-            [&](auto id, auto seq)
-            {
-                if (id != core_id || seq != m_impl->last_seq)
-                {
-                    return;
-                }
-
-                loop->quit();
-            });
-
-        m_impl->last_seq = sync(0);
+        coco::then(sync<sync_mode::recursive>(),
+                   [&](auto)
+                   {
+                       loop->quit();
+                   });
 
         loop->run();
     }
@@ -132,7 +143,7 @@ namespace pipewire
 
     std::shared_ptr<core> core::create(std::shared_ptr<pipewire::context> context)
     {
-        auto *core = pw_context_connect(context->get(), nullptr, 0);
+        auto *const core = pw_context_connect(context->get(), nullptr, 0);
         check(core, "Failed to connect core");
 
         if (!core)
