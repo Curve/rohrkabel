@@ -26,6 +26,7 @@ namespace pipewire
 
       public:
         void emit();
+        bool emit(std::chrono::milliseconds);
 
       public:
         void attach(std::shared_ptr<main_loop>, std::move_only_function<void()> callback);
@@ -41,6 +42,7 @@ namespace pipewire
 
       public:
         void send(T = {});
+        bool try_send(T = {}, std::chrono::milliseconds = std::chrono::milliseconds{500});
     };
 
     template <typename T>

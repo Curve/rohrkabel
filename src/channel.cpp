@@ -59,6 +59,19 @@ namespace pipewire
         pw_loop_signal_event(m_impl->loop->loop(), source);
     }
 
+    bool channel_state::emit(std::chrono::milliseconds timeout)
+    {
+        if (m_impl->source.wait_for(timeout) != std::future_status::ready)
+        {
+            return false;
+        }
+
+        auto *const source = m_impl->source.get();
+        pw_loop_signal_event(m_impl->loop->loop(), source);
+
+        return true;
+    }
+
     void channel_state::attach(std::shared_ptr<main_loop> loop, std::move_only_function<void()> callback)
     {
         auto receive = [](void *data, std::uint64_t)

@@ -18,6 +18,13 @@ namespace pipewire
     }
 
     template <typename T>
+    bool sender<T>::try_send(T message, std::chrono::milliseconds timeout)
+    {
+        cr::sender<T>::send(std::move(message));
+        return m_state->emit(timeout);
+    }
+
+    template <typename T>
     receiver<T>::receiver(std::shared_ptr<cr::queue<T>> queue, std::shared_ptr<channel_state> state)
         : cr::receiver<T>(queue), m_state(std::move(state))
     {
