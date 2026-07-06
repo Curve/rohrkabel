@@ -99,7 +99,7 @@ CPMFindPackage(
 
 CPMFindPackage(
   NAME           channel
-  VERSION        3.0.1
+  VERSION        4.0.0
   GIT_REPOSITORY "https://github.com/Curve/channel"
 )
 
@@ -153,7 +153,7 @@ packageProject(
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
   INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
-  DEPENDENCIES "coco 4.7.1;ereignis 6.3.0;channel 3.0.1;PipeWire"
+  DEPENDENCIES "coco 4.7.1;ereignis 6.3.0;channel 4.0.0;PipeWire"
 )
 
 install(FILES "${PROJECT_SOURCE_DIR}/cmake/FindPipeWire.cmake" DESTINATION lib/cmake/${PROJECT_NAME}-${PROJECT_VERSION})
