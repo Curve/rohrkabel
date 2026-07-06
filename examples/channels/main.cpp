@@ -40,7 +40,7 @@ int main()
         auto created = std::optional<pw::node>{};
         auto stopped = std::atomic<bool>{false};
 
-        auto visitor = overload{[&](create_virtual_mic msg) -> coco::stray
+        auto visitor = overload{[&](create_virtual_mic msg) -> coco::stray // NOLINT(*-capturing-lambda-coroutines)
                                 {
                                     // We check if the stopped flag is set, so that we don't await something after the run-loop
                                     // was stopped.
@@ -64,7 +64,7 @@ int main()
                                     std::println("Created node: {}", node->id());
                                     created.emplace(std::move(node.value()));
                                 },
-                                [&](terminate) -> coco::stray
+                                [&](terminate) -> coco::stray // NOLINT(*-capturing-lambda-coroutines)
                                 {
                                     stopped = true;
                                     loop->quit();
