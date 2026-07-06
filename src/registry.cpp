@@ -1,7 +1,6 @@
 #include "registry/registry.hpp"
 
 #include "proxy/proxy.hpp"
-#include "utils/check.hpp"
 
 #include <pipewire/pipewire.h>
 
@@ -44,14 +43,13 @@ namespace pipewire
         return get();
     }
 
-    std::optional<registry> registry::create(std::shared_ptr<pipewire::core> core)
+    res<registry, std::error_code> registry::create(std::shared_ptr<pipewire::core> core)
     {
         auto *const registry = pw_core_get_registry(core->get(), version, 0);
-        check(registry, "Failed to get registry");
 
         if (!registry)
         {
-            return std::nullopt;
+            return std::unexpected{std::make_error_code(static_cast<std::errc>(errno))};
         }
 
         return from(registry, std::move(core));

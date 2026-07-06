@@ -1,5 +1,4 @@
 #include "loop.hpp"
-#include "utils/check.hpp"
 
 #include <mutex>
 
@@ -44,7 +43,7 @@ namespace pipewire
         return get();
     }
 
-    std::shared_ptr<main_loop> main_loop::create()
+    res<std::shared_ptr<main_loop>, std::error_code> main_loop::create()
     {
         static std::once_flag flag{};
 
@@ -55,11 +54,10 @@ namespace pipewire
                        });
 
         auto *const loop = pw_main_loop_new(nullptr);
-        check(loop, "Failed to create main_loop");
 
         if (!loop)
         {
-            return nullptr;
+            return std::unexpected{std::make_error_code(static_cast<std::errc>(errno))};
         }
 
         return from(loop);

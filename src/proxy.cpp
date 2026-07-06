@@ -61,7 +61,7 @@ namespace pipewire
         auto listener = proxy_listener{raw};
         auto props    = spa::dict{};
 
-        auto done = coco::promise<expected<void>>{};
+        auto done = coco::promise<res<void>>{};
         auto fut  = done.get_future();
 
         listener.once<proxy_event::bound>(

@@ -32,9 +32,9 @@ int main()
 {
     auto thread = [](recipe::receiver receiver)
     {
-        auto loop    = pw::main_loop::create();
-        auto context = pw::context::create(loop);
-        auto core    = pw::core::create(context);
+        auto loop    = pw::main_loop::create().value();
+        auto context = pw::context::create(loop).value();
+        auto core    = pw::core::create(context).value();
         auto reg     = pw::registry::create(core);
 
         auto created = std::optional<pw::node>{};

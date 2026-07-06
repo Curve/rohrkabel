@@ -111,9 +111,9 @@ pw::lazy<int> co_main(std::shared_ptr<pw::main_loop> &loop, std::shared_ptr<pw::
 
 int main()
 {
-    auto loop    = pw::main_loop::create();
-    auto context = pipewire::context::create(loop);
-    auto core    = pw::core::create(context);
+    auto loop    = pw::main_loop::create().value();
+    auto context = pipewire::context::create(loop).value();
+    auto core    = pw::core::create(context).value();
 
     auto result = co_main(loop, core);
     loop->run();

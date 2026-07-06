@@ -4,8 +4,6 @@
 #include "link/link.hpp"
 #include "node/node.hpp"
 
-#include "utils/check.hpp"
-
 #include <ranges>
 #include <limits>
 
@@ -141,14 +139,13 @@ namespace pipewire
         return get();
     }
 
-    std::shared_ptr<core> core::create(std::shared_ptr<pipewire::context> context)
+    res<std::shared_ptr<core>, std::error_code> core::create(std::shared_ptr<pipewire::context> context)
     {
         auto *const core = pw_context_connect(context->get(), nullptr, 0);
-        check(core, "Failed to connect core");
 
         if (!core)
         {
-            return nullptr;
+            return std::unexpected{std::make_error_code(static_cast<std::errc>(errno))};
         }
 
         return from(core, std::move(context));

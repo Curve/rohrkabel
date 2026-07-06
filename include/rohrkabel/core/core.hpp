@@ -7,8 +7,10 @@
 #include "../utils/traits.hpp"
 #include "../utils/deleter.hpp"
 
-#include <memory>
 #include <cstdint>
+#include <system_error>
+
+#include <memory>
 #include <optional>
 
 struct pw_core;
@@ -93,7 +95,7 @@ namespace pipewire
         [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[nodiscard]] static std::shared_ptr<core> create(std::shared_ptr<pipewire::context>);
+        [[nodiscard]] static res<std::shared_ptr<core>, std::error_code> create(std::shared_ptr<pipewire::context>);
 
       public:
         [[nodiscard]] static std::shared_ptr<core> from(raw_type *, std::shared_ptr<pipewire::context>);

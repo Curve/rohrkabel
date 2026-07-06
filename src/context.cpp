@@ -1,7 +1,5 @@
 #include "context.hpp"
 
-#include "utils/check.hpp"
-
 #include <pipewire/pipewire.h>
 
 namespace pipewire
@@ -34,14 +32,13 @@ namespace pipewire
         return get();
     }
 
-    std::shared_ptr<context> context::create(std::shared_ptr<main_loop> loop)
+    res<std::shared_ptr<context>, std::error_code> context::create(std::shared_ptr<main_loop> loop)
     {
         auto *const ctx = pw_context_new(loop->loop(), nullptr, 0);
-        check(ctx, "Failed to create context");
 
         if (!ctx)
         {
-            return nullptr;
+            return std::unexpected{std::make_error_code(static_cast<std::errc>(errno))};
         }
 
         return from(ctx, std::move(loop));

@@ -3,10 +3,10 @@
 #include "spa/pod/prop.hpp"
 #include "spa/pod/object.hpp"
 
-#include "utils/check.hpp"
-
 #include <spa/debug/pod.h>
 #include <spa/pod/builder.h>
+
+#include <cassert>
 
 namespace pipewire::spa
 {
@@ -37,7 +37,7 @@ namespace pipewire::spa
 
     std::vector<void *> pod::array() const
     {
-        check(type() == spa::type::array, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::array);
 
         std::vector<void *> rtn;
 
@@ -120,49 +120,49 @@ namespace pipewire::spa
     template <>
     bool pod::read() const
     {
-        check(type() == spa::type::boolean, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::boolean);
         return reinterpret_cast<spa_pod_bool *>(m_impl->pod.get())->value;
     }
 
     template <>
     int pod::read() const
     {
-        check(type() == spa::type::num_int, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::num_int);
         return reinterpret_cast<spa_pod_int *>(m_impl->pod.get())->value;
     }
 
     template <>
     long pod::read() const
     {
-        check(type() == spa::type::num_long, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::num_long);
         return reinterpret_cast<spa_pod_long *>(m_impl->pod.get())->value;
     }
 
     template <>
     float pod::read() const
     {
-        check(type() == spa::type::num_float, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::num_float);
         return reinterpret_cast<spa_pod_float *>(m_impl->pod.get())->value;
     }
 
     template <>
     double pod::read() const
     {
-        check(type() == spa::type::num_double, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::num_double);
         return reinterpret_cast<spa_pod_double *>(m_impl->pod.get())->value;
     }
 
     template <>
     pod_object pod::read() const
     {
-        check(type() == spa::type::object, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::object);
         return pod_object::view(reinterpret_cast<spa_pod_object *>(m_impl->pod.get()));
     }
 
     template <>
     std::string pod::read() const
     {
-        check(type() == spa::type::string, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::string);
 
         const auto *content = SPA_POD_CONTENTS(spa_pod_string, m_impl->pod.get());
 
@@ -177,35 +177,35 @@ namespace pipewire::spa
     template <>
     void pod::write(bool value)
     {
-        check(type() == spa::type::boolean, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::boolean);
         reinterpret_cast<spa_pod_bool *>(m_impl->pod.get())->value = value;
     }
 
     template <>
     void pod::write(int value)
     {
-        check(type() == spa::type::num_int, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::num_int);
         reinterpret_cast<spa_pod_int *>(m_impl->pod.get())->value = value;
     }
 
     template <>
     void pod::write(long value)
     {
-        check(type() == spa::type::num_long, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::num_long);
         reinterpret_cast<spa_pod_long *>(m_impl->pod.get())->value = value;
     }
 
     template <>
     void pod::write(float value)
     {
-        check(type() == spa::type::num_float, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::num_float);
         reinterpret_cast<spa_pod_float *>(m_impl->pod.get())->value = value;
     }
 
     template <>
     void pod::write(double value)
     {
-        check(type() == spa::type::num_double, "Converting pod to wrong type");
+        assert("Converting pod to wrong type" && type() == spa::type::num_double);
         reinterpret_cast<spa_pod_double *>(m_impl->pod.get())->value = value;
     }
 

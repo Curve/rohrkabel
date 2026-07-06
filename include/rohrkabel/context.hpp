@@ -1,9 +1,12 @@
 #pragma once
 
 #include "loop.hpp"
+
+#include "utils/res.hpp"
 #include "utils/deleter.hpp"
 
 #include <memory>
+#include <system_error>
 
 struct pw_context;
 
@@ -34,7 +37,7 @@ namespace pipewire
         [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[nodiscard]] static std::shared_ptr<context> create(std::shared_ptr<main_loop>);
+        [[nodiscard]] static res<std::shared_ptr<context>, std::error_code> create(std::shared_ptr<main_loop>);
 
       public:
         [[nodiscard]] static std::shared_ptr<context> from(raw_type *, std::shared_ptr<main_loop>);

@@ -6,7 +6,7 @@
 
 #include <memory>
 #include <cstdint>
-#include <optional>
+#include <system_error>
 
 struct pw_registry;
 
@@ -54,7 +54,7 @@ namespace pipewire
         [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        [[nodiscard]] static std::optional<registry> create(std::shared_ptr<pipewire::core>);
+        [[nodiscard]] static res<registry, std::error_code> create(std::shared_ptr<pipewire::core>);
 
       public:
         [[nodiscard]] static registry from(raw_type *, std::shared_ptr<pipewire::core>);
