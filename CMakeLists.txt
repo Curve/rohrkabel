@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(rohrkabel LANGUAGES CXX VERSION 11.0.0)
+project(rohrkabel LANGUAGES CXX VERSION 11.0.1)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -87,7 +87,7 @@ include("cmake/cpm.cmake")
 
 CPMFindPackage(
   NAME           coco
-  VERSION        4.7.1
+  VERSION        4.7.2
   GIT_REPOSITORY "https://github.com/Curve/coco"
 )
 
