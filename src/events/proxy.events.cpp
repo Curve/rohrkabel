@@ -31,6 +31,24 @@ namespace pipewire
             events.get<proxy_event::bound_props>().fire(global, props);
         };
 
+        m_impl->events.removed = [](void *data)
+        {
+            auto &events = *reinterpret_cast<listener::events *>(data);
+            events.get<proxy_event::removed>().fire();
+        };
+
+        m_impl->events.destroy = [](void *data)
+        {
+            auto &events = *reinterpret_cast<listener::events *>(data);
+            events.get<proxy_event::destroy>().fire();
+        };
+
+        m_impl->events.done = [](void *data, int seq)
+        {
+            auto &events = *reinterpret_cast<listener::events *>(data);
+            events.get<proxy_event::done>().fire(seq);
+        };
+
         pw_proxy_add_listener(proxy, listener::get(), &m_impl->events, m_events.get());
     }
 

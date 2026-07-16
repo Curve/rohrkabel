@@ -14,12 +14,18 @@ namespace pipewire
         error,
         bound,
         bound_props,
+        removed,
+        destroy,
+        done,
     };
 
-    class proxy_listener : public listener<                                                              //
-                               ereignis::event<proxy_event::error, void(int, int, const char *)>,        //
-                               ereignis::event<proxy_event::bound, void(std::uint32_t)>,                 //
-                               ereignis::event<proxy_event::bound_props, void(std::uint32_t, spa::dict)> //
+    class proxy_listener : public listener<                                                               //
+                               ereignis::event<proxy_event::error, void(int, int, const char *)>,         //
+                               ereignis::event<proxy_event::bound, void(std::uint32_t)>,                  //
+                               ereignis::event<proxy_event::bound_props, void(std::uint32_t, spa::dict)>, //
+                               ereignis::event<proxy_event::removed, void()>,                             //
+                               ereignis::event<proxy_event::destroy, void()>,                             //
+                               ereignis::event<proxy_event::done, void(int)>                              //
                                >
     {
         struct impl;

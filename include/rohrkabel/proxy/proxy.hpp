@@ -5,8 +5,9 @@
 #include "../utils/traits.hpp"
 #include "../utils/deleter.hpp"
 
-#include <string>
 #include <memory>
+#include <string>
+
 #include <cstdint>
 
 struct pw_proxy;
@@ -36,9 +37,15 @@ namespace pipewire
         virtual ~proxy();
 
       public:
-        [[nodiscard]] spa::dict props() const;
-        [[nodiscard]] std::string type() const;
         [[nodiscard]] std::uint32_t id() const;
+        [[nodiscard]] spa::dict props() const;
+
+      public:
+        [[nodiscard]] lazy<int> sync() const;
+        [[nodiscard]] int sync(int seq) const;
+
+      public:
+        [[nodiscard]] std::string type() const;
         [[nodiscard]] std::uint32_t version() const;
 
       public:

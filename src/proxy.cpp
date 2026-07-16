@@ -4,6 +4,8 @@
 #include <pipewire/pipewire.h>
 #include <coco/promise/promise.hpp>
 
+#include <atomic>
+
 namespace pipewire
 {
     struct proxy::impl
@@ -23,19 +25,54 @@ namespace pipewire
 
     proxy::~proxy() = default;
 
+    std::uint32_t proxy::id() const
+    {
+        return pw_proxy_get_bound_id(m_impl->proxy.get());
+    }
+
     spa::dict proxy::props() const
     {
         return m_impl->props;
     }
 
+    lazy<int> proxy::sync() const
+    {
+        auto listener = listen();
+        auto pending  = std::numeric_limits<int>::max();
+
+        auto promise = coco::promise<int>{};
+        auto fut     = promise.get_future();
+        auto done    = std::atomic<bool>{false};
+
+        listener.on<proxy_event::done>(
+            [&](int seq)
+            {
+                if (seq < pending)
+                {
+                    return;
+                }
+
+                if (done.exchange(true))
+                {
+                    return;
+                }
+
+                promise.set_value(seq);
+            });
+
+        pending = sync(0);
+
+        co_return co_await std::move(fut);
+    }
+
+    int proxy::sync(int seq) const
+    {
+        return pw_proxy_sync(m_impl->proxy.get(), seq);
+    }
+
     std::string proxy::type() const
     {
         return pw_proxy_get_type(m_impl->proxy.get(), nullptr);
-    }
-
-    std::uint32_t proxy::id() const
-    {
-        return pw_proxy_get_bound_id(m_impl->proxy.get());
     }
 
     std::uint32_t proxy::version() const

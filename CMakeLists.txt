@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(rohrkabel LANGUAGES CXX VERSION 11.0.1)
+project(rohrkabel LANGUAGES CXX VERSION 11.1.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -116,7 +116,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # --------------------------------------------------------------------------------------------------------
 
 find_package(PipeWire REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE PipeWire::PipeWire)
+target_link_libraries(${PROJECT_NAME} PUBLIC PipeWire::PipeWire)
 
 # --------------------------------------------------------------------------------------------------------
 # Build examples
