@@ -53,7 +53,6 @@ namespace pipewire
                 promise.set_value(std::move(info));
             });
 
-        auto info  = co_await std::move(fut);
         auto proxy = co_await std::move(_proxy);
 
         if (!proxy.has_value())
@@ -61,7 +60,7 @@ namespace pipewire
             co_return std::unexpected{proxy.error()};
         }
 
-        co_return link{std::move(proxy.value()), std::move(info)};
+        co_return link{std::move(proxy.value()), co_await std::move(fut)};
     }
 
     const char *link::type            = PW_TYPE_INTERFACE_Link;
