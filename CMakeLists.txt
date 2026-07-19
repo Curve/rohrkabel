@@ -61,9 +61,13 @@ endif()
 
 file(GLOB src
   "src/*.cpp"
+
   "src/spa/*.cpp"
   "src/info/*.cpp"
   "src/events/*.cpp"
+
+  "src/impl/*.cpp"
+  "src/impl/events/*.cpp"
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${src})

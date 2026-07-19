@@ -1,6 +1,7 @@
 #pragma once
 
 #include "loop.hpp"
+#include "module/impl/module.hpp"
 
 #include "utils/res.hpp"
 #include "utils/deleter.hpp"
@@ -12,9 +13,21 @@ struct pw_context;
 
 namespace pipewire
 {
+    struct module_options
+    {
+        std::string name;
+        std::string args;
+
+      public:
+        properties props{properties::create()};
+    };
+
     class context
     {
         struct impl;
+
+      private:
+        using module = pipewire::impl::module;
 
       public:
         using raw_type = pw_context;
@@ -29,7 +42,9 @@ namespace pipewire
         ~context();
 
       public:
-        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] res<module, std::error_code> load(module_options);
+
+      public:
         [[nodiscard]] std::shared_ptr<main_loop> loop() const;
 
       public:

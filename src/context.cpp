@@ -1,6 +1,7 @@
 #include "context.hpp"
 
 #include <pipewire/pipewire.h>
+#include <pipewire/impl-module.h>
 
 namespace pipewire
 {
@@ -17,9 +18,17 @@ namespace pipewire
 
     context::~context() = default;
 
-    context::raw_type *context::get() const
+    res<context::module, std::error_code> context::load(module_options opts)
     {
-        return m_impl->context.get();
+        auto *const props = std::move(opts.props).release();
+        auto *const mod   = pw_context_load_module(m_impl->context.get(), opts.name.c_str(), opts.args.c_str(), props);
+
+        if (!mod)
+        {
+            return std::unexpected{std::make_error_code(static_cast<std::errc>(errno))};
+        }
+
+        return module::from(mod);
     }
 
     std::shared_ptr<main_loop> context::loop() const
