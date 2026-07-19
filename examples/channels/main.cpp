@@ -50,7 +50,8 @@ int main()
                                         co_return;
                                     }
 
-                                    auto node = co_await core->create(pw::null_sink_factory{
+                                    auto node = co_await core->create(pw::null_factory{
+                                        .type      = pw::null_factory::kind::source,
                                         .name      = msg.name,
                                         .positions = {"FL", "FR"},
                                     });

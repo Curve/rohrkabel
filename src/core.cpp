@@ -28,7 +28,7 @@ namespace pipewire
 
     core::~core() = default;
 
-    void *core::create_object(factory factory) const
+    void *core::create_object(object factory) const
     {
         const auto &[name, props, type, version] = factory;
         const auto *dict                         = &props.get()->dict;
@@ -107,15 +107,17 @@ namespace pipewire
     }
 
     template <>
-    task<node> core::create(null_sink_factory factory)
+    task<node> core::create(null_factory factory)
     {
-        auto positions = factory.positions            //
-                         | std::views::join_with(',') //
-                         | std::ranges::to<std::string>();
+        using enum null_factory::kind;
+
+        const auto positions = factory.positions            //
+                               | std::views::join_with(',') //
+                               | std::ranges::to<std::string>();
 
         auto props = properties::create({
             {"node.name", factory.name},
-            {"media.class", "Audio/Source/Virtual"},
+            {"media.class", factory.type == sink ? "Audio/Sink/Virtual" : "Audio/Source/Virtual"},
             {"factory.name", "support.null-audio-sink"},
             {"audio.channels", std::to_string(factory.positions.size())},
             {"audio.position", positions},

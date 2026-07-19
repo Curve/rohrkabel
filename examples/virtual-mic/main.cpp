@@ -123,7 +123,8 @@ int main()
         return 1;
     }
 
-    auto virt_mic = core->wait(core->create(pw::null_sink_factory{
+    auto virt_mic = core->wait(core->create(pw::null_factory{
+        .type      = pw::null_factory::kind::source,
         .name      = "Virtual Mic",
         .positions = {"FL", "FR"},
     }));

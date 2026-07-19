@@ -18,11 +18,19 @@ namespace pipewire
     class node;
     class node_listener;
 
-    struct null_sink_factory
+    struct null_factory
     {
         using result = node;
 
       public:
+        enum class kind : std::uint8_t
+        {
+            sink,
+            source,
+        };
+
+      public:
+        kind type;
         std::string name;
         std::set<std::string> positions;
     };
@@ -55,6 +63,7 @@ namespace pipewire
 
       public:
         [[nodiscard]] node_info info() const;
+        [[nodiscard]] [[rk::needs_sync]] lazy<params_t> params() const;
 
       public:
         template <detail::listener<raw_type> Listener = node_listener>

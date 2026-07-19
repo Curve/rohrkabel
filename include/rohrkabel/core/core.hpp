@@ -20,7 +20,7 @@ namespace pipewire
     class proxy;
     class core_listener;
 
-    struct factory
+    struct object
     {
         using result = proxy;
 
@@ -56,7 +56,7 @@ namespace pipewire
         ~core();
 
       private:
-        [[nodiscard]] void *create_object(factory) const;
+        [[nodiscard]] void *create_object(object) const;
 
       public:
         [[nodiscard]] int sync(int seq) const;
@@ -67,9 +67,9 @@ namespace pipewire
 
       public:
         template <detail::proxy T>
-        [[nodiscard]] task<T> create(factory);
+        [[nodiscard]] task<T> create(object);
 
-        template <detail::factory Factory = factory>
+        template <detail::factory Factory = object>
         [[nodiscard]] task<typename Factory::result> create(Factory);
 
       public:

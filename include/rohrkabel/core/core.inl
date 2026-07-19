@@ -13,7 +13,7 @@ namespace pipewire
     }
 
     template <detail::proxy T>
-    task<T> core::create(factory factory)
+    task<T> core::create(object factory)
     {
         using raw_t = std::add_pointer_t<typename T::raw_type>;
 
