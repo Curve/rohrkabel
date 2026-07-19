@@ -41,12 +41,15 @@ namespace pipewire
         ~link() final;
 
       public:
-        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] link_info info() const;
 
       public:
         template <detail::listener<raw_type> Listener = link_listener>
         [[nodiscard]] Listener listen() const;
+
+      public:
+        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] raw_type *release() &&;
 
       public:
         [[nodiscard]] operator raw_type *() const &;

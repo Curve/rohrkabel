@@ -29,6 +29,11 @@ namespace pipewire
         pw_node_set_param(m_impl->node, id, flags, pod.get());
     }
 
+    node_info node::info() const
+    {
+        return m_impl->info;
+    }
+
     lazy<node::params_t> node::params() const
     {
         auto listener = listen();
@@ -54,9 +59,10 @@ namespace pipewire
         return m_impl->node;
     }
 
-    node_info node::info() const
+    node::raw_type *node::release() &&
     {
-        return m_impl->info;
+        std::ignore = std::move(*this).proxy::release();
+        return std::exchange(m_impl->node, nullptr);
     }
 
     node::operator raw_type *() const &

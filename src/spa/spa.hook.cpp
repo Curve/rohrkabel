@@ -24,6 +24,11 @@ namespace pipewire::spa
         return m_impl->hook.get();
     }
 
+    hook::raw_type *hook::release() &&
+    {
+        return m_impl->hook.release();
+    }
+
     hook hook::create()
     {
         auto *const hook = new raw_type;

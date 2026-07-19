@@ -24,14 +24,20 @@ namespace pipewire
 
     link::~link() = default;
 
+    link_info link::info() const
+    {
+        return m_impl->info;
+    }
+
     link::raw_type *link::get() const
     {
         return m_impl->link;
     }
 
-    link_info link::info() const
+    link::raw_type *link::release() &&
     {
-        return m_impl->info;
+        std::ignore = std::move(*this).proxy::release();
+        return std::exchange(m_impl->link, nullptr);
     }
 
     link::operator raw_type *() const &

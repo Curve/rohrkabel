@@ -33,6 +33,10 @@ namespace pipewire
         [[nodiscard]] std::shared_ptr<main_loop> loop() const;
 
       public:
+        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] raw_type *release() &&;
+
+      public:
         [[nodiscard]] operator raw_type *() const &;
         [[nodiscard]] operator raw_type *() const && = delete;
 

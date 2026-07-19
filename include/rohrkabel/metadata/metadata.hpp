@@ -40,12 +40,15 @@ namespace pipewire
         void set_property(std::uint32_t id, std::string key, std::string type, std::string value);
 
       public:
-        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] properties_t properties() const;
 
       public:
         template <detail::listener<raw_type> Listener = metadata_listener>
         [[nodiscard]] Listener listen() const;
+
+      public:
+        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] raw_type *release() &&;
 
       public:
         [[nodiscard]] operator raw_type *() const &;

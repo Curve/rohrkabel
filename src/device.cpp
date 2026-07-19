@@ -29,6 +29,11 @@ namespace pipewire
         pw_device_set_param(m_impl->device, id, flags, pod.get());
     }
 
+    device_info device::info() const
+    {
+        return m_impl->info;
+    }
+
     lazy<device::params_t> device::params() const
     {
         auto listener = listen();
@@ -54,9 +59,10 @@ namespace pipewire
         return m_impl->device;
     }
 
-    device_info device::info() const
+    device::raw_type *device::release() &&
     {
-        return m_impl->info;
+        std::ignore = std::move(*this).proxy::release();
+        return std::exchange(m_impl->device, nullptr);
     }
 
     device::operator raw_type *() const &

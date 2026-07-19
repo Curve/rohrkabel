@@ -42,7 +42,8 @@ namespace pipewire
         void set_param(std::uint32_t id, std::uint32_t flags, const spa::pod &pod);
 
       public:
-        [[rk::needs_sync]] [[nodiscard]] lazy<params_t> params() const;
+        [[nodiscard]] device_info info() const;
+        [[nodiscard]] [[rk::needs_sync]] lazy<params_t> params() const;
 
       public:
         template <detail::listener<raw_type> Listener = device_listener>
@@ -50,7 +51,7 @@ namespace pipewire
 
       public:
         [[nodiscard]] raw_type *get() const;
-        [[nodiscard]] device_info info() const;
+        [[nodiscard]] raw_type *release() &&;
 
       public:
         [[nodiscard]] operator raw_type *() const &;

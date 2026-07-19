@@ -54,15 +54,15 @@ namespace pipewire
         void set_param(std::uint32_t id, std::uint32_t flags, const spa::pod &pod);
 
       public:
-        [[nodiscard]] [[rk::needs_sync]] lazy<params_t> params() const;
-
-      public:
-        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] node_info info() const;
 
       public:
         template <detail::listener<raw_type> Listener = node_listener>
         [[nodiscard]] Listener listen() const;
+
+      public:
+        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] raw_type *release() &&;
 
       public:
         [[nodiscard]] operator raw_type *() const &;

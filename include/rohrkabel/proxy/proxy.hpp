@@ -49,11 +49,12 @@ namespace pipewire
         [[nodiscard]] std::uint32_t version() const;
 
       public:
-        [[nodiscard]] raw_type *get() const;
-
-      public:
         template <detail::listener<raw_type> Listener = proxy_listener>
         [[nodiscard]] Listener listen() const;
+
+      public:
+        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] raw_type *release() &&;
 
       public:
         [[nodiscard]] operator raw_type *() const &;

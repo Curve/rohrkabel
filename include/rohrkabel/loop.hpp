@@ -32,8 +32,11 @@ namespace pipewire
         void quit() const;
 
       public:
-        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] pw_loop *loop() const;
+
+      public:
+        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] raw_type *release() &&;
 
       public:
         [[nodiscard]] operator raw_type *() const &;

@@ -28,14 +28,19 @@ namespace pipewire
         pw_main_loop_quit(m_impl->main_loop.get());
     }
 
+    pw_loop *main_loop::loop() const
+    {
+        return pw_main_loop_get_loop(m_impl->main_loop.get());
+    }
+
     main_loop::raw_type *main_loop::get() const
     {
         return m_impl->main_loop.get();
     }
 
-    pw_loop *main_loop::loop() const
+    main_loop::raw_type *main_loop::release() &&
     {
-        return pw_main_loop_get_loop(m_impl->main_loop.get());
+        return m_impl->main_loop.release();
     }
 
     main_loop::operator raw_type *() const &

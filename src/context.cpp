@@ -27,6 +27,16 @@ namespace pipewire
         return m_impl->loop;
     }
 
+    context::raw_type *context::get() const
+    {
+        return m_impl->context.get();
+    }
+
+    context::raw_type *context::release() &&
+    {
+        return m_impl->context.release();
+    }
+
     context::operator raw_type *() const &
     {
         return get();

@@ -124,14 +124,19 @@ namespace pipewire
         return create<node>({.name = "adapter", .props = std::move(props)});
     }
 
+    std::shared_ptr<pipewire::context> core::context() const
+    {
+        return m_impl->context;
+    }
+
     core::raw_type *core::get() const
     {
         return m_impl->core.get();
     }
 
-    std::shared_ptr<pipewire::context> core::context() const
+    core::raw_type *core::release() &&
     {
-        return m_impl->context;
+        return m_impl->core.release();
     }
 
     core::operator raw_type *() const &

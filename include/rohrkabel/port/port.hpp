@@ -39,15 +39,16 @@ namespace pipewire
         ~port() final;
 
       public:
-        [[rk::needs_sync]] [[nodiscard]] lazy<params_t> params() const;
-
-      public:
-        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] port_info info() const;
+        [[nodiscard]] [[rk::needs_sync]] lazy<params_t> params() const;
 
       public:
         template <detail::listener<raw_type> Listener = port_listener>
         [[nodiscard]] Listener listen() const;
+
+      public:
+        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] raw_type *release() &&;
 
       public:
         [[nodiscard]] operator raw_type *() const &;

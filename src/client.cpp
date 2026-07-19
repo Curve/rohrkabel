@@ -24,14 +24,20 @@ namespace pipewire
 
     client::~client() = default;
 
+    client_info client::info() const
+    {
+        return m_impl->info;
+    }
+
     client::raw_type *client::get() const
     {
         return m_impl->client;
     }
 
-    client_info client::info() const
+    client::raw_type *client::release() &&
     {
-        return m_impl->info;
+        std::ignore = std::move(*this).proxy::release();
+        return std::exchange(m_impl->client, nullptr);
     }
 
     client::operator raw_type *() const &

@@ -40,6 +40,7 @@ namespace pipewire
 
       public:
         [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] raw_type *release() &&;
 
       public:
         [[nodiscard]] static properties create();

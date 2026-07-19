@@ -38,16 +38,19 @@ namespace pipewire
         ~registry();
 
       public:
-        template <detail::listener<raw_type> Listener = registry_listener>
-        [[nodiscard]] Listener listen() const;
-
-      public:
         template <detail::proxy T>
         [[nodiscard]] task<T> bind(std::uint32_t id);
 
       public:
-        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] std::shared_ptr<pipewire::core> core() const;
+
+      public:
+        template <detail::listener<raw_type> Listener = registry_listener>
+        [[nodiscard]] Listener listen() const;
+
+      public:
+        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] raw_type *release() &&;
 
       public:
         [[nodiscard]] operator raw_type *() const &;

@@ -24,6 +24,11 @@ namespace pipewire
 
     port::~port() = default;
 
+    port_info port::info() const
+    {
+        return m_impl->info;
+    }
+
     lazy<port::params_t> port::params() const
     {
         auto listener = listen();
@@ -49,9 +54,10 @@ namespace pipewire
         return m_impl->port;
     }
 
-    port_info port::info() const
+    port::raw_type *port::release() &&
     {
-        return m_impl->info;
+        std::ignore = std::move(*this).proxy::release();
+        return std::exchange(m_impl->port, nullptr);
     }
 
     port::operator raw_type *() const &

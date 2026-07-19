@@ -48,6 +48,11 @@ namespace pipewire
         return m_impl->properties.get();
     }
 
+    properties::raw_type *properties::release() &&
+    {
+        return m_impl->properties.release();
+    }
+
     properties properties::create()
     {
         return from(pw_properties_new(nullptr, nullptr));

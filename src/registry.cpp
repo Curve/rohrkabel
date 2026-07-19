@@ -28,14 +28,19 @@ namespace pipewire
 
     registry::~registry() = default;
 
+    std::shared_ptr<core> registry::core() const
+    {
+        return m_impl->core;
+    }
+
     registry::raw_type *registry::get() const
     {
         return m_impl->registry.get();
     }
 
-    std::shared_ptr<core> registry::core() const
+    registry::raw_type *registry::release() &&
     {
-        return m_impl->core;
+        return m_impl->registry.release();
     }
 
     registry::operator raw_type *() const &

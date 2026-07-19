@@ -88,6 +88,11 @@ namespace pipewire
         return m_impl->proxy.get();
     }
 
+    proxy::raw_type *proxy::release() &&
+    {
+        return m_impl->proxy.release();
+    }
+
     proxy::operator raw_type *() const &
     {
         return get();

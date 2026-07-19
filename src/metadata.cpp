@@ -42,14 +42,20 @@ namespace pipewire
                                                    });
     }
 
+    metadata::properties_t metadata::properties() const
+    {
+        return m_impl->properties;
+    }
+
     metadata::raw_type *metadata::get() const
     {
         return m_impl->metadata;
     }
 
-    metadata::properties_t metadata::properties() const
+    metadata::raw_type *metadata::release() &&
     {
-        return m_impl->properties;
+        std::ignore = std::move(*this).proxy::release();
+        return std::exchange(m_impl->metadata, nullptr);
     }
 
     metadata::operator raw_type *() const &

@@ -30,12 +30,15 @@ namespace pipewire
         ~client() final;
 
       public:
-        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] client_info info() const;
 
       public:
         template <detail::listener<raw_type> Listener = client_listener>
         [[nodiscard]] Listener listen() const;
+
+      public:
+        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] raw_type *release() &&;
 
       public:
         [[nodiscard]] operator raw_type *() const &;

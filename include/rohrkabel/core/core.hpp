@@ -66,10 +66,6 @@ namespace pipewire
         [[nodiscard]] lazy<int> sync() const;
 
       public:
-        template <detail::listener<raw_type> Listener = core_listener>
-        [[nodiscard]] Listener listen() const;
-
-      public:
         template <detail::proxy T>
         [[nodiscard]] task<T> create(factory);
 
@@ -87,8 +83,15 @@ namespace pipewire
         detail::lazy_of<Awaitable> await(Awaitable) const;
 
       public:
-        [[nodiscard]] raw_type *get() const;
         [[nodiscard]] std::shared_ptr<pipewire::context> context() const;
+
+      public:
+        template <detail::listener<raw_type> Listener = core_listener>
+        [[nodiscard]] Listener listen() const;
+
+      public:
+        [[nodiscard]] raw_type *get() const;
+        [[nodiscard]] raw_type *release() &&;
 
       public:
         [[nodiscard]] operator raw_type *() const &;
