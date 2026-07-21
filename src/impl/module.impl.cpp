@@ -30,9 +30,9 @@ namespace pipewire
             out += std::format("node.name = {} ", escape(data.name));
         }
 
-        if (!data.descrption.empty())
+        if (!data.description.empty())
         {
-            out += std::format("node.description = {} ", escape(data.descrption));
+            out += std::format("node.description = {} ", escape(data.description));
         }
     }
 

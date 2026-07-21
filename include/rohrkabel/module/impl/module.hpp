@@ -20,14 +20,14 @@ namespace pipewire
         struct
         {
             std::string name;
-            std::string descrption;
+            std::string description;
             std::optional<std::uint32_t> node;
         } capture;
 
         struct
         {
             std::string name;
-            std::string descrption;
+            std::string description;
             std::optional<std::uint32_t> node;
         } playback;
 
