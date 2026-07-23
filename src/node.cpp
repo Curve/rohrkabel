@@ -84,6 +84,7 @@ namespace pipewire
                 promise.set_value(std::move(info));
             });
 
+        co_await task<node>::make_lazy{};
         auto proxy = co_await std::move(_proxy);
 
         if (!proxy.has_value())
