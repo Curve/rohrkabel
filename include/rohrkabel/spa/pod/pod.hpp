@@ -34,6 +34,7 @@ namespace pipewire::spa
     struct prop
     {
         static std::uint32_t mute;
+        static std::uint32_t monitor_mute;
         static std::uint32_t volume;
         static std::uint32_t channel_volumes;
     }; // namespace prop

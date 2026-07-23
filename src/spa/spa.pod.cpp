@@ -21,6 +21,7 @@ namespace pipewire::spa
     std::uint32_t type::array        = SPA_TYPE_Array;
 
     std::uint32_t prop::mute            = SPA_PROP_mute;
+    std::uint32_t prop::monitor_mute    = SPA_PROP_monitorMute;
     std::uint32_t prop::volume          = SPA_PROP_volume;
     std::uint32_t prop::channel_volumes = SPA_PROP_channelVolumes;
 
