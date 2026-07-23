@@ -6,6 +6,7 @@
 
 #include <ranges>
 #include <limits>
+#include <format>
 
 #include <pipewire/pipewire.h>
 #include <coco/promise/promise.hpp>
@@ -115,13 +116,13 @@ namespace pipewire
                                | std::views::join_with(',') //
                                | std::ranges::to<std::string>();
 
-        auto props = properties::create({
-            {"node.name", factory.name},
-            {"media.class", factory.type == sink ? "Audio/Sink/Virtual" : "Audio/Source/Virtual"},
-            {"factory.name", "support.null-audio-sink"},
-            {"audio.channels", std::to_string(factory.positions.size())},
-            {"audio.position", positions},
-        });
+        auto props = std::move(factory.props);
+
+        props.set("factory.name", "support.null-audio-sink");
+        props.set("node.name", factory.name);
+        props.set("media.class", factory.type == sink ? "Audio/Sink/Virtual" : "Audio/Source/Virtual");
+        props.set("audio.position", positions);
+        props.set("audio.channels", std::format("{}", factory.positions.size()));
 
         return create<node>({.name = "adapter", .props = std::move(props)});
     }

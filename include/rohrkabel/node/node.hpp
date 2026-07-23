@@ -2,6 +2,7 @@
 
 #include "info.hpp"
 
+#include "../properties.hpp"
 #include "../proxy/proxy.hpp"
 #include "../spa/pod/pod.hpp"
 
@@ -33,6 +34,9 @@ namespace pipewire
         kind type;
         std::string name;
         std::set<std::string> positions;
+
+      public:
+        properties props{properties::create()};
     };
 
     class node final : public proxy
