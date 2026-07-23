@@ -93,25 +93,22 @@ int main()
         return 1;
     }
 
-    const auto is = [&](auto what)
+    static const auto is = [](const auto &what, auto &&x)
     {
-        return [what](auto &&x)
-        {
-            auto props = x.props();
-            return props["node.name"] == what;
-        };
+        auto props = x.props();
+        return props["node.name"] == what;
     };
 
     auto speaker_node    = std::optional<pw::node>{};
     auto microphone_node = std::optional<pw::node>{};
 
-    if (auto it = std::ranges::find_if(nodes, is(speaker)); it != nodes.end())
+    if (auto it = std::ranges::find_if(nodes, std::bind_front(is, speaker)); it != nodes.end())
     {
         speaker_node.emplace(std::move(*it));
         nodes.erase(it);
     }
 
-    if (auto it = std::ranges::find_if(nodes, is(microphone)); it != nodes.end())
+    if (auto it = std::ranges::find_if(nodes, std::bind_front(is, microphone)); it != nodes.end())
     {
         microphone_node.emplace(std::move(*it));
         nodes.erase(it);
