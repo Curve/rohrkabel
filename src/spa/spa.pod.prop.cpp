@@ -31,7 +31,7 @@ namespace pipewire::spa
         return m_impl->prop->flags;
     }
 
-    enum_value<prop> pod_prop::key() const
+    std::uint32_t pod_prop::key() const
     {
         return m_impl->prop->key;
     }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../../utils/enum.hpp"
 #include "../../utils/traits.hpp"
 #include "../../utils/deleter.hpp"
 
@@ -19,23 +18,30 @@ namespace pipewire::spa
     class pod_prop;
     class pod_object;
 
-    enum class type : std::uint8_t
+    struct type
     {
-        string     = 8,
-        boolean    = 2,
-        object     = 15,
-        num_int    = 4,
-        num_long   = 5,
-        num_float  = 6,
-        num_double = 7,
-        array      = 13,
-    };
+        static std::uint32_t string;
+        static std::uint32_t boolean;
+        static std::uint32_t object;
+        static std::uint32_t object_props;
+        static std::uint32_t num_int;
+        static std::uint32_t num_long;
+        static std::uint32_t num_float;
+        static std::uint32_t num_double;
+        static std::uint32_t array;
+    }; // namespace type
 
-    enum class prop : std::uint32_t
+    struct prop
     {
-        mute            = 65540,
-        channel_volumes = 65544,
-    };
+        static std::uint32_t mute;
+        static std::uint32_t volume;
+        static std::uint32_t channel_volumes;
+    }; // namespace prop
+
+    struct param
+    {
+        static std::uint32_t props;
+    }; // namespace prop
 
     template <typename T>
     concept PodReadable = detail::one_of<T, bool, int, long, float, double, std::string, pod_object>;
@@ -71,12 +77,12 @@ namespace pipewire::spa
         [[nodiscard]] std::vector<void *> array() const;
 
       public:
-        [[nodiscard]] std::optional<pod_prop> find(enum_value<prop>) const;
-        [[nodiscard]] std::optional<pod_prop> find_recursive(enum_value<prop>) const;
+        [[nodiscard]] std::optional<pod_prop> find(std::uint32_t prop) const;
+        [[nodiscard]] std::optional<pod_prop> find_recursive(std::uint32_t prop) const;
 
       public:
         [[nodiscard]] std::size_t size() const;
-        [[nodiscard]] enum_value<spa::type> type() const;
+        [[nodiscard]] std::uint32_t type() const;
 
       public:
         template <PodReadable T>
@@ -102,6 +108,9 @@ namespace pipewire::spa
       public:
         [[nodiscard]] static pod view(raw_type *);
         [[nodiscard]] static pod copy(const raw_type *);
+
+      public:
+        [[nodiscard]] static pod create();
     };
 } // namespace pipewire::spa
 

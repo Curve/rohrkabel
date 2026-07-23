@@ -35,7 +35,7 @@ namespace pipewire::spa
 
       public:
         [[nodiscard]] std::uint32_t flags() const;
-        [[nodiscard]] enum_value<prop> key() const;
+        [[nodiscard]] std::uint32_t key() const;
 
       public:
         [[nodiscard]] raw_type *get() const;

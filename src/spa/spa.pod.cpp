@@ -10,6 +10,22 @@
 
 namespace pipewire::spa
 {
+    std::uint32_t type::string       = SPA_TYPE_String;
+    std::uint32_t type::boolean      = SPA_TYPE_Bool;
+    std::uint32_t type::object       = SPA_TYPE_Object;
+    std::uint32_t type::object_props = SPA_TYPE_OBJECT_Props;
+    std::uint32_t type::num_int      = SPA_TYPE_Int;
+    std::uint32_t type::num_long     = SPA_TYPE_Long;
+    std::uint32_t type::num_float    = SPA_TYPE_Float;
+    std::uint32_t type::num_double   = SPA_TYPE_Double;
+    std::uint32_t type::array        = SPA_TYPE_Array;
+
+    std::uint32_t prop::mute            = SPA_PROP_mute;
+    std::uint32_t prop::volume          = SPA_PROP_volume;
+    std::uint32_t prop::channel_volumes = SPA_PROP_channelVolumes;
+
+    std::uint32_t param::props = SPA_PARAM_Props;
+
     struct pod::impl
     {
         pw_unique_ptr<raw_type> pod;
@@ -55,7 +71,7 @@ namespace pipewire::spa
     template <>
     pod_object pod::read() const;
 
-    std::optional<pod_prop> pod::find(enum_value<prop> key) const
+    std::optional<pod_prop> pod::find(std::uint32_t prop) const
     {
         // Re-implementation of `spa_pod_find_prop` without const return value
 
@@ -64,24 +80,24 @@ namespace pipewire::spa
             return std::nullopt;
         }
 
-        for (auto &&prop : read<pod_object>().props())
+        for (auto &&item : read<pod_object>().props())
         {
-            if (prop.key() != key)
+            if (item.key() != prop)
             {
                 continue;
             }
 
-            return std::move(prop);
+            return std::move(item);
         }
 
         return std::nullopt;
     }
 
-    std::optional<pod_prop> pod::find_recursive(enum_value<prop> key) const
+    std::optional<pod_prop> pod::find_recursive(std::uint32_t prop) const
     {
-        return [key](this auto &&impl, const auto &pod) -> std::optional<pod_prop> // NOLINT(*-recursion)
+        return [prop](this auto &&impl, const auto &pod) -> std::optional<pod_prop> // NOLINT(*-recursion)
         {
-            if (auto ret = pod.find(key); ret)
+            if (auto ret = pod.find(prop); ret)
             {
                 return ret;
             }
@@ -112,7 +128,7 @@ namespace pipewire::spa
         return m_impl->pod->size;
     }
 
-    enum_value<spa::type> pod::type() const
+    std::uint32_t pod::type() const
     {
         return m_impl->pod->type;
     }

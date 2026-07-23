@@ -26,9 +26,9 @@ namespace pipewire::spa
         return spa::pod::view(&m_impl->object->pod);
     }
 
-    spa::type pod_object::type() const
+    std::uint32_t pod_object::type() const
     {
-        return static_cast<spa::type>(m_impl->object->body.type);
+        return m_impl->object->body.type;
     }
 
     std::uint32_t pod_object::id() const
