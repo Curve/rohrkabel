@@ -27,7 +27,7 @@ namespace pipewire
         struct impl;
 
       private:
-        using module = pipewire::impl::module;
+        using mod = pipewire::impl::mod;
 
       public:
         using raw_type = pw_context;
@@ -42,7 +42,7 @@ namespace pipewire
         ~context();
 
       public:
-        [[nodiscard]] res<module, std::error_code> load(module_options);
+        [[nodiscard]] res<mod, std::error_code> load(module_options);
 
       public:
         [[nodiscard]] std::shared_ptr<main_loop> loop() const;

@@ -27,7 +27,7 @@ namespace pipewire::impl
         std::unique_ptr<impl> m_impl;
 
       public:
-        module_listener(module::raw_type *);
+        module_listener(mod::raw_type *);
 
       public:
         ~module_listener();

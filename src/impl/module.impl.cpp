@@ -57,61 +57,61 @@ namespace pipewire
 
 namespace pipewire::impl
 {
-    struct module::impl
+    struct mod::impl
     {
         pw_unique_ptr<raw_type> module;
     };
 
     // clang-format off
     // clang-format behaves weirdly here because the name clashes with C++20 modules
-    module::module(deleter<raw_type> deleter, raw_type *raw)
+    mod::mod(deleter<raw_type> deleter, raw_type *raw)
         : m_impl(std::make_unique<impl>(pw_unique_ptr<raw_type>{raw, deleter}))
     {
     }
     // clang-format on
 
-    module::module(module &&) noexcept = default;
+    mod::mod(mod &&) noexcept = default;
 
-    module &module::operator=(module &&) noexcept = default;
+    mod &mod::operator=(mod &&) noexcept = default;
 
-    module::~module() = default;
+    mod::~mod() = default;
 
-    module_info module::info() const
+    module_info mod::info() const
     {
         return module_info::from(pw_impl_module_get_info(m_impl->module.get()));
     }
 
-    properties module::properties() const
+    properties mod::properties() const
     {
         return pipewire::properties::from(pw_properties_copy(pw_impl_module_get_properties(m_impl->module.get())));
     }
 
-    void module::update_properties(pipewire::properties props)
+    void mod::update_properties(pipewire::properties props)
     {
         pw_impl_module_update_properties(m_impl->module.get(), &props.get()->dict);
     }
 
-    module::raw_type *module::get() const
+    mod::raw_type *mod::get() const
     {
         return m_impl->module.get();
     }
 
-    module::raw_type *module::release() &&
+    mod::raw_type *mod::release() &&
     {
         return m_impl->module.release();
     }
 
-    module::operator raw_type *() const &
+    mod::operator raw_type *() const &
     {
         return get();
     }
 
-    module module::from(raw_type *raw)
+    mod mod::from(raw_type *raw)
     {
         return {pw_impl_module_destroy, raw};
     }
 
-    module module::view(raw_type *raw)
+    mod mod::view(raw_type *raw)
     {
         return {view_deleter<raw_type>, raw};
     }

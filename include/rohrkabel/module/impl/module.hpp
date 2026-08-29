@@ -40,7 +40,7 @@ namespace pipewire::impl
 {
     class module_listener;
 
-    class module
+    class mod
     {
         struct impl;
 
@@ -51,14 +51,14 @@ namespace pipewire::impl
         std::unique_ptr<impl> m_impl;
 
       public:
-        module(deleter<raw_type>, raw_type *);
+        mod(deleter<raw_type>, raw_type *);
 
       public:
-        module(module &&) noexcept;
-        module &operator=(module &&) noexcept;
+        mod(mod &&) noexcept;
+        mod &operator=(mod &&) noexcept;
 
       public:
-        ~module();
+        ~mod();
 
       public:
         [[nodiscard]] module_info info() const;
@@ -80,8 +80,8 @@ namespace pipewire::impl
         [[nodiscard]] operator raw_type *() const && = delete;
 
       public:
-        static module from(raw_type *);
-        static module view(raw_type *);
+        static mod from(raw_type *);
+        static mod view(raw_type *);
     };
 } // namespace pipewire::impl
 

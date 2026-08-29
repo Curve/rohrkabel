@@ -10,7 +10,7 @@ namespace pipewire::impl
         pw_impl_module_events events;
     };
 
-    module_listener::module_listener(module::raw_type *module) : m_impl(std::make_unique<impl>())
+    module_listener::module_listener(mod::raw_type *module) : m_impl(std::make_unique<impl>())
     {
         m_impl->events.version = version;
 

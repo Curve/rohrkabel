@@ -4,8 +4,8 @@
 
 namespace pipewire::impl
 {
-    template <detail::listener<module::raw_type> Listener>
-    Listener module::listen() const
+    template <detail::listener<mod::raw_type> Listener>
+    Listener mod::listen() const
     {
         return {get()};
     }

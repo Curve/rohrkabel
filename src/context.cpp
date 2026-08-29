@@ -18,17 +18,17 @@ namespace pipewire
 
     context::~context() = default;
 
-    res<context::module, std::error_code> context::load(module_options opts)
+    res<context::mod, std::error_code> context::load(module_options opts)
     {
         auto *const props = std::move(opts.props).release();
-        auto *const mod   = pw_context_load_module(m_impl->context.get(), opts.name.c_str(), opts.args.c_str(), props);
+        auto *const raw   = pw_context_load_module(m_impl->context.get(), opts.name.c_str(), opts.args.c_str(), props);
 
-        if (!mod)
+        if (!raw)
         {
             return std::unexpected{std::make_error_code(static_cast<std::errc>(errno))};
         }
 
-        return module::from(mod);
+        return mod::from(raw);
     }
 
     std::shared_ptr<main_loop> context::loop() const
