@@ -32,6 +32,9 @@ namespace pipewire
         } playback;
 
       public:
+        bool dont_fallback{false};
+
+      public:
         operator module_options() const;
     };
 } // namespace pipewire

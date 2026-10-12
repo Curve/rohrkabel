@@ -41,10 +41,12 @@ namespace pipewire
         std::string args = "{ capture.props = { ";
         {
             build_props(args, capture);
+            args += std::format("node.dont-fallback = {} ", dont_fallback);
         }
         args += "} playback.props = { ";
         {
             build_props(args, playback);
+            args += std::format("node.dont-fallback = {} ", dont_fallback);
         }
         args += "} }";
 
@@ -108,7 +110,9 @@ namespace pipewire::impl
 
     mod mod::from(raw_type *raw)
     {
-        return {pw_impl_module_destroy, raw};
+        // We avoid `pw_impl_module_destroy`, because e.g. a pw-loopback can destroy itself when a connected node disconnects
+        // (and is using node.dont-fallback)
+        return {pw_impl_module_schedule_destroy, raw};
     }
 
     mod mod::view(raw_type *raw)
