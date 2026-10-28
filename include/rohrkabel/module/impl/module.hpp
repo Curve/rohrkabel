@@ -32,7 +32,7 @@ namespace pipewire
         } playback;
 
       public:
-        bool dont_fallback{false};
+        std::map<std::string, std::string> props;
 
       public:
         operator module_options() const;

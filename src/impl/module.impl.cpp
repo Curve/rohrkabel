@@ -1,6 +1,7 @@
 #include "module/impl/module.hpp"
 #include "context.hpp"
 
+#include <ranges>
 #include <format>
 
 #include <pipewire/pipewire.h>
@@ -38,15 +39,25 @@ namespace pipewire
 
     loopback_options::operator module_options() const
     {
+        static constexpr auto fmt = [](auto &&item)
+        {
+            return std::format("{} = {} ", item.first, item.second);
+        };
+
+        const auto additional = props                        //
+                                | std::views::transform(fmt) //
+                                | std::views::join           //
+                                | std::ranges::to<std::string>();
+
         std::string args = "{ capture.props = { ";
         {
             build_props(args, capture);
-            args += std::format("node.dont-fallback = {} ", dont_fallback);
+            args += additional;
         }
         args += "} playback.props = { ";
         {
             build_props(args, playback);
-            args += std::format("node.dont-fallback = {} ", dont_fallback);
+            args += additional;
         }
         args += "} }";
 
